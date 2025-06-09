@@ -1,0 +1,133 @@
+{
+  "performanceReviews": [
+    {
+      "employeeId": "EMP001",
+      "employeeName": "John Doe",
+      "department": "Engineering",
+      "position": "Senior Developer",
+      "reviewYear": 2024,
+      "overallRating": 4.5,
+      "reviewer": "Sarah Johnson",
+      "reviewDate": "2024-03-15",
+      "status": "completed",
+      "categories": {
+        "technicalSkills": {
+          "rating": 4.8,
+          "comments": "Excellent technical expertise. Consistently delivers high-quality code and solutions."
+        },
+        "communication": {
+          "rating": 4.2,
+          "comments": "Good communication skills. Effectively collaborates with team members."
+        },
+        "leadership": {
+          "rating": 4.5,
+          "comments": "Strong leadership qualities. Mentors junior developers effectively."
+        },
+        "productivity": {
+          "rating": 4.7,
+          "comments": "Highly productive. Consistently meets deadlines and exceeds expectations."
+        }
+      },
+      "achievements": [
+        "Led the successful implementation of the new authentication system",
+        "Mentored 3 junior developers",
+        "Reduced system response time by 40%"
+      ],
+      "areasForImprovement": [
+        "Could improve documentation practices",
+        "Consider taking on more cross-team projects"
+      ],
+      "goalsForNextYear": [
+        "Lead a major system architecture redesign",
+        "Improve team documentation standards",
+        "Take on more mentoring responsibilities"
+      ]
+    },
+    {
+      "employeeId": "EMP002",
+      "employeeName": "Jane Smith",
+      "department": "Marketing",
+      "position": "Marketing Manager",
+      "reviewYear": 2024,
+      "overallRating": 4.2,
+      "reviewer": "Michael Brown",
+      "reviewDate": "2024-03-10",
+      "status": "completed",
+      "categories": {
+        "strategicPlanning": {
+          "rating": 4.5,
+          "comments": "Excellent strategic thinking. Successfully launched new marketing campaigns."
+        },
+        "teamManagement": {
+          "rating": 4.3,
+          "comments": "Strong team leadership. Effectively manages and motivates the marketing team."
+        },
+        "communication": {
+          "rating": 4.4,
+          "comments": "Outstanding communication skills. Builds strong relationships with stakeholders."
+        },
+        "innovation": {
+          "rating": 4.0,
+          "comments": "Good innovative thinking. Introduced new marketing approaches."
+        }
+      },
+      "achievements": [
+        "Increased social media engagement by 60%",
+        "Successfully launched 3 major campaigns",
+        "Improved team productivity by 25%"
+      ],
+      "areasForImprovement": [
+        "Could improve data analytics skills",
+        "Consider more cross-department collaboration"
+      ],
+      "goalsForNextYear": [
+        "Implement new marketing automation tools",
+        "Develop advanced analytics capabilities",
+        "Expand team's digital marketing expertise"
+      ]
+    },
+    {
+      "employeeId": "EMP003",
+      "employeeName": "Robert Wilson",
+      "department": "Sales",
+      "position": "Sales Representative",
+      "reviewYear": 2024,
+      "overallRating": 3.8,
+      "reviewer": "Lisa Chen",
+      "reviewDate": "2024-03-20",
+      "status": "completed",
+      "categories": {
+        "salesPerformance": {
+          "rating": 3.9,
+          "comments": "Good sales performance. Consistently meets targets."
+        },
+        "customerRelations": {
+          "rating": 4.2,
+          "comments": "Excellent customer relationship management skills."
+        },
+        "productKnowledge": {
+          "rating": 3.7,
+          "comments": "Solid product knowledge. Could improve in some technical areas."
+        },
+        "teamwork": {
+          "rating": 3.5,
+          "comments": "Good team player. Could be more proactive in team initiatives."
+        }
+      },
+      "achievements": [
+        "Exceeded Q4 sales target by 15%",
+        "Maintained 95% customer satisfaction rate",
+        "Successfully onboarded 5 new major clients"
+      ],
+      "areasForImprovement": [
+        "Need to improve technical product knowledge",
+        "Could be more proactive in team activities"
+      ],
+      "goalsForNextYear": [
+        "Increase sales by 20%",
+        "Complete advanced product training",
+        "Take on mentoring role for new sales team members"
+      ]
+    }
+  ]
+} 

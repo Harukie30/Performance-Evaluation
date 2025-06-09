@@ -1,0 +1,35 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "email": "admin@smct.com",
+      "password": "admin123",
+      "role": "admin",
+      "name": "Admin User",
+      "department": "IT",
+      "permissions": ["manage_users", "view_all_reviews", "create_reviews", "edit_reviews", "delete_reviews"]
+    },
+    {
+      "id": "2",
+      "username": "hr_manager",
+      "email": "hr@smct.com",
+      "password": "hr123",
+      "role": "hr",
+      "name": "HR Manager",
+      "department": "Human Resources",
+      "permissions": ["view_all_reviews", "create_reviews", "edit_reviews"]
+    },
+    {
+      "id": "3",
+      "username": "evaluator1",
+      "email": "evaluator@smct.com",
+      "password": "eval123",
+      "role": "evaluator",
+      "name": "John Evaluator",
+      "department": "Operations",
+      "permissions": ["create_reviews", "edit_own_reviews"]
+    }
+    
+  ]
+} 
