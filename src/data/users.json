@@ -160,5 +160,23 @@
     "datehired": {
       "date": "2023-08-30"
     }
+  },
+  {
+    "id": 10,
+    "employeeId": "010",
+    "name": "Lisa Kaon",
+    "email": "lisa.anderson@smct.com",
+    "phone": "+1 234-567-8908",
+    "position": {
+      "title": "Content Strategist"
+    },
+    "department": {
+      "department_name": "Marketing"
+    },
+    "location": "Austin",
+    "status": "Active",
+    "datehired": {
+      "date": "2023-08-30"
+    }
   }
 ]

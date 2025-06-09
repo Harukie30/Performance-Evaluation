@@ -32,6 +32,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { QuarterlyReviewModal } from '@/components/QuarterlyReviewModal';
 
 interface User {
   id: string;
@@ -86,6 +87,7 @@ interface RecentActivity {
 }
 
 const QuarterViewModal = ({ employee }: { employee: Employee }) => {
+  const [selectedQuarter, setSelectedQuarter] = useState<'Q1' | 'Q2' | 'Q3' | 'Q4' | null>(null);
   const currentYear = new Date().getFullYear();
   const quarters = [
     { id: 'Q1', label: 'First Quarter', months: 'Jan - Mar' },
@@ -95,43 +97,56 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
   ];
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">View Quarters</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Quarterly Reviews - {employee.name}</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          {quarters.map((quarter) => {
-            const review = employee.quarterlyReviews?.[quarter.id as keyof typeof employee.quarterlyReviews];
-            return (
-              <div key={quarter.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">{quarter.label}</h4>
-                  <p className="text-sm text-gray-500">{quarter.months} {currentYear}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    review?.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    review?.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {review?.status || 'Not Started'}
-                  </span>
-                  {review?.date && (
-                    <span className="text-sm text-gray-500">
-                      {new Date(review.date).toLocaleDateString()}
+    <>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">View Quarters</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Quarterly Reviews - {employee.name}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {quarters.map((quarter) => {
+              const review = employee.quarterlyReviews?.[quarter.id as keyof typeof employee.quarterlyReviews];
+              return (
+                <div key={quarter.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">{quarter.label}</h4>
+                    <p className="text-sm text-gray-500">{quarter.months} {currentYear}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedQuarter(quarter.id as 'Q1' | 'Q2' | 'Q3' | 'Q4')}
+                      disabled={!review?.status || review.status === 'not_started'}
+                    >
+                      View Details
+                    </Button>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      review?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      review?.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {review?.status || 'Not Started'}
                     </span>
-                  )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </DialogContent>
-    </Dialog>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {selectedQuarter && (
+        <QuarterlyReviewModal
+          isOpen={!!selectedQuarter}
+          onClose={() => setSelectedQuarter(null)}
+          quarter={selectedQuarter}
+        />
+      )}
+    </>
   );
 };
 
