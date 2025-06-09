@@ -5,6 +5,7 @@ export interface Employee {
   employeeName: string;
   department: string;
   position: string;
+  status: string;
 }
 
 export interface Evaluation {
@@ -40,10 +41,13 @@ export const loadEvaluations = (): Evaluation[] => {
 };
 
 export const loadEmployees = (): Employee[] => {
-  return performanceReviews.map(review => ({
-    employeeId: review.employeeId,
-    employeeName: review.employeeName,
-    department: review.department,
-    position: review.position
-  }));
+  return performanceReviews
+    .filter(review => review.status === "completed")
+    .map(review => ({
+      employeeId: review.employeeId,
+      employeeName: review.employeeName,
+      department: review.department,
+      position: review.position,
+      status: review.status
+    }));
 }; 

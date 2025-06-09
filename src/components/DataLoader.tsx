@@ -13,7 +13,7 @@ export const DataLoader: React.FC = () => {
   };
 
   const handleEmployeesClick = () => {
-    const data = loadEmployees();
+    const data = loadEmployees().filter(emp => emp.status === "completed");
     setEmployees(data);
     setActiveTab('employees');
   };
@@ -35,7 +35,7 @@ export const DataLoader: React.FC = () => {
             activeTab === 'employees' ? 'bg-blue-500 text-white' : 'bg-gray-200'
           }`}
         >
-          Employees
+          Active Employees
         </button>
       </div>
 

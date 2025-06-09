@@ -1,0 +1,188 @@
+{
+  "quarterlyReviews": {
+    "Q1": {
+      "reviewPeriod": "January - March 2024",
+      "reviews": [
+        {
+          "employeeId": "EMP001",
+          "employeeName": "John Doe",
+          "department": "Engineering",
+          "position": "Senior Developer",
+          "overallRating": 4.5,
+          "reviewer": "Sarah Johnson",
+          "reviewDate": "2024-03-15",
+          "status": "completed",
+          "categories": {
+            "technicalSkills": {
+              "rating": 4.8,
+              "comments": "Excellent technical expertise. Successfully implemented Q1 projects."
+            },
+            "communication": {
+              "rating": 4.2,
+              "comments": "Good communication skills. Effective team collaboration."
+            },
+            "leadership": {
+              "rating": 4.5,
+              "comments": "Strong leadership in Q1 initiatives."
+            },
+            "productivity": {
+              "rating": 4.7,
+              "comments": "High productivity in Q1 deliverables."
+            },
+            "teamwork": {
+              "rating": 4.3,
+              "comments": "Excellent team player in Q1 projects."
+            }
+          },
+          "achievements": [
+            "Completed major system upgrade",
+            "Mentored 2 junior developers",
+            "Improved system performance by 30%"
+          ],
+          "goalsForNextQuarter": [
+            "Implement new testing framework",
+            "Lead technical documentation initiative"
+          ]
+        }
+      ]
+    },
+    "Q2": {
+      "reviewPeriod": "April - June 2024",
+      "reviews": [
+        {
+          "employeeId": "EMP001",
+          "employeeName": "John Doe",
+          "department": "Engineering",
+          "position": "Senior Developer",
+          "overallRating": 4.6,
+          "reviewer": "Sarah Johnson",
+          "reviewDate": "2024-06-15",
+          "status": "completed",
+          "categories": {
+            "technicalSkills": {
+              "rating": 4.9,
+              "comments": "Outstanding technical growth in Q2."
+            },
+            "communication": {
+              "rating": 4.3,
+              "comments": "Improved cross-team communication."
+            },
+            "leadership": {
+              "rating": 4.6,
+              "comments": "Enhanced leadership capabilities."
+            },
+            "productivity": {
+              "rating": 4.8,
+              "comments": "Exceeded Q2 productivity targets."
+            },
+            "teamwork": {
+              "rating": 4.4,
+              "comments": "Strong team collaboration in Q2."
+            }
+          },
+          "achievements": [
+            "Launched new testing framework",
+            "Improved documentation standards",
+            "Reduced bug reports by 40%"
+          ],
+          "goalsForNextQuarter": [
+            "Implement CI/CD pipeline",
+            "Lead team training sessions"
+          ]
+        }
+      ]
+    },
+    "Q3": {
+      "reviewPeriod": "July - September 2024",
+      "reviews": [
+        {
+          "employeeId": "EMP001",
+          "employeeName": "John Doe",
+          "department": "Engineering",
+          "position": "Senior Developer",
+          "overallRating": 4.7,
+          "reviewer": "Sarah Johnson",
+          "reviewDate": "2024-09-15",
+          "status": "completed",
+          "categories": {
+            "technicalSkills": {
+              "rating": 4.9,
+              "comments": "Mastered new technologies in Q3."
+            },
+            "communication": {
+              "rating": 4.5,
+              "comments": "Excellent stakeholder communication."
+            },
+            "leadership": {
+              "rating": 4.7,
+              "comments": "Strong leadership in Q3 projects."
+            },
+            "productivity": {
+              "rating": 4.8,
+              "comments": "Consistently high productivity."
+            },
+            "teamwork": {
+              "rating": 4.6,
+              "comments": "Outstanding team collaboration."
+            }
+          },
+          "achievements": [
+            "Implemented CI/CD pipeline",
+            "Led successful team training",
+            "Reduced deployment time by 50%"
+          ],
+          "goalsForNextQuarter": [
+            "Architect new system features",
+            "Mentor junior team members"
+          ]
+        }
+      ]
+    },
+    "Q4": {
+      "reviewPeriod": "October - December 2024",
+      "reviews": [
+        {
+          "employeeId": "EMP001",
+          "employeeName": "John Doe",
+          "department": "Engineering",
+          "position": "Senior Developer",
+          "overallRating": 4.8,
+          "reviewer": "Sarah Johnson",
+          "reviewDate": "2024-12-15",
+          "status": "completed",
+          "categories": {
+            "technicalSkills": {
+              "rating": 5.0,
+              "comments": "Exceptional technical leadership."
+            },
+            "communication": {
+              "rating": 4.7,
+              "comments": "Outstanding communication skills."
+            },
+            "leadership": {
+              "rating": 4.8,
+              "comments": "Excellent leadership in Q4."
+            },
+            "productivity": {
+              "rating": 4.9,
+              "comments": "Consistently exceeds expectations."
+            },
+            "teamwork": {
+              "rating": 4.8,
+              "comments": "Exceptional team player."
+            }
+          },
+          "achievements": [
+            "Architected new system features",
+            "Mentored 4 junior developers",
+            "Improved system reliability by 60%"
+          ],
+          "goalsForNextYear": [
+            "Lead major system redesign",
+            "Develop team training program"
+          ]
+        }
+      ]
+    }
+  }
+} 
