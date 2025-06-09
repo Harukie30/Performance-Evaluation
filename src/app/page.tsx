@@ -142,18 +142,7 @@ export default function Home() {
       </header>
       {/* End of Section */}
 
-      {/* Data Loader Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300 mb-4">
-            Performance Data
-          </h2>
-          <p className="text-lg text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
-            View and manage employee evaluations and information
-          </p>
-        </div>
-        <DataLoader />
-      </section>
+      
 
       {/* Features Section */}
       <motion.div

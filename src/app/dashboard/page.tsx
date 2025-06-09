@@ -341,9 +341,9 @@ export default function DashboardPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleViewEvaluation(evaluation.id)}
+                            onClick={() => handleNewEvaluation()}
                           >
-                            View
+                            New Evaluation
                           </Button>
                         </TableCell>
                       </TableRow>
