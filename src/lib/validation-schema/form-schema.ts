@@ -12,6 +12,10 @@ const baseSchema = z.object({
   datehired: z.date(),
   reviewType: z.enum(["quarterly", "annual", "probationary"]),
   reviewPeriod: z.string(),
+  ForRegular: z.enum(["Q1 2023", "Q2 2023", "Q3 2023", "Q4 2023", "Q1 2024", "Q2 2024"]).optional(),
+  ForProbationary: z.enum(["3 months", "5 months"]).optional(),
+  otherReviewType: z.string().optional(),
+  otherReviewDetails: z.string().optional(),
   attendance: z.number().optional(),
   punctuality: z.number().optional(),
   correctiveActionWarningReprimandsOralOrWritten: z.number().optional(),
@@ -20,6 +24,20 @@ const baseSchema = z.object({
   courteous: z.number().optional(),
   communication: z.number().optional(),
   initiative: z.number().optional(),
+  jobKnowledge: z.number(),
+  promptnessOfWork: z.number(),
+  qualityOfWork: z.number(),
+  jobKnowledgeComments: z.string(),
+  qualityofworkComments: z.string(),
+  promptnessofworkComments: z.string(),
+  punctualityComments: z.string().optional(),
+  attendanceComments: z.string().optional(),
+  correctiveactionComments: z.string().optional(),
+  honestyComments: z.string().optional(),
+  loyaltyComments: z.string().optional(),
+  courteousComments: z.string().optional(),
+  communicationComments: z.string().optional(),
+  initiativeComments: z.string().optional(),
 });
 
 // Review type specific schemas
@@ -162,8 +180,8 @@ export interface PerformanceFormValues {
   datehired: Date;
   reviewType: "quarterly" | "annual" | "probationary";
   reviewPeriod: string;
-  ForRegular?: string;
-  ForProbationary?: string;
+  ForRegular?: "Q1 2023" | "Q2 2023" | "Q3 2023" | "Q4 2023" | "Q1 2024" | "Q2 2024";
+  ForProbationary?: "3 months" | "5 months";
   otherReviewType?: string;
   otherReviewDetails?: string;
   attendance: number | undefined;

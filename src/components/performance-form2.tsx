@@ -26,7 +26,7 @@ export default function PerformanceForm2({
   formData,
 }: PerformanceForm2Props): React.JSX.Element {
   const form = useForm<PerformanceFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       ...formData,
       qualityMeetsStandards: formData.qualityMeetsStandards || 1,

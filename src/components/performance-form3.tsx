@@ -26,7 +26,7 @@ export default function PerformanceForm3({
   formData,
 }: PerformanceForm3Props): React.JSX.Element {
   const form = useForm<PerformanceFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       ...formData,
       adaptabilityOpenness: Number(formData.adaptabilityOpenness) || 1,

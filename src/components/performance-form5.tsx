@@ -31,7 +31,7 @@ export default function PerformanceForm5({
   formData,
 }: PerformanceForm5Props): React.JSX.Element {
   const form = useForm<PerformanceFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       ...formData,
       // Reliability fields (Part V)

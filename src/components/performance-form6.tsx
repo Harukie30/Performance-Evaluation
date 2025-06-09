@@ -31,7 +31,7 @@ export default function PerformanceForm6({
   formData,
 }: PerformanceForm6Props): React.JSX.Element {
   const form = useForm<PerformanceFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       ...formData,
       // Ethical & Professional Behavior fields

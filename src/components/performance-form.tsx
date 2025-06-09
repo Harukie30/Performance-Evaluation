@@ -43,6 +43,7 @@ import {
 } from "../lib/validation-schema/form-schema";
 
 import { useState } from "react";
+import { Resolver } from "react-hook-form";
 
 interface Employee {
   id: number;

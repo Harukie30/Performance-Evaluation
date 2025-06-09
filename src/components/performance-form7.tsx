@@ -32,7 +32,7 @@ export default function PerformanceForm7({
   formData,
 }: PerformanceForm7Props): React.JSX.Element {
   const form = useForm<PerformanceFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       ...formData,
       // Customer Service fields (Part VII)
