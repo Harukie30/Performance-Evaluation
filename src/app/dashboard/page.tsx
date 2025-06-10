@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { QuarterlyReviewModal } from '@/components/QuarterlyReviewModal';
 import ProfileEditor from "@/components/ProfileEditor";
+import RecentActivityModal from "@/components/RecentActivityModal";
 
 interface User {
   id: string;
@@ -157,6 +158,7 @@ export default function DashboardPage() {
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const router = useRouter();
 
   const loadEmployees = async () => {
@@ -530,11 +532,27 @@ export default function DashboardPage() {
     }
 
     return (
-      <>
+      <div className="space-y-8">
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 text-white shadow-lg">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
+              <p className="text-blue-100">Here's what's happening with your evaluations today.</p>
+            </div>
+            <Button 
+              onClick={handleNewEvaluation} 
+              className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200"
+            >
+              New Evaluation
+            </Button>
+          </div>
+        </div>
+
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
-            <Card key={index} className="p-6 hover:shadow-lg transition-shadow duration-300">
+            <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300 border-none bg-white">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-gray-600">{stat.title}</p>
@@ -550,42 +568,64 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <Card className="mb-8">
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-            <div className="space-y-4">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-                  <div className={`p-2 rounded-full ${
-                    activity.type === "evaluation" ? "bg-blue-100" :
-                    activity.type === "update" ? "bg-yellow-100" :
-                    "bg-green-100"
-                  }`}>
-                    {activity.type === "evaluation" ? (
-                      <FileText className="h-5 w-5 text-blue-600" />
-                    ) : activity.type === "update" ? (
-                      <Clock className="h-5 w-5 text-yellow-600" />
-                    ) : (
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    )}
+        <div className="grid grid-cols-1 gap-6">
+          <Card>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Recent Activity</h2>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-blue-600 hover:text-blue-700"
+                  onClick={() => setIsActivityModalOpen(true)}
+                >
+                  View All
+                </Button>
+              </div>
+              <div className="space-y-4">
+                {recentActivities.slice(0, 3).map((activity) => (
+                  <div 
+                    key={activity.id} 
+                    className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    <div className={`p-2 rounded-full ${
+                      activity.type === "evaluation" ? "bg-blue-100" :
+                      activity.type === "update" ? "bg-yellow-100" :
+                      "bg-green-100"
+                    }`}>
+                      {activity.type === "evaluation" ? (
+                        <FileText className="h-5 w-5 text-blue-600" />
+                      ) : activity.type === "update" ? (
+                        <Clock className="h-5 w-5 text-yellow-600" />
+                      ) : (
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{activity.description}</p>
+                      <p className="text-sm text-gray-600 truncate">
+                        {activity.employeeName} • {activity.timestamp}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{activity.description}</p>
-                    <p className="text-sm text-gray-600">
-                      {activity.employeeName} • {activity.timestamp}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        </Card>
-      </>
+          </Card>
+        </div>
+
+        {/* Recent Activity Modal */}
+        <RecentActivityModal
+          isOpen={isActivityModalOpen}
+          onClose={() => setIsActivityModalOpen(false)}
+          activities={recentActivities}
+        />
+      </div>
     );
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-lg">
         <div className="p-6">
@@ -636,7 +676,11 @@ export default function DashboardPage() {
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </Button>
-            <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700" onClick={handleLogout}>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-red-600 hover:text-red-700" 
+              onClick={handleLogout}
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </Button>
@@ -647,28 +691,6 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         <div className="p-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold">Welcome back, {user.name}</h1>
-              <p className="text-gray-600">
-                {activeTab === "dashboard" 
-                  ? "Here's an overview of your evaluations" 
-                  : activeTab === "evaluations"
-                  ? "Manage your evaluations"
-                  : activeTab === "employees"
-                  ? "Manage your employees"
-                  : activeTab === "profile"
-                  ? "Manage your profile"
-                  : "Manage your settings"}
-              </p>
-            </div>
-            {activeTab === "dashboard" && (
-              <Button onClick={handleNewEvaluation} className="bg-blue-600 hover:bg-blue-700">
-                New Evaluation
-              </Button>
-            )}
-          </div>
-
           {renderContent()}
         </div>
       </div>
