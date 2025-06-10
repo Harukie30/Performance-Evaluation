@@ -25,7 +25,8 @@ import {
   Settings,
   FileText,
   XIcon,
-  MenuIcon
+  MenuIcon,
+  Circle
 } from "lucide-react";
 import {
   Dialog,
@@ -37,6 +38,8 @@ import {
 import { QuarterlyReviewModal } from '@/components/QuarterlyReviewModal';
 import ProfileEditor from "@/components/ProfileEditor";
 import RecentActivityModal from "@/components/RecentActivityModal";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface User {
   id: string;
@@ -351,10 +354,83 @@ export default function DashboardPage() {
   const renderContent = () => {
     if (activeTab === "profile") {
       return (
-        <div className="max-w-2xl mx-auto py-8">
-          <Card className="p-6 bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-            <h1 className="text-3xl font-bold mb-8 text-gray-900">Profile Settings</h1>
-            <ProfileEditor user={user} onUpdate={handleProfileUpdate} />
+        <div className="max-w-4xl mx-auto py-8">
+          <Card className="p-8 bg-white shadow-xl rounded-lg border-none">
+            {/* Header for Boards (if applicable, otherwise omit or adapt) */}
+            <div className="flex items-center space-x-2 mb-8">
+              {/* Assuming you might have a home icon or similar for 'Boards' */}
+              {/* <Home className="h-5 w-5 text-gray-500" /> */}
+              {/* <p className="text-gray-700 font-semibold">Boards</p> */}
+            </div>
+
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Account Settings</h1>
+            <p className="text-gray-500 mb-8">Edit your name, avatar etc.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="md:col-span-2 space-y-6">
+                {/* Your Name */}
+                <div>
+                  <Label htmlFor="yourName" className="text-gray-700 font-medium">Your Name</Label>
+                  <Input
+                    id="yourName"
+                    type="text"
+                    value={user.name}
+                    onChange={(e) => setUser({ ...user, name: e.target.value })}
+                    className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* Password */}
+                <div>
+                  <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      id="password"
+                      type="password"
+                      value="********" // Placeholder for password
+                      disabled // Passwords are not directly editable here
+                      className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <Button variant="link" className="text-blue-500 hover:underline p-0 h-auto">Change</Button>
+                  </div>
+                </div>
+
+                {/* Email Address */}
+                <div>
+                  <Label htmlFor="emailAddress" className="text-gray-700 font-medium">Email Address</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      id="emailAddress"
+                      type="email"
+                      value={user.username} // Assuming username is email
+                      onChange={(e) => setUser({ ...user, username: e.target.value })}
+                      className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <Button variant="link" className="text-blue-500 hover:underline p-0 h-auto">Change</Button>
+                  </div>
+                </div>
+
+                {/* Delete Your Account */}
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <h3 className="text-red-500 font-medium mb-1">Delete Your Account</h3>
+                  <p className="text-sm text-gray-500">You will receive an email to confirm your decision. Please note, that all boards you have created will be permanently erased.</p>
+                </div>
+              </div>
+
+              {/* Avatar Upload */}
+              <div className="md:col-span-1 flex flex-col items-center justify-start pt-14">
+                <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                  <User className="h-16 w-16 text-gray-400" /> {/* Placeholder avatar icon */}
+                </div>
+                <Button className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">Upload a picture</Button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-10 pt-6 border-t border-gray-200 flex justify-end space-x-4">
+              <Button variant="outline" className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors duration-200">Cancel</Button>
+              <Button onClick={() => handleProfileUpdate(user)} className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">Save</Button>
+            </div>
           </Card>
         </div>
       );
@@ -363,9 +439,15 @@ export default function DashboardPage() {
     if (activeTab === "evaluations") {
       return (
         <Tabs defaultValue="pending" className="space-y-4">
-          <TabsList className="bg-white">
-            <TabsTrigger value="pending">Pending Evaluations</TabsTrigger>
-            <TabsTrigger value="completed">Completed Evaluations</TabsTrigger>
+          <TabsList className="space-x-4 bg-gray-200 ">
+            <TabsTrigger 
+              value="pending" 
+              className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
+            >Pending Evaluations</TabsTrigger>
+            <TabsTrigger 
+              value="completed" 
+              className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
+            >Completed Evaluations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending">
@@ -474,12 +556,15 @@ export default function DashboardPage() {
     if (activeTab === "employees") {
       return (
         <Tabs defaultValue="active" className="space-y-4">
-          <TabsList className="bg-white">
-            <TabsTrigger value="active">Active Employees</TabsTrigger>
+          <TabsList className="bg-blue-500 text-white">
+            <TabsTrigger 
+              value="active" 
+              className="data-[state=active]:bg-yellow-300 data-[state=active]:text-black hover:bg-blue-400 transition-colors duration-200"
+            >Active Employees</TabsTrigger>
           </TabsList>
 
           <TabsContent value="active">
-            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
+            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-0">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-800">Active Employees</h2>
                 <Users className="h-15 w-15 text-blue-600" />
@@ -567,7 +652,7 @@ export default function DashboardPage() {
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.01] ease-in-out">
-          <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM12 14v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zM12 0v-4H10v4H6v2h4v4h2V6h4V4h-4zm48 0v-4H58v4h-4v2h4v4h2V6h4V4h-4zM36 42v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm24-18v-4H58v4h-4v2h4v4h2v-4h4v-2h-4zM0 42v-4H-2v4H-6v2h4v4h2v-4h4v-2h-4zm0 18v-4H-2v4H-6v2h4v4h2v-4h4v-2h-4zM24 6v-4h-2v4h-4v2h4v4h2V8h4V6h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+          <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
           
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           

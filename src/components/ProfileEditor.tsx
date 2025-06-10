@@ -125,7 +125,7 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
             </Select>
           </div>
           <div className="flex space-x-2">
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black">
               Save Changes
             </Button>
             <Button
@@ -170,7 +170,7 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
           </div>
           <Button
             onClick={() => setIsEditing(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black"
           >
             Edit Profile
           </Button>
