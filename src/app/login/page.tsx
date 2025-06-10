@@ -82,12 +82,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-blue-300">
-      <div className="w-full max-w-5xl bg-white rounded-lg shadow-xl overflow-hidden flex flex-col lg:flex-row">
+      <div className="w-full max-w-5xl bg-blue-600 rounded-lg shadow-xl overflow-hidden flex flex-col lg:flex-row">
         <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center items-center text-center lg:text-left">
-          <h1 className="text-4xl font-bold text-gray-800 mb-6">
+          <h1 className="text-4xl font-bold text-white mb-6">
           SMCT Review Management
           </h1>
-          <p className="text-gray-600 mb-8 max-w-md">
+          <p className="text-white mb-8 max-w-md">
           Keep track of your performance reviews, goals, and feedback all in one place.
           </p>
           <img
@@ -95,9 +95,9 @@ export default function LoginPage() {
             alt="Business Account Icon"
             className="w-64 h-auto mb-8"
           />
-          <p className="text-gray-500 text-sm mt-auto">
+          <p className="text-white text-sm mt-auto">
             © 2025 Performance login form. All Rights Reserved | Design by{" "}
-            <a href="#" className="text-blue-500 hover:underline">
+            <a href="#" className="text-blue-300 hover:underline">
               SMCT DevTeam
             </a>
           </p>

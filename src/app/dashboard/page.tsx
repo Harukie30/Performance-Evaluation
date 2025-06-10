@@ -438,18 +438,18 @@ export default function DashboardPage() {
     if (activeTab === "evaluations") {
       return (
         <Tabs defaultValue="pending" className="space-y-4">
-          <TabsList className="space-x-4 bg-gray-200 ">
+          <TabsList className="space-x-4 bg-gray-200 p-1 rounded-lg">
             <TabsTrigger 
               value="pending" 
-              className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
+              className="flex-1 py-2 px-4 rounded-md text-gray-700 data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
             >Pending Evaluations</TabsTrigger>
             <TabsTrigger 
               value="completed" 
-              className="data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
+              className="flex-1 py-2 px-4 rounded-md text-gray-700 data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
             >Completed Evaluations</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending">
+          <TabsContent value="pending" key="pending">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-800 ">Pending Evaluations</h2>
@@ -502,7 +502,7 @@ export default function DashboardPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="completed">
+          <TabsContent value="completed" key="completed">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-800">Completed Evaluations</h2>
@@ -555,14 +555,14 @@ export default function DashboardPage() {
     if (activeTab === "employees") {
       return (
         <Tabs defaultValue="active" className="space-y-4">
-          <TabsList className="bg-blue-500 text-white">
+          <TabsList className="bg-gray-200 p-1 rounded-lg">
             <TabsTrigger 
               value="active" 
-              className="data-[state=active]:bg-yellow-300 data-[state=active]:text-black hover:bg-blue-400 transition-colors duration-200"
+              className="flex-1 py-2 px-4 rounded-md text-gray-700 data-[state=active]:bg-yellow-300 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
             >Active Employees</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="active">
+          <TabsContent value="active" key="active">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-0">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-800">Active Employees</h2>
@@ -603,7 +603,7 @@ export default function DashboardPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="inactive">
+          <TabsContent value="inactive" key="inactive">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-800">Inactive Employees</h2>
@@ -768,19 +768,19 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-blue-200">
       {/* Sidebar */}
       <div className="fixed md:relative w-full md:w-20 lg:w-64 h-full transition-all duration-300 z-30">
   {/* Mobile Toggle Button */}
   <button 
-    className="md:hidden absolute top-4 right-4 p-2 z-40 text-gray-700 hover:bg-gray-100 rounded-full"
+    className="md:hidden absolute top-4 right-4 p-2 z-40 text-gray-700 hover:bg-yellow-400 rounded-full"
     onClick={toggleSidebar}
   >
     {isSidebarOpen ? <XIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
   </button>
 
   {/* Sidebar Container */}
-  <div className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
+  <div className={`bg-yellow-100 shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
     isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
   }`}>
     <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
@@ -791,12 +791,12 @@ export default function DashboardPage() {
         <img
           src="/images/smct.png"
           alt="SMCT Logo"
-          className="h-10 lg:h-12 w-auto transition-opacity duration-300"
+          className="h-15 lg:h-17 w-auto transition-opacity duration-300"
         />
       </div>
 
       {/* Navigation */}
-      <nav className="space-y-1">
+      <nav className="space-y-1 bg-blue-100 rounded-2xl">
         {navItems.map((item) => (
           <Button
             key={item.id}
