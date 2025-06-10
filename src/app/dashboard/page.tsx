@@ -579,7 +579,7 @@ export default function DashboardPage() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
                   onClick={() => setIsActivityModalOpen(true)}
                 >
                   View All
@@ -643,64 +643,97 @@ export default function DashboardPage() {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg">
-        <div className="p-6">
-          <div className="flex items-center space-x-4 mb-6">
-            <Avatar className="h-12 w-12">
+      <div className="w-64 bg-white shadow-lg flex flex-col h-screen">
+        <div className="p-6 flex-1">
+          <div className="mb-8 flex justify-center">
+            {/* Logo Placeholder */}
+            <img src="/smct.png"  className="h-5 w-auto" />
+          </div>
+          <div className="flex items-center space-x-4 mb-8">
+            <Avatar className="h-12 w-12 border-2 border-blue-100">
               <AvatarImage src={`https://avatar.vercel.sh/${user.username}`} />
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="bg-blue-100 text-blue-600">{user.name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <div>
-              <h2 className="font-semibold">{user.name}</h2>
-              <p className="text-sm text-gray-500">{user.role}</p>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-gray-900 truncate">{user.name}</h2>
+              <p className="text-sm text-gray-500 truncate">{user.role}</p>
             </div>
           </div>
-          <nav className="space-y-2">
+          <nav className="space-y-1">
             <Button 
               variant={activeTab === "dashboard" ? "secondary" : "ghost"} 
-              className="w-full justify-start" 
+              className={`w-full justify-start group transition-all duration-200 ${
+                activeTab === "dashboard" 
+                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100" 
+                  : "hover:bg-gray-50"
+              }`}
               onClick={() => handleTabChange("dashboard")}
             >
-              <BarChart3 className="mr-2 h-4 w-4" />
+              <BarChart3 className={`mr-2 h-4 w-4 transition-transform duration-200 ${
+                activeTab === "dashboard" ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
+              }`} />
               Dashboard
             </Button>
             <Button 
               variant={activeTab === "evaluations" ? "secondary" : "ghost"} 
-              className="w-full justify-start" 
+              className={`w-full justify-start group transition-all duration-200 ${
+                activeTab === "evaluations" 
+                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100" 
+                  : "hover:bg-gray-50"
+              }`}
               onClick={() => handleTabChange("evaluations")}
             >
-              <FileText className="mr-2 h-4 w-4" />
+              <FileText className={`mr-2 h-4 w-4 transition-transform duration-200 ${
+                activeTab === "evaluations" ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
+              }`} />
               Evaluations
             </Button>
             <Button 
               variant={activeTab === "employees" ? "secondary" : "ghost"} 
-              className="w-full justify-start" 
+              className={`w-full justify-start group transition-all duration-200 ${
+                activeTab === "employees" 
+                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100" 
+                  : "hover:bg-gray-50"
+              }`}
               onClick={() => handleTabChange("employees")}
             >
-              <Users className="mr-2 h-4 w-4" />
+              <Users className={`mr-2 h-4 w-4 transition-transform duration-200 ${
+                activeTab === "employees" ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
+              }`} />
               Employees
             </Button>
             <Button 
               variant={activeTab === "profile" ? "secondary" : "ghost"} 
-              className="w-full justify-start"
+              className={`w-full justify-start group transition-all duration-200 ${
+                activeTab === "profile" 
+                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100" 
+                  : "hover:bg-gray-50"
+              }`}
               onClick={() => handleTabChange("profile")}
             >
-              <User className="mr-2 h-4 w-4" />
+              <User className={`mr-2 h-4 w-4 transition-transform duration-200 ${
+                activeTab === "profile" ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
+              }`} />
               Profile
-            </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
             </Button>
             <Button 
               variant="ghost" 
-              className="w-full justify-start text-red-600 hover:text-red-700" 
-              onClick={handleLogout}
+              className="w-full justify-start group transition-all duration-200 hover:bg-gray-50"
             >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              <Settings className="mr-2 h-4 w-4 text-gray-500 group-hover:text-blue-600 transition-transform duration-200" />
+              Settings
             </Button>
           </nav>
+        </div>
+        <div className="p-4 border-t border-gray-100">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 group transition-all duration-200"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+            Logout
+          </Button>
         </div>
       </div>
 
