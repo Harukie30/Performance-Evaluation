@@ -352,7 +352,7 @@ export default function DashboardPage() {
     if (activeTab === "profile") {
       return (
         <div className="max-w-2xl mx-auto py-8">
-          <Card className="p-6 bg-white shadow-md rounded-lg transition-all duration-300 border-none">
+          <Card className="p-6 bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
             <h1 className="text-3xl font-bold mb-8 text-gray-900">Profile Settings</h1>
             <ProfileEditor user={user} onUpdate={handleProfileUpdate} />
           </Card>
@@ -369,7 +369,7 @@ export default function DashboardPage() {
           </TabsList>
 
           <TabsContent value="pending">
-            <Card className="bg-white shadow-md rounded-lg transition-all duration-300 border-none">
+            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -418,7 +418,7 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="completed">
-            <Card className="bg-white shadow-md rounded-lg transition-all duration-300 border-none">
+            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -471,7 +471,7 @@ export default function DashboardPage() {
           </TabsList>
 
           <TabsContent value="active">
-            <Card className="bg-white shadow-md rounded-lg transition-all duration-300 border-none">
+            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -508,7 +508,7 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="inactive">
-            <Card className="bg-white shadow-md rounded-lg transition-all duration-300 border-none">
+            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -550,22 +550,26 @@ export default function DashboardPage() {
     return (
       <div className="space-y-8">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 text-white shadow-lg">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="mb-6 lg:mb-2 flex justify-center">
-        <img 
-          src="/images/smct.png" 
-          alt="SMCT Logo" 
-          className="h-10 lg:h-12 w-auto transition-opacity duration-300" 
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.01] ease-in-out">
+          <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM12 14v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zM12 0v-4H10v4H6v2h4v4h2V6h4V4h-4zm48 0v-4H58v4h-4v2h4v4h2V6h4V4h-4zM36 42v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm24-18v-4H58v4h-4v2h4v4h2v-4h4v-2h-4zM0 42v-4H-2v4H-6v2h4v4h2v-4h4v-2h-4zm0 18v-4H-2v4H-6v2h4v4h2v-4h4v-2h-4zM24 6v-4h-2v4h-4v2h4v4h2V8h4V6h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+          
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          
+        <img
+          src="/images/dataa.png"
+          alt="SMCT Logo"
+          className="h-15 lg:h-15 w-auto transition-opacity duration-300"
         />
-      </div>
+      
             <div>
               <h1 className="text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
-              <p className="text-blue-100">Here's what's happening with your evaluations today.</p>
+              <p className="text-blue-100 opacity-90">Here's what's happening with your evaluations today.</p>
             </div>
-            <Button 
-              onClick={handleNewEvaluation} 
-              className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200"
+             {/* Logo */}
+      
+            <Button
+              onClick={handleNewEvaluation}
+              className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
             >
               New Evaluation
             </Button>
@@ -575,14 +579,14 @@ export default function DashboardPage() {
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
-            <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300 border-none bg-white">
+            <Card key={index} className="p-6 hover:shadow-xl transition-all duration-300 border-none bg-white rounded-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <h3 className="text-2xl font-bold mt-1">{stat.value}</h3>
-                  <p className="text-xs text-gray-500">{stat.description}</p>
+                  <h3 className="text-2xl font-bold mt-1 text-gray-800">{stat.value}</h3>
+                  <p className="text-xs text-gray-500 opacity-90">{stat.description}</p>
                 </div>
-                <div className={`p-3 rounded-full ${stat.color} transition-transform duration-300 hover:scale-110`}>
+                <div className={`p-3 rounded-full ${stat.color} transition-transform duration-300 group-hover:scale-110`}>
                   {stat.icon}
                 </div>
               </div>
@@ -591,8 +595,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="grid grid-cols-1 gap-6 border-0 bg-white">
-          <Card className="overflow-hidden border-0">
+        <div className="grid grid-cols-1 gap-6">
+          <Card className="overflow-hidden bg-white border-0 shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
@@ -676,24 +680,19 @@ export default function DashboardPage() {
   </button>
 
   {/* Sidebar Container */}
-  <div className={`bg-yellow-200 shadow-lg flex flex-col h-full transition-all duration-300 transform ${
+  <div className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
     isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
   }`}>
     <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
-      {/* User Profile */}
-      <div className="flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 mb-6 lg:mb-8">
-        <Avatar className="h-12 w-12 border-2 border-blue-400 flex-shrink-0">
-          <AvatarImage src={`https://avatar.vercel.sh/${user.username}`} />
-          <AvatarFallback className="bg-blue-100 text-blue-600 text-lg">
-            {user.name.charAt(0)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="mt-3 lg:mt-0 text-center lg:text-left flex-1 min-w-0 hidden lg:block">
-          <h2 className="font-semibold text-gray-900 truncate text-sm md:text-base">
-            {user.name}
-          </h2>
-          <p className="text-xs text-gray-500 truncate">{user.role}</p>
-        </div>
+      
+
+      {/* Logo */}
+      <div className="mb-6 lg:mb-8 flex justify-center  bg-gradient-blue-500">
+        <img
+          src="/images/smct.png"
+          alt="SMCT Logo"
+          className="h-10 lg:h-12 w-auto transition-opacity duration-300"
+        />
       </div>
 
       {/* Navigation */}
@@ -722,7 +721,23 @@ export default function DashboardPage() {
       </nav>
     </div>
 
-    {/* Footer */}
+    
+{/* User Profile */}
+<div className="flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 mb-6 lg:mb-8">
+        <Avatar className="h-12 w-12 border-2 border-blue-400 flex-shrink-0">
+          <AvatarImage src={`https://avatar.vercel.sh/${user.username}`} />
+          <AvatarFallback className="bg-blue-100 text-blue-600 text-lg">
+            {user.name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="mt-3 lg:mt-0 text-center lg:text-left flex-1 min-w-0 hidden lg:block">
+          <h2 className="font-semibold text-gray-900 truncate text-sm md:text-base">
+            {user.name}
+          </h2>
+          <p className="text-xs text-gray-500 truncate">{user.role}</p>
+        </div>
+      </div>
+{/* Footer */}
     <div className="p-3 lg:p-4 border-t border-gray-100">
       <Button
         variant="ghost"
