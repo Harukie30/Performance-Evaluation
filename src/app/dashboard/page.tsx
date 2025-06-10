@@ -569,42 +569,58 @@ export default function DashboardPage() {
 
         {/* Recent Activity */}
         <div className="grid grid-cols-1 gap-6">
-          <Card>
+          <Card className="overflow-hidden">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Recent Activity</h2>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  <h2 className="text-xl font-semibold">Recent Activity</h2>
+                </div>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-blue-600 hover:text-blue-700"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                   onClick={() => setIsActivityModalOpen(true)}
                 >
                   View All
                 </Button>
               </div>
-              <div className="space-y-4">
+
+              <div className="space-y-3">
                 {recentActivities.slice(0, 3).map((activity) => (
                   <div 
                     key={activity.id} 
-                    className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                    className="group flex items-start gap-4 p-4 rounded-lg border border-gray-100 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200"
                   >
                     <div className={`p-2 rounded-full ${
-                      activity.type === "evaluation" ? "bg-blue-100" :
-                      activity.type === "update" ? "bg-yellow-100" :
-                      "bg-green-100"
+                      activity.type === "evaluation" ? "bg-blue-100 text-blue-600" :
+                      activity.type === "update" ? "bg-yellow-100 text-yellow-600" :
+                      "bg-green-100 text-green-600"
                     }`}>
                       {activity.type === "evaluation" ? (
-                        <FileText className="h-5 w-5 text-blue-600" />
+                        <FileText className="h-4 w-4" />
                       ) : activity.type === "update" ? (
-                        <Clock className="h-5 w-5 text-yellow-600" />
+                        <Clock className="h-4 w-4" />
                       ) : (
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <CheckCircle2 className="h-4 w-4" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{activity.description}</p>
-                      <p className="text-sm text-gray-600 truncate">
-                        {activity.employeeName} • {activity.timestamp}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                        <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {activity.description}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {activity.employeeName}
                       </p>
                     </div>
                   </div>
