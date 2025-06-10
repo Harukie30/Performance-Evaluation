@@ -33,6 +33,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QuarterlyReviewModal } from '@/components/QuarterlyReviewModal';
+import ProfileEditor from "@/components/ProfileEditor";
 
 interface User {
   id: string;
@@ -285,6 +286,10 @@ export default function DashboardPage() {
     router.push("/login");
   };
 
+  const handleProfileUpdate = (updatedUser: User) => {
+    setUser(updatedUser);
+  };
+
   if (!user) {
     return null;
   }
@@ -296,6 +301,15 @@ export default function DashboardPage() {
   const completionRate = totalEvaluations > 0 ? (completedEvaluations / totalEvaluations) * 100 : 0;
 
   const renderContent = () => {
+    if (activeTab === "profile") {
+      return (
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
+          <ProfileEditor user={user} onUpdate={handleProfileUpdate} />
+        </div>
+      );
+    }
+
     if (activeTab === "evaluations") {
       return (
         <Tabs defaultValue="pending" className="space-y-4">
@@ -601,7 +615,11 @@ export default function DashboardPage() {
               <Users className="mr-2 h-4 w-4" />
               Employees
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
+            <Button 
+              variant={activeTab === "profile" ? "secondary" : "ghost"} 
+              className="w-full justify-start"
+              onClick={() => handleTabChange("profile")}
+            >
               <User className="mr-2 h-4 w-4" />
               Profile
             </Button>
@@ -628,7 +646,11 @@ export default function DashboardPage() {
                   ? "Here's an overview of your evaluations" 
                   : activeTab === "evaluations"
                   ? "Manage your evaluations"
-                  : "Manage your employees"}
+                  : activeTab === "employees"
+                  ? "Manage your employees"
+                  : activeTab === "profile"
+                  ? "Manage your profile"
+                  : "Manage your settings"}
               </p>
             </div>
             {activeTab === "dashboard" && (
