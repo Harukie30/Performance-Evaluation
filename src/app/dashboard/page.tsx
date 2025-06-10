@@ -351,9 +351,11 @@ export default function DashboardPage() {
   const renderContent = () => {
     if (activeTab === "profile") {
       return (
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
-          <ProfileEditor user={user} onUpdate={handleProfileUpdate} />
+        <div className="max-w-2xl mx-auto py-8">
+          <Card className="p-6 bg-white shadow-md rounded-lg transition-all duration-300 border-none">
+            <h1 className="text-3xl font-bold mb-8 text-gray-900">Profile Settings</h1>
+            <ProfileEditor user={user} onUpdate={handleProfileUpdate} />
+          </Card>
         </div>
       );
     }
@@ -367,7 +369,7 @@ export default function DashboardPage() {
           </TabsList>
 
           <TabsContent value="pending">
-            <Card>
+            <Card className="bg-white shadow-md rounded-lg transition-all duration-300 border-none">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -416,7 +418,7 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="completed">
-            <Card>
+            <Card className="bg-white shadow-md rounded-lg transition-all duration-300 border-none">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -466,11 +468,10 @@ export default function DashboardPage() {
         <Tabs defaultValue="active" className="space-y-4">
           <TabsList className="bg-white">
             <TabsTrigger value="active">Active Employees</TabsTrigger>
-            <TabsTrigger value="inactive">Inactive Employees</TabsTrigger>
           </TabsList>
 
           <TabsContent value="active">
-            <Card>
+            <Card className="bg-white shadow-md rounded-lg transition-all duration-300 border-none">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -507,7 +508,7 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="inactive">
-            <Card>
+            <Card className="bg-white shadow-md rounded-lg transition-all duration-300 border-none">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -551,6 +552,13 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-8 text-white shadow-lg">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="mb-6 lg:mb-2 flex justify-center">
+        <img 
+          src="/images/smct.png" 
+          alt="SMCT Logo" 
+          className="h-10 lg:h-12 w-auto transition-opacity duration-300" 
+        />
+      </div>
             <div>
               <h1 className="text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
               <p className="text-blue-100">Here's what's happening with your evaluations today.</p>
@@ -672,15 +680,6 @@ export default function DashboardPage() {
     isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
   }`}>
     <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
-      {/* Logo */}
-      <div className="mb-6 lg:mb-8 flex justify-center">
-        <img 
-          src="/images/smct.png" 
-          alt="SMCT Logo" 
-          className="h-10 lg:h-12 w-auto transition-opacity duration-300" 
-        />
-      </div>
-
       {/* User Profile */}
       <div className="flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 mb-6 lg:mb-8">
         <Avatar className="h-12 w-12 border-2 border-blue-400 flex-shrink-0">
