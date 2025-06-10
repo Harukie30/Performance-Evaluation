@@ -300,6 +300,37 @@ export default function DashboardPage() {
   const pendingEvaluations = evaluations.filter(e => e.status === "draft" || e.status === "submitted").length;
   const completionRate = totalEvaluations > 0 ? (completedEvaluations / totalEvaluations) * 100 : 0;
 
+  const stats = [
+    { 
+      title: "Total Evaluations", 
+      value: totalEvaluations, 
+      icon: <Users className="h-6 w-6" />,
+      color: "bg-blue-100 text-blue-600",
+      description: "Total number of evaluations"
+    },
+    { 
+      title: "Completed", 
+      value: completedEvaluations, 
+      icon: <CheckCircle2 className="h-6 w-6" />,
+      color: "bg-green-100 text-green-600",
+      description: "Successfully completed evaluations"
+    },
+    { 
+      title: "Pending", 
+      value: pendingEvaluations, 
+      icon: <Clock className="h-6 w-6" />,
+      color: "bg-yellow-100 text-yellow-600",
+      description: "Evaluations awaiting completion"
+    },
+    { 
+      title: "Completion Rate", 
+      value: `${completionRate.toFixed(1)}%`, 
+      icon: <BarChart3 className="h-6 w-6" />,
+      color: "bg-purple-100 text-purple-600",
+      description: "Overall completion percentage"
+    }
+  ];
+
   const renderContent = () => {
     if (activeTab === "profile") {
       return (
@@ -502,42 +533,20 @@ export default function DashboardPage() {
       <>
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Evaluations</p>
-                <h3 className="text-2xl font-bold mt-1">{totalEvaluations}</h3>
+          {stats.map((stat, index) => (
+            <Card key={index} className="p-6 hover:shadow-lg transition-shadow duration-300">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                  <h3 className="text-2xl font-bold mt-1">{stat.value}</h3>
+                  <p className="text-xs text-gray-500">{stat.description}</p>
+                </div>
+                <div className={`p-3 rounded-full ${stat.color} transition-transform duration-300 hover:scale-110`}>
+                  {stat.icon}
+                </div>
               </div>
-              <Users className="h-8 w-8 text-blue-600" />
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <h3 className="text-2xl font-bold mt-1">{completedEvaluations}</h3>
-              </div>
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Pending</p>
-                <h3 className="text-2xl font-bold mt-1">{pendingEvaluations}</h3>
-              </div>
-              <Clock className="h-8 w-8 text-yellow-600" />
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Completion Rate</p>
-                <h3 className="text-2xl font-bold mt-1">{completionRate.toFixed(1)}%</h3>
-              </div>
-              <BarChart3 className="h-8 w-8 text-purple-600" />
-            </div>
-          </Card>
+            </Card>
+          ))}
         </div>
 
         {/* Recent Activity */}
