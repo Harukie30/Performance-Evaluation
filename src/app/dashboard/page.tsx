@@ -36,7 +36,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QuarterlyReviewModal } from '@/components/QuarterlyReviewModal';
-import ProfileEditor from "@/components/ProfileEditor";
 import RecentActivityModal from "@/components/RecentActivityModal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
