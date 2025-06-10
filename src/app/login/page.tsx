@@ -37,14 +37,14 @@ export default function LoginPage() {
 
       const user = await response.json();
       console.log("Login successful, user data:", user);
-      
+
       // Store user info in a cookie
-      Cookies.set("user", JSON.stringify(user), { 
+      Cookies.set("user", JSON.stringify(user), {
         expires: 7,
         path: "/", // Ensure cookie is available for all paths
-        sameSite: "lax" // Add security attributes
+        sameSite: "lax", // Add security attributes
       });
-      
+
       console.log("Cookie set, redirecting to dashboard");
       toast.success("Login successful!");
       router.push("/dashboard");
@@ -88,11 +88,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
@@ -100,4 +96,4 @@ export default function LoginPage() {
       </Card>
     </div>
   );
-} 
+}
