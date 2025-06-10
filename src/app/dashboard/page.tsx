@@ -23,7 +23,9 @@ import {
   LogOut,
   User,
   Settings,
-  FileText
+  FileText,
+  XIcon,
+  MenuIcon
 } from "lucide-react";
 import {
   Dialog,
@@ -159,7 +161,20 @@ export default function DashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+    { id: "evaluations", label: "Evaluations", icon: FileText },
+    { id: "employees", label: "Employees", icon: Users },
+    { id: "profile", label: "Profile", icon: User },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
 
   const loadEmployees = async () => {
     try {
@@ -568,8 +583,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="grid grid-cols-1 gap-6">
-          <Card className="overflow-hidden">
+        <div className="grid grid-cols-1 gap-6 border-0 bg-white">
+          <Card className="overflow-hidden border-0">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
@@ -643,102 +658,87 @@ export default function DashboardPage() {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg flex flex-col h-screen">
-        <div className="p-6 flex-1">
-          <div className="mb-8 flex justify-center">
-            {/* Logo Placeholder */}
-            <img src="/smct.png"  className="h-5 w-auto" />
-          </div>
-          <div className="flex items-center space-x-4 mb-8">
-            <Avatar className="h-12 w-12 border-2 border-blue-100">
-              <AvatarImage src={`https://avatar.vercel.sh/${user.username}`} />
-              <AvatarFallback className="bg-blue-100 text-blue-600">{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-gray-900 truncate">{user.name}</h2>
-              <p className="text-sm text-gray-500 truncate">{user.role}</p>
-            </div>
-          </div>
-          <nav className="space-y-1">
-            <Button 
-              variant={activeTab === "dashboard" ? "secondary" : "ghost"} 
-              className={`w-full justify-start group transition-all duration-200 ${
-                activeTab === "dashboard" 
-                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100" 
-                  : "hover:bg-gray-50"
-              }`}
-              onClick={() => handleTabChange("dashboard")}
-            >
-              <BarChart3 className={`mr-2 h-4 w-4 transition-transform duration-200 ${
-                activeTab === "dashboard" ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
-              }`} />
-              Dashboard
-            </Button>
-            <Button 
-              variant={activeTab === "evaluations" ? "secondary" : "ghost"} 
-              className={`w-full justify-start group transition-all duration-200 ${
-                activeTab === "evaluations" 
-                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100" 
-                  : "hover:bg-gray-50"
-              }`}
-              onClick={() => handleTabChange("evaluations")}
-            >
-              <FileText className={`mr-2 h-4 w-4 transition-transform duration-200 ${
-                activeTab === "evaluations" ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
-              }`} />
-              Evaluations
-            </Button>
-            <Button 
-              variant={activeTab === "employees" ? "secondary" : "ghost"} 
-              className={`w-full justify-start group transition-all duration-200 ${
-                activeTab === "employees" 
-                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100" 
-                  : "hover:bg-gray-50"
-              }`}
-              onClick={() => handleTabChange("employees")}
-            >
-              <Users className={`mr-2 h-4 w-4 transition-transform duration-200 ${
-                activeTab === "employees" ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
-              }`} />
-              Employees
-            </Button>
-            <Button 
-              variant={activeTab === "profile" ? "secondary" : "ghost"} 
-              className={`w-full justify-start group transition-all duration-200 ${
-                activeTab === "profile" 
-                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100" 
-                  : "hover:bg-gray-50"
-              }`}
-              onClick={() => handleTabChange("profile")}
-            >
-              <User className={`mr-2 h-4 w-4 transition-transform duration-200 ${
-                activeTab === "profile" ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"
-              }`} />
-              Profile
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start group transition-all duration-200 hover:bg-gray-50"
-            >
-              <Settings className="mr-2 h-4 w-4 text-gray-500 group-hover:text-blue-600 transition-transform duration-200" />
-              Settings
-            </Button>
-          </nav>
-        </div>
-        <div className="p-4 border-t border-gray-100">
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 group transition-all duration-200"
-            onClick={handleLogout}
-          >
-            <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-            Logout
-          </Button>
+      <div className="fixed md:relative w-full md:w-20 lg:w-64 h-full transition-all duration-300 z-30">
+  {/* Mobile Toggle Button */}
+  <button 
+    className="md:hidden absolute top-4 right-4 p-2 z-40 text-gray-700 hover:bg-gray-100 rounded-full"
+    onClick={toggleSidebar}
+  >
+    {isSidebarOpen ? <XIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
+  </button>
+
+  {/* Sidebar Container */}
+  <div className={`bg-yellow-200 shadow-lg flex flex-col h-full transition-all duration-300 transform ${
+    isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+  }`}>
+    <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
+      {/* Logo */}
+      <div className="mb-6 lg:mb-8 flex justify-center">
+        <img 
+          src="/images/smct.png" 
+          alt="SMCT Logo" 
+          className="h-10 lg:h-12 w-auto transition-opacity duration-300" 
+        />
+      </div>
+
+      {/* User Profile */}
+      <div className="flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 mb-6 lg:mb-8">
+        <Avatar className="h-12 w-12 border-2 border-blue-400 flex-shrink-0">
+          <AvatarImage src={`https://avatar.vercel.sh/${user.username}`} />
+          <AvatarFallback className="bg-blue-100 text-blue-600 text-lg">
+            {user.name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="mt-3 lg:mt-0 text-center lg:text-left flex-1 min-w-0 hidden lg:block">
+          <h2 className="font-semibold text-gray-900 truncate text-sm md:text-base">
+            {user.name}
+          </h2>
+          <p className="text-xs text-gray-500 truncate">{user.role}</p>
         </div>
       </div>
 
+      {/* Navigation */}
+      <nav className="space-y-1">
+        {navItems.map((item) => (
+          <Button
+            key={item.id}
+            variant={activeTab === item.id ? "secondary" : "ghost"}
+            className={`w-full justify-center lg:justify-start group transition-all duration-200 ${
+              activeTab === item.id
+                ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                : "hover:bg-gray-50"
+            } py-3 lg:py-2`}
+            onClick={() => handleTabChange(item.id)}
+          >
+            <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
+              activeTab === item.id 
+                ? "text-blue-600" 
+                : "text-gray-500 group-hover:text-blue-600"
+            }`} />
+            <span className="ml-0 lg:ml-2 hidden lg:inline-block transition-all duration-200">
+              {item.label}
+            </span>
+          </Button>
+        ))}
+      </nav>
+    </div>
+
+    {/* Footer */}
+    <div className="p-3 lg:p-4 border-t border-gray-100">
+      <Button
+        variant="ghost"
+        className="w-full justify-center lg:justify-start text-red-600 hover:text-red-700 hover:bg-red-50 group transition-all duration-200"
+        onClick={handleLogout}
+      >
+        <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+        <span className="ml-0 lg:ml-2 hidden lg:inline-block">Logout</span>
+      </Button>
+    </div>
+  </div>
+</div>
+
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-blue-200">
         <div className="p-8">
           {renderContent()}
         </div>
