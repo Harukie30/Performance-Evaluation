@@ -19,7 +19,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { HelpCircleIcon, MailIcon } from "lucide-react";
-import { DataLoader } from "@/components/DataLoader";
+
 
 const faqs = [
   {

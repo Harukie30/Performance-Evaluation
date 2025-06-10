@@ -107,14 +107,14 @@ export const QuarterlyReviewModal: React.FC<QuarterlyReviewModalProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex justify-between items-center">
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-2xl font-bold  ">
               {quarter} Review - {quarterData.reviewPeriod}
             </DialogTitle>
             <Button
               onClick={handlePrint}
-              variant="outline"
+             
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
             >
               <Printer className="h-4 w-4" />
               Print Review

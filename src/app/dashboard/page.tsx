@@ -104,7 +104,7 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm">View Quarters</Button>
+          <Button  className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black" size="lg">View Quarters</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -370,6 +370,10 @@ export default function DashboardPage() {
 
           <TabsContent value="pending">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-gray-800 ">Pending Evaluations</h2>
+                <FileText className="h-15 w-15 text-blue-600 " />
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -419,6 +423,10 @@ export default function DashboardPage() {
 
           <TabsContent value="completed">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-gray-800">Completed Evaluations</h2>
+                <CheckCircle2 className="h-15 w-15 text-green-600" />
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -472,6 +480,10 @@ export default function DashboardPage() {
 
           <TabsContent value="active">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-gray-800">Active Employees</h2>
+                <Users className="h-15 w-15 text-blue-600" />
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -509,6 +521,10 @@ export default function DashboardPage() {
 
           <TabsContent value="inactive">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-800">Inactive Employees</h2>
+                <Users className="h-6 w-6 text-gray-600" />
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
