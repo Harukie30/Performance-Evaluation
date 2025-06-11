@@ -26,7 +26,8 @@ import {
   FileText,
   XIcon,
   MenuIcon,
-  Circle
+  UserPlus,
+  UserMinus
 } from "lucide-react";
 import {
   Dialog,
@@ -52,6 +53,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import LoadingScreen from "@/components/LoadingScreen";
 import { AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -178,6 +180,18 @@ export default function DashboardPage() {
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newEmployee, setNewEmployee] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    position: "",
+    department: "",
+    location: "",
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
   const toggleSidebar = () => {
@@ -326,6 +340,82 @@ export default function DashboardPage() {
 
   const handleProfileUpdate = (updatedUser: User) => {
     setUser(updatedUser);
+  };
+
+  const validateEmployeeForm = () => {
+    const errors: Record<string, string> = {};
+    if (!newEmployee.name.trim()) errors.name = "Name is required";
+    if (!newEmployee.email.trim()) errors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmployee.email)) errors.email = "Invalid email format";
+    if (!newEmployee.phone.trim()) errors.phone = "Phone is required";
+    if (!newEmployee.position.trim()) errors.position = "Position is required";
+    if (!newEmployee.department.trim()) errors.department = "Department is required";
+    if (!newEmployee.location.trim()) errors.location = "Location is required";
+    return errors;
+  };
+
+  const handleAddEmployee = async () => {
+    const errors = validateEmployeeForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      const response = await fetch('/api/employees', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newEmployee),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add employee');
+      }
+
+      toast.success('Employee added successfully');
+      setIsAddEmployeeOpen(false);
+      setNewEmployee({
+        name: "",
+        email: "",
+        phone: "",
+        position: "",
+        department: "",
+        location: "",
+      });
+      setFormErrors({});
+      loadEmployees();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to add employee');
+      console.error('Error adding employee:', error);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const handleDeleteEmployee = async (employeeId: string) => {
+    setIsDeleting(employeeId);
+    try {
+      const response = await fetch(`/api/employees/${employeeId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete employee');
+      }
+
+      toast.success('Employee deleted successfully');
+      loadEmployees();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete employee');
+      console.error('Error deleting employee:', error);
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   if (!user || isLoading) {
@@ -615,7 +705,130 @@ export default function DashboardPage() {
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-0">
               <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-blue-600">Active Employees</h2>
-                <Users className="h-15 w-15 text-blue-600" />
+                <div className="flex items-center gap-4">
+                  <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black">
+                        <UserPlus className="h-5 w-5 mr-2" />
+                        Add Employee
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Employee</DialogTitle>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="name">Full Name</Label>
+                          <Input
+                            id="name"
+                            value={newEmployee.name}
+                            onChange={(e) => {
+                              setNewEmployee({ ...newEmployee, name: e.target.value });
+                              if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
+                            }}
+                            className={formErrors.name ? "border-red-500" : ""}
+                          />
+                          {formErrors.name && <p className="text-sm text-red-500">{formErrors.name}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={newEmployee.email}
+                            onChange={(e) => {
+                              setNewEmployee({ ...newEmployee, email: e.target.value });
+                              if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
+                            }}
+                            className={formErrors.email ? "border-red-500" : ""}
+                          />
+                          {formErrors.email && <p className="text-sm text-red-500">{formErrors.email}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="phone">Phone</Label>
+                          <Input
+                            id="phone"
+                            type="tel"
+                            value={newEmployee.phone}
+                            onChange={(e) => {
+                              setNewEmployee({ ...newEmployee, phone: e.target.value });
+                              if (formErrors.phone) setFormErrors({ ...formErrors, phone: '' });
+                            }}
+                            className={formErrors.phone ? "border-red-500" : ""}
+                          />
+                          {formErrors.phone && <p className="text-sm text-red-500">{formErrors.phone}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="position">Position</Label>
+                          <Input
+                            id="position"
+                            value={newEmployee.position}
+                            onChange={(e) => {
+                              setNewEmployee({ ...newEmployee, position: e.target.value });
+                              if (formErrors.position) setFormErrors({ ...formErrors, position: '' });
+                            }}
+                            className={formErrors.position ? "border-red-500" : ""}
+                          />
+                          {formErrors.position && <p className="text-sm text-red-500">{formErrors.position}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="department">Department</Label>
+                          <Input
+                            id="department"
+                            value={newEmployee.department}
+                            onChange={(e) => {
+                              setNewEmployee({ ...newEmployee, department: e.target.value });
+                              if (formErrors.department) setFormErrors({ ...formErrors, department: '' });
+                            }}
+                            className={formErrors.department ? "border-red-500" : ""}
+                          />
+                          {formErrors.department && <p className="text-sm text-red-500">{formErrors.department}</p>}
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="location">Location</Label>
+                          <Input
+                            id="location"
+                            value={newEmployee.location}
+                            onChange={(e) => {
+                              setNewEmployee({ ...newEmployee, location: e.target.value });
+                              if (formErrors.location) setFormErrors({ ...formErrors, location: '' });
+                            }}
+                            className={formErrors.location ? "border-red-500" : ""}
+                          />
+                          {formErrors.location && <p className="text-sm text-red-500">{formErrors.location}</p>}
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setIsAddEmployeeOpen(false);
+                            setFormErrors({});
+                          }}
+                          disabled={isAdding}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleAddEmployee}
+                          disabled={isAdding}
+                          className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black"
+                        >
+                          {isAdding ? (
+                            <>
+                              <span className="animate-spin mr-2">⏳</span>
+                              Adding...
+                            </>
+                          ) : (
+                            'Add Employee'
+                          )}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  <Users className="h-15 w-15 text-blue-600" />
+                </div>
               </div>
               <Table>
                 <TableHeader>
@@ -627,7 +840,7 @@ export default function DashboardPage() {
                     <TableHead>Email</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Join Date</TableHead>
-                    <TableHead>Quarter View</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -643,7 +856,42 @@ export default function DashboardPage() {
                         <TableCell>{employee.location}</TableCell>
                         <TableCell>{employee.datehired.date}</TableCell>
                         <TableCell>
-                          <QuarterViewModal employee={employee} />
+                          <div className="flex items-center gap-2">
+                            <QuarterViewModal employee={employee} />
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="text-red-600 hover:text-white hover:bg-red-500"
+                                  disabled={isDeleting === employee.employeeId}
+                                >
+                                  {isDeleting === employee.employeeId ? (
+                                    <span className="animate-spin">⏳</span>
+                                  ) : (
+                                    <UserMinus className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the employee
+                                    and remove their data from our servers.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteEmployee(employee.employeeId)}
+                                    className="bg-red-500 text-white hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

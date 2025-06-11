@@ -330,15 +330,15 @@ export default function HRDashboard() {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
-                            variant="ghost"
+                            
                             className="text-red-600 hover:text-white hover:bg-red-500"
                           >
-                            <UserMinus className="h-4 w-4" />
+                            <UserMinus className="h-4 w-4 " />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogContent >
+                          <AlertDialogHeader >
+                            <AlertDialogTitle className="text-white">Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
                               This action cannot be undone. This will permanently delete the employee
                               and remove their data from our servers.
