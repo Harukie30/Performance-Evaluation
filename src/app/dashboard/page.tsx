@@ -39,6 +39,17 @@ import { QuarterlyReviewModal } from '@/components/QuarterlyReviewModal';
 import RecentActivityModal from "@/components/RecentActivityModal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface User {
   id: string;
@@ -414,6 +425,36 @@ export default function DashboardPage() {
                   <h3 className="text-red-500 font-medium mb-1">Delete Your Account</h3>
                   <p className="text-sm text-gray-500">You will receive an email to confirm your decision. Please note, that all boards you have created will be permanently erased.</p>
                 </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      className="bg-red-500 text-white hover:bg-red-700 hover:text-white"
+                    >
+                      Delete Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your account
+                        and remove all your data from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          // Add your delete account logic here
+                          handleLogout();
+                        }}
+                        className="bg-red-500 text-white hover:bg-red-700 hover:text-white"
+                      >
+                        Delete Account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
 
               {/* Avatar Upload */}
@@ -451,7 +492,7 @@ export default function DashboardPage() {
 
           <TabsContent value="pending" key="pending">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-              <div className="p-6 border-p bg-blue-100 border-blue-500  flex items-center justify-between">
+              <div className="p-6 border-p bg-yellow-200 border-blue-500  flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-blue-600 ">Pending Evaluations</h2>
                 <FileText className="h-15 w-15 text-blue-600 " />
               </div>
@@ -482,7 +523,7 @@ export default function DashboardPage() {
                                 : "bg-blue-100 text-blue-800"
                             }`}
                           >
-                            {evaluation.status}
+                            Pending
                           </span>
                         </TableCell>
                         <TableCell>{evaluation.lastModified}</TableCell>
@@ -504,7 +545,7 @@ export default function DashboardPage() {
 
           <TabsContent value="completed" key="completed">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-              <div className="p-6 border-p bg-green-200 flex items-center justify-between">
+              <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-green-700">Completed Evaluations</h2>
                 <CheckCircle2 className="h-15 w-15 text-green-600" />
               </div>
@@ -564,8 +605,8 @@ export default function DashboardPage() {
 
           <TabsContent value="active" key="active">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-0">
-              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-gray-800">Active Employees</h2>
+              <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-blue-600">Active Employees</h2>
                 <Users className="h-15 w-15 text-blue-600" />
               </div>
               <Table>

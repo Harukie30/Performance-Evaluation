@@ -94,7 +94,7 @@ export default function RegisterPage() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.3 }}
-            src="/images/dataa.png"
+            src="/images/reg.png"
             alt="Business Account Icon"
             className="w-64 h-auto mb-8"
           />
@@ -118,7 +118,7 @@ export default function RegisterPage() {
             transition={{ delay: 0.3, duration: 0.3 }}
           >
             <img
-              src="/images/reg.png"
+              src="/images/smct.png"
               alt="Logo"
               className="h-25 w-auto mx-auto mb-4"
             />
