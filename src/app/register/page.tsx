@@ -6,47 +6,61 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import Cookies from "js-cookie";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, User } from "lucide-react";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Invalid credentials");
+        throw new Error("Registration failed");
       }
 
-      const user = await response.json();
-      Cookies.set("user", JSON.stringify(user), {
-        expires: 7,
-        path: "/",
-        sameSite: "lax",
-      });
-
-      toast.success("Login successful!");
-      router.push("/dashboard");
+      toast.success("Registration successful!");
+      router.push("/login");
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Invalid username or password");
+      console.error("Registration error:", error);
+      toast.error("Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   return (
@@ -54,10 +68,10 @@ export default function LoginPage() {
       <div className="w-full max-w-5xl bg-white rounded-lg shadow-xl overflow-hidden flex flex-col lg:flex-row">
         <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center items-center text-center lg:text-left">
           <h1 className="text-4xl font-bold text-gray-800 mb-6">
-          Sign In to Your Performance Review Account
+            Create Your Performance Review Account
           </h1>
           <p className="text-gray-600 mb-8 max-w-md">
-          Securely access and manage your performance evaluations and account settings.
+            Join our platform to manage your performance evaluations and track your professional growth.
           </p>
           <img
             src="/images/dataa.png"
@@ -65,7 +79,7 @@ export default function LoginPage() {
             className="w-64 h-auto mb-8"
           />
           <p className="text-gray-500 text-sm mt-auto">
-            © 2019 Business login form. All Rights Reserved | Design by{" "}
+            © 2019 Business registration form. All Rights Reserved | Design by{" "}
             <a href="#" className="text-blue-500 hover:underline">
               W3layouts
             </a>
@@ -75,17 +89,36 @@ export default function LoginPage() {
         <div className="w-full lg:w-1/2 p-8 lg:p-12 bg-yellow-100 flex flex-col justify-center">
           <div>
             <img
-              src="/images/smct.png" // change to your actual logo path
+              src="/images/smct.png"
               alt="Logo"
               className="h-25 w-auto mx-auto mb-4"
             />
           </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            Login To Your Account
+            Create Your Account
           </h2>
-          <p className="text-gray-600 mb-8">Enter your details to login.</p>
+          <p className="text-gray-600 mb-8">Fill in your details to register.</p>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleRegister} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="fullName" className="text-gray-700">
+                FULL NAME
+              </Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  placeholder="Enter Your Full Name"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  required
+                  className="pl-10 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700">
                 EMAIL ADDRESS
@@ -94,10 +127,11 @@ export default function LoginPage() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="Enter Your Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={handleChange}
                   required
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -112,10 +146,30 @@ export default function LoginPage() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
                   id="password"
+                  name="password"
                   type="password"
-                  placeholder="Enter Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="pl-10 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-gray-700">
+                CONFIRM PASSWORD
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
                   required
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -125,11 +179,12 @@ export default function LoginPage() {
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                id="remember"
+                id="terms"
+                required
                 className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
               />
-              <Label htmlFor="remember" className="text-gray-700">
-                Remember Me
+              <Label htmlFor="terms" className="text-gray-700">
+                I agree to the Terms & Conditions
               </Label>
             </div>
 
@@ -160,24 +215,17 @@ export default function LoginPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Logging in...
+                  Creating Account...
                 </>
               ) : (
-                "LOGIN"
+                "REGISTER"
               )}
             </Button>
 
             <p className="text-center text-sm text-gray-600 mt-4">
-              By clicking login, you agree to our{" "}
-              <a href="#" className="text-blue-500 hover:underline">
-                Terms & Conditions!
-              </a>
-            </p>
-
-            <p className="text-center text-sm text-gray-600 mt-4">
-              Don't have an account?{" "}
-              <a href="/register" className="text-blue-500 hover:underline">
-                Register here
+              Already have an account?{" "}
+              <a href="/login" className="text-blue-500 hover:underline">
+                Login here
               </a>
             </p>
           </form>
@@ -185,4 +233,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+} 
