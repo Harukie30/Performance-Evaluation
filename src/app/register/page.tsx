@@ -118,7 +118,7 @@ export default function RegisterPage() {
             transition={{ delay: 0.3, duration: 0.3 }}
           >
             <img
-              src="/images/smct.png"
+              src="/images/reg.png"
               alt="Logo"
               className="h-25 w-auto mx-auto mb-4"
             />
