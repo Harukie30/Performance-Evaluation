@@ -421,14 +421,14 @@ export default function DashboardPage() {
                 <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mb-4">
                   <User className="h-16 w-16 text-gray-400" /> {/* Placeholder avatar icon */}
                 </div>
-                <Button className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">Upload a picture</Button>
+                <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200">Upload a picture</Button>
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="mt-10 pt-6 border-t border-gray-200 flex justify-end space-x-4">
-              <Button variant="outline" className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors duration-200">Cancel</Button>
-              <Button onClick={() => handleProfileUpdate(user)} className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">Save</Button>
+              
+              <Button onClick={() => handleProfileUpdate(user)} className="px-13 py-2 bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200">Save</Button>
             </div>
           </Card>
         </div>
@@ -451,8 +451,8 @@ export default function DashboardPage() {
 
           <TabsContent value="pending" key="pending">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-gray-800 ">Pending Evaluations</h2>
+              <div className="p-6 border-p bg-blue-100 border-blue-500  flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-blue-600 ">Pending Evaluations</h2>
                 <FileText className="h-15 w-15 text-blue-600 " />
               </div>
               <Table>
@@ -488,7 +488,7 @@ export default function DashboardPage() {
                         <TableCell>{evaluation.lastModified}</TableCell>
                         <TableCell>
                           <Button
-                            variant="outline"
+                            className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
                             size="sm"
                             onClick={() => handleNewEvaluation()}
                           >
@@ -504,8 +504,8 @@ export default function DashboardPage() {
 
           <TabsContent value="completed" key="completed">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-gray-800">Completed Evaluations</h2>
+              <div className="p-6 border-p bg-green-200 flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-green-700">Completed Evaluations</h2>
                 <CheckCircle2 className="h-15 w-15 text-green-600" />
               </div>
               <Table>
@@ -535,7 +535,7 @@ export default function DashboardPage() {
                         <TableCell>{evaluation.lastModified}</TableCell>
                         <TableCell>
                           <Button
-                            variant="outline"
+                            className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
                             size="sm"
                             onClick={() => handleViewEvaluation(evaluation.id)}
                           >
@@ -823,14 +823,14 @@ export default function DashboardPage() {
 
     
 {/* User Profile */}
-<div className="flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 mb-6 lg:mb-8">
-        <Avatar className="h-12 w-12 border-2 border-blue-400 flex-shrink-0">
+<div className="flex flex-col items-center lg:items-start lg:flex-row lg:space-x-10 mb-6 lg:mb-8 bg-yellow-400">
+        <Avatar className="h-12 w-12 border-2 left-6 border-blue-400 flex-shrink-0">
           <AvatarImage src={`https://avatar.vercel.sh/${user.username}`} />
           <AvatarFallback className="bg-blue-100 text-blue-600 text-lg">
             {user.name.charAt(0)}
           </AvatarFallback>
         </Avatar>
-        <div className="mt-3 lg:mt-0 text-center lg:text-left flex-1 min-w-0 hidden lg:block">
+        <div className="mt-3 lg:mt-0 text-center  lg:text-left flex-1 min-w-0 hidden lg:block">
           <h2 className="font-semibold text-gray-900 truncate text-sm md:text-base">
             {user.name}
           </h2>

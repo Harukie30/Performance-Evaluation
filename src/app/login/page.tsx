@@ -54,11 +54,10 @@ export default function LoginPage() {
       <div className="w-full max-w-5xl bg-white rounded-lg shadow-xl overflow-hidden flex flex-col lg:flex-row">
         <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center items-center text-center lg:text-left">
           <h1 className="text-4xl font-bold text-gray-800 mb-6">
-            Manage Your Performace Review Account
+          Sign In to Your Performance Review Account
           </h1>
           <p className="text-gray-600 mb-8 max-w-md">
-            Donec dictum nisl nec mi lacinia, sed maximus tellus eleifend. Proin
-            molestie cursus sapien ac eleifend
+          Securely access and manage your performance evaluations and account settings.
           </p>
           <img
             src="/images/dataa.png"
@@ -73,7 +72,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="w-full lg:w-1/2 p-8 lg:p-12 bg-gray-50 flex flex-col justify-center">
+        <div className="w-full lg:w-1/2 p-8 lg:p-12 bg-yellow-100 flex flex-col justify-center">
           <div>
             <img
               src="/images/smct.png" // change to your actual logo path
