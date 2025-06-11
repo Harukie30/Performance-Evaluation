@@ -50,6 +50,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import LoadingScreen from "@/components/LoadingScreen";
+import { AnimatePresence } from "framer-motion";
 
 interface User {
   id: string;
@@ -175,6 +177,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   const toggleSidebar = () => {
@@ -285,6 +288,11 @@ export default function DashboardPage() {
         }
         const userData = await response.json();
         setUser(userData);
+        
+        // Add a small delay to show the loading screen
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000);
       } catch (error) {
         console.error('Auth check failed:', error);
         router.push('/login');
@@ -320,8 +328,8 @@ export default function DashboardPage() {
     setUser(updatedUser);
   };
 
-  if (!user) {
-    return null;
+  if (!user || isLoading) {
+    return <LoadingScreen />;
   }
 
   // Calculate statistics
@@ -421,19 +429,19 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Delete Your Account */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="mt-8 pt-6 border-t  border-gray-200">
                   <h3 className="text-red-500 font-medium mb-1">Delete Your Account</h3>
                   <p className="text-sm text-gray-500">You will receive an email to confirm your decision. Please note, that all boards you have created will be permanently erased.</p>
                 </div>
-                <AlertDialog>
+                <AlertDialog >
                   <AlertDialogTrigger asChild>
                     <Button
-                      className="bg-red-500 text-white hover:bg-red-700 hover:text-white"
+                      className="bg-red-500 text-white  hover:bg-red-700 hover:text-white"
                     >
                       Delete Account
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="bg-white border-0">
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                       <AlertDialogDescription>
@@ -442,7 +450,7 @@ export default function DashboardPage() {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel className="border-0 bg-blue-500 text-white hover:bg-yellow-400 hover:text-black">Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
                           // Add your delete account logic here
