@@ -750,7 +750,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-xl font-semibold">Recent Activity</h2>
+                  <h2 className="text-2xl font-semibold">Recent Activity</h2>
                 </div>
                 <Button 
                   variant="ghost" 
@@ -766,7 +766,7 @@ export default function DashboardPage() {
                 {recentActivities.slice(0, 3).map((activity) => (
                   <div 
                     key={activity.id} 
-                    className="group flex items-start gap-4 p-4 rounded-lg border border-gray-100 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200"
+                    className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200"
                   >
                     <div className={`p-2 rounded-full ${
                       activity.type === "evaluation" ? "bg-blue-100 text-blue-600" :
@@ -890,7 +890,7 @@ export default function DashboardPage() {
     <div className="p-3 lg:p-4 border-t border-gray-100">
       <Button
         variant="ghost"
-        className="w-full justify-center lg:justify-start text-red-600 hover:text-red-700 hover:bg-red-50 group transition-all duration-200"
+        className="w-full justify-center lg:justify-start text-red-600 hover:text-white hover:bg-red-500  group transition-all duration-200"
         onClick={handleLogout}
       >
         <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />

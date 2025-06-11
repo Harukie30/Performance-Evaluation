@@ -106,12 +106,12 @@ export default function RecentActivityModal({
         {/* Filters and Search */}
         <div className="flex flex-col sm:flex-row gap-4 mt-6 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w- text-gray-400" />
             <Input
               placeholder="Search activities..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 w-20"
             />
           </div>
           <div className="flex gap-4">
@@ -181,7 +181,7 @@ export default function RecentActivityModal({
             <p className="text-sm text-gray-500">
               Showing {filteredActivities.length} of {activities.length} activities
             </p>
-            <Button variant="outline" onClick={onClose}>
+            <Button className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black" onClick={onClose}>
               Close
             </Button>
           </div>

@@ -47,7 +47,12 @@ export default function LoginPage() {
       
       // Add a delay before navigation to show the loading screen
       setTimeout(() => {
-        router.push("/dashboard");
+        // Redirect based on user role
+        if (user.role === "HR") {
+          router.push("/hr-dashboard");
+        } else {
+          router.push("/dashboard");
+        }
       }, 2000);
     } catch (error) {
       console.error("Login error:", error);

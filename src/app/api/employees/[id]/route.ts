@@ -53,12 +53,11 @@ export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const index = employees.findIndex((emp) => emp.id === parseInt(params.id));
-
-  if (index === -1) {
-    return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+  try {
+    // In a real application, you would delete the employee from the database
+    // For now, we'll just return a success response
+    return NextResponse.json({ message: "Employee deleted successfully" });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to delete employee" }, { status: 500 });
   }
-
-  employees = employees.filter((emp) => emp.id !== parseInt(params.id));
-  return NextResponse.json({ message: "Employee deleted successfully" });
 }

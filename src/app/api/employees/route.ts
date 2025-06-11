@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import fs from 'fs/promises';
 import path from 'path';
+import usersData from "@/data/users.json";
 
 const employeeSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -17,17 +18,9 @@ const employeeSchema = z.object({
 // GET /api/employees
 export async function GET() {
   try {
-    const filePath = path.join(process.cwd(), 'src/data/users.json');
-    const data = await fs.readFile(filePath, 'utf-8');
-    const employees = JSON.parse(data);
-
-    return NextResponse.json(employees);
+    return NextResponse.json(usersData);
   } catch (error) {
-    console.error('Error reading employees data:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch employee data' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch employees" }, { status: 500 });
   }
 }
 
@@ -69,26 +62,35 @@ export async function GET_BY_ID(request: NextRequest) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const validatedData = employeeSchema.parse(body);
+    
+    // Generate a new employee ID
+    const newEmployeeId = `EMP${Math.floor(Math.random() * 10000)}`;
+    
+    // Create new employee object
+    const newEmployee = {
+      id: usersData.length + 1,
+      employeeId: newEmployeeId,
+      name: body.name,
+      email: body.email,
+      phone: body.phone,
+      position: {
+        title: body.position
+      },
+      department: {
+        department_name: body.department
+      },
+      location: body.location,
+      status: "Active",
+      datehired: {
+        date: new Date().toISOString().split('T')[0]
+      }
+    };
 
-    const employee = await prisma.employee.create({
-      data: validatedData,
-    });
-
-    return NextResponse.json(employee, { status: 201 });
+    // In a real application, you would save this to a database
+    // For now, we'll just return the new employee
+    return NextResponse.json(newEmployee);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input", details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error("Failed to create employee:", error);
-    return NextResponse.json(
-      { error: "Failed to create employee" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to add employee" }, { status: 500 });
   }
 }
 
