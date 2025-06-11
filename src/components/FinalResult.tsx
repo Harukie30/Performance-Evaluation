@@ -1480,7 +1480,7 @@ export default function FinalResults({
             </DialogHeader>
             <DialogFooter>
               <Button
-                variant="outline"
+                className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
                 onClick={() => setShowConfirmDialog(false)}
                 disabled={isSubmitting}
               >
