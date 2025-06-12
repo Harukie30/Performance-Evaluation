@@ -1315,20 +1315,33 @@ export default function DashboardPage() {
           </div>
 
           {/* User Profile */}
-          <div className="flex flex-col items-center lg:items-start lg:space-x-10 mb-6 lg:mb-8 bg-yellow-400">
-            <Avatar className="h-12 w-12 border-2 left-6 border-blue-400 flex-shrink-0">
-              <AvatarImage src={`https://avatar.vercel.sh/${user.username}`} />
-              <AvatarFallback className="bg-blue-100 text-blue-600 text-lg">
-                {user.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="mt-3 lg:mt-0 text-center lg:text-right flex-1 min-w-0 hidden lg:block">
-              <h2 className="font-semibold text-gray-900 truncate text-sm md:text-base">
+          <div className="flex flex-col items-center lg:flex-row lg:items-start gap-4 mb-8 p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="relative">
+              <Avatar className="h-14 w-14 flex-shrink-0">
+                <AvatarImage
+                  src={`https://avatar.vercel.sh/${user.username}`}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-600 font-medium">
+                  {user.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 border-2 border-white"></div>
+            </div>
+
+            <div className="text-center lg:text-left flex-1 min-w-0">
+              <h2 className="font-bold text-gray-900 text-lg md:text-xl truncate">
                 {user.name}
               </h2>
-              <p className="text-xs text-gray-500 left-5 truncate">
-                {user.role}
-              </p>
+              <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:gap-2 justify-center lg:justify-start">
+                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full">
+                  {user.role}
+                </span>
+                <div className="hidden sm:block w-1 h-1 bg-gray-300 rounded-full"></div>
+                <p className="text-sm text-gray-500 mt-1 sm:mt-0 truncate">
+                  {user.department || "Human Resources"}
+                </p>
+              </div>
             </div>
           </div>
 
