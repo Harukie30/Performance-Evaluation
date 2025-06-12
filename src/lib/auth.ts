@@ -13,10 +13,18 @@ const USERS = [
     id: "2",
     email: "hr@smct.com",
     password: "hr123",
-    role: "hr",
+    role: "HR",
     name: "HR Manager",
     department: "Human Resources",
-    permissions: ["view_all_reviews", "create_reviews", "edit_reviews"]
+    permissions: [
+      "view_all_reviews",
+      "create_reviews",
+      "edit_reviews",
+      "manage_employees",
+      "add_employee",
+      "delete_employee",
+      "edit_employee"
+    ]
   },
   {
     id: "3",

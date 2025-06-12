@@ -15,10 +15,18 @@
       "username": "hr_manager",
       "email": "hr@smct.com",
       "password": "hr123",
-      "role": "hr",
+      "role": "HR",
       "name": "HR Manager",
       "department": "Human Resources",
-      "permissions": ["view_all_reviews", "create_reviews", "edit_reviews"]
+      "permissions": [
+        "view_all_reviews",
+        "create_reviews",
+        "edit_reviews",
+        "manage_employees",
+        "add_employee",
+        "delete_employee",
+        "edit_employee"
+      ]
     },
     {
       "id": "3",
@@ -30,6 +38,5 @@
       "department": "Operations",
       "permissions": ["create_reviews", "edit_own_reviews"]
     }
-    
   ]
 } 
