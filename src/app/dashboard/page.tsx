@@ -769,7 +769,7 @@ export default function DashboardPage() {
                   Active Employees
                 </h2>
                 <div className="flex items-center gap-4">
-                  {user?.role === "HR Manager" && (
+                  {user?.role === "HR" && (
                     <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
                       <DialogTrigger asChild>
                         <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black">
@@ -930,7 +930,7 @@ export default function DashboardPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <QuarterViewModal employee={employee} />
-                            {user?.role === "HR Manager" && (
+                            {user?.role === "HR" && (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button
