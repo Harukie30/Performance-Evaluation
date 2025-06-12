@@ -244,7 +244,6 @@ export default function DashboardPage() {
     { id: "evaluations", label: "Evaluations", icon: FileText },
     { id: "employees", label: "Employees", icon: Users },
     { id: "profile", label: "Profile", icon: User },
-    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   const loadEmployees = async () => {
@@ -626,6 +625,11 @@ export default function DashboardPage() {
     if (activeTab === "evaluations") {
       return (
         <Tabs defaultValue="pending" className="space-y-4">
+          <div>
+            <h2 className="font-bold text-3xl">
+              Employee Evaluations
+            </h2>
+          </div>
           <TabsList className="space-x-4 bg-gray-200 p-1 rounded-lg">
             <TabsTrigger
               value="pending"
@@ -751,6 +755,11 @@ export default function DashboardPage() {
     if (activeTab === "employees") {
       return (
         <Tabs defaultValue="active" className="space-y-4">
+          <div>
+            <h2 className="font-bold text-3xl">
+              Employee Section
+            </h2>
+          </div>
           <TabsList className="bg-gray-200 p-1 rounded-lg">
             <TabsTrigger
               value="active"

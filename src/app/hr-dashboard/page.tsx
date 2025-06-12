@@ -244,7 +244,6 @@ export default function HRDashboard() {
     { id: "evaluations", label: "Evaluations", icon: FileText },
     { id: "employees", label: "Employee Management", icon: Users },
     { id: "profile", label: "Profile", icon: User },
-    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   useEffect(() => {
@@ -693,6 +692,11 @@ export default function HRDashboard() {
     if (activeTab === "evaluations") {
       return (
         <Tabs defaultValue="pending" className="space-y-4">
+          <div>
+            <h2 className="text-3xl font-bold text-black ">
+              Employee Evaluations
+            </h2>
+          </div>
           <TabsList className="space-x-4 bg-gray-200 p-1 rounded-lg">
             <TabsTrigger
               value="pending"
@@ -830,14 +834,14 @@ export default function HRDashboard() {
       return (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="text-3xl font-bold text-black ">
               Employee Management
             </h1>
             <Button
               onClick={() => setIsAddEmployeeOpen(true)}
               className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200"
             >
-              <Plus className="h-5 w-5 mr-2" />
+              <Plus className="h-5 w-5 mr-4" />
               Add Employee
             </Button>
           </div>
@@ -888,10 +892,9 @@ export default function HRDashboard() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button
-                              variant="outline"
                               size="sm"
                               onClick={() => setSelectedQuarter("Q1")}
-                              className="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                              className=" bg-blue-500 text-white hover:bg-green-400 hover:text-white transition-colors duration-200"
                             >
                               View Quarters
                             </Button>
@@ -915,11 +918,11 @@ export default function HRDashboard() {
                                     {isDeleting === employee.employeeId ? (
                                       <span className="animate-spin">⏳</span>
                                     ) : (
-                                      <UserMinus className="h-4 w-4" />
+                                      <UserMinus className="h-6 w-6" />
                                     )}
                                   </Button>
                                 </AlertDialogTrigger>
-                                <AlertDialogContent>
+                                <AlertDialogContent className="bg-white">
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>
                                       Are you sure?
@@ -931,7 +934,7 @@ export default function HRDashboard() {
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>
+                                    <AlertDialogCancel className="border-0 bg-blue-500 hover:bg-green-400 text-white hover:text-white">
                                       Cancel
                                     </AlertDialogCancel>
                                     <AlertDialogAction
@@ -1184,7 +1187,7 @@ export default function HRDashboard() {
 
         {/* Employee List */}
         <Card className="mt-8 bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-          <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
+          <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
             <h2 className="text-3xl font-bold text-blue-600">
               Employee Management
             </h2>
