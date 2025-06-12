@@ -99,9 +99,9 @@ export default function RegisterPage() {
             className="w-64 h-auto mb-8"
           />
           <p className="text-gray-500 text-sm mt-auto">
-            © 2019 Business registration form. All Rights Reserved | Design by{" "}
+            © 2025 Perormance login form. All Rights Reserved | Design by{" "}
             <a href="#" className="text-blue-500 hover:underline">
-              W3layouts
+              SMCT DevTeam
             </a>
           </p>
         </motion.div>
