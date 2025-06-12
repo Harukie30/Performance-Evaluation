@@ -44,7 +44,7 @@ import {
 
 import { useState } from "react";
 import { Resolver } from "react-hook-form";
-import Link from "next/link";
+
 
 interface Employee {
   id: number;
@@ -164,11 +164,7 @@ export default function PerformanceForm({
     <Form {...form}>
       <form onSubmit={onSubmit} className="space-y-16">
         {error && <ErrorMessage message={error} />}
-<div>
-<Link href="/dashboard">
-  <Button className="bg-blue-500 text-white hover:bg-yellow-300 hover:text-black">← Back to Dashboard</Button>
-</Link>
-</div>
+
         {/* Purpose Section */}
         <div className="border p-4 rounded-md">
           <h3 className="text-lg font-bold mb-2">PURPOSE</h3>
