@@ -135,7 +135,7 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
             className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
             size="lg"
           >
-            View Quarters
+            View Quarter
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">

@@ -18,7 +18,7 @@ interface Employee {
 
 interface Review {
   id: string;
-  employeeId: number;
+  employeeId: string | number;
   department: string;
   position: string;
   status: "Pending" | "In Progress" | "Completed" | "Pending HR Review" | "Rejected";
@@ -375,7 +375,7 @@ export async function DELETE(request: NextRequest) {
     let reviewFound = false;
     for (const employee of usersData.employees) {
       if (employee.performance_reviews) {
-        const reviewIndex = employee.performance_reviews.findIndex(r => r.id === id);
+        const reviewIndex = employee.performance_reviews.findIndex((r: Review) => r.id === id);
         if (reviewIndex !== -1) {
           employee.performance_reviews.splice(reviewIndex, 1);
           reviewFound = true;
