@@ -35,6 +35,7 @@ import {
   Plus,
   Loader2,
   Trash2,
+  Eye,
 } from "lucide-react";
 import {
   Dialog,
@@ -60,6 +61,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/LoadingScreen";
+import { QuarterlyReviewModal } from "@/components/QuarterlyReviewModal";
 
 interface Employee {
   id: number;
@@ -77,6 +79,12 @@ interface Employee {
   status: string;
   datehired: {
     date: string;
+  };
+  quarterlyReviews?: {
+    Q1?: { status: string; date?: string };
+    Q2?: { status: string; date?: string };
+    Q3?: { status: string; date?: string };
+    Q4?: { status: string; date?: string };
   };
 }
 
@@ -107,8 +115,97 @@ interface Activity {
   user: string;
 }
 
+const QuarterViewModal = ({ employee }: { employee: Employee }) => {
+  const [selectedQuarter, setSelectedQuarter] = useState<
+    "Q1" | "Q2" | "Q3" | "Q4" | null
+  >(null);
+  const currentYear = new Date().getFullYear();
+  const quarters = [
+    { id: "Q1", label: "First Quarter", months: "Jan - Mar" },
+    { id: "Q2", label: "Second Quarter", months: "Apr - Jun" },
+    { id: "Q3", label: "Third Quarter", months: "Jul - Sep" },
+    { id: "Q4", label: "Fourth Quarter", months: "Oct - Dec" },
+  ];
+
+  return (
+    <>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
+            size="lg"
+          >
+            View Quarters
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Quarterly Reviews - {employee.name}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {quarters.map((quarter) => {
+              const review =
+                employee.quarterlyReviews?.[
+                  quarter.id as keyof typeof employee.quarterlyReviews
+                ];
+              return (
+                <div
+                  key={quarter.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <div>
+                    <h4 className="font-medium text-gray-900">{quarter.label}</h4>
+                    <p className="text-sm text-gray-500">
+                      {quarter.months} {currentYear}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setSelectedQuarter(
+                          quarter.id as "Q1" | "Q2" | "Q3" | "Q4"
+                        )
+                      }
+                      disabled={!review?.status || review.status === "not_started"}
+                      className="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                    >
+                      View Details
+                    </Button>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        review?.status === "completed"
+                          ? "bg-green-100 text-green-800"
+                          : review?.status === "in_progress"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {review?.status || "Not Started"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {selectedQuarter && (
+        <QuarterlyReviewModal
+          isOpen={!!selectedQuarter}
+          onClose={() => setSelectedQuarter(null)}
+          quarter={selectedQuarter}
+        />
+      )}
+    </>
+  );
+};
+
 export default function HRDashboard() {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedQuarter, setSelectedQuarter] = useState<"Q1" | "Q2" | "Q3" | "Q4" | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
@@ -131,7 +228,7 @@ export default function HRDashboard() {
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const router = useRouter();
@@ -347,11 +444,19 @@ export default function HRDashboard() {
 
   const renderContent = () => {
     if (activeTab === "dashboard") {
-      return (
+  return (
         <div className="space-y-6">
           {/* Welcome Section */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white shadow-xl">
             <div className="flex items-center justify-between">
+              <div>
+              <img
+              src="/images/dataa.png"
+              alt="SMCT Logo"
+              className="h-15 lg:h-15 w-auto transition-opacity duration-300"
+            />
+            
+              </div>
               <div>
                 <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
                 <p className="text-blue-100">Here's what's happening with your HR dashboard today.</p>
@@ -518,7 +623,7 @@ export default function HRDashboard() {
             </div>
 
             <div className="mt-10 pt-6 border-t border-gray-200 flex justify-end space-x-4">
-              <Button
+                <Button
                 onClick={() => user && handleProfileUpdate(user)}
                 className="px-13 py-2 bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200"
               >
@@ -554,7 +659,16 @@ export default function HRDashboard() {
                 <h2 className="text-3xl font-bold text-blue-600">
                   Pending Evaluations
                 </h2>
-                <FileText className="h-15 w-15 text-blue-600" />
+                <div className="flex items-center gap-4">
+                  <Button
+                    onClick={handleNewEvaluation}
+                    className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black"
+                  >
+                    <FileText className="h-5 w-5 mr-2" />
+                    New Evaluation
+                  </Button>
+                  <FileText className="h-15 w-15 text-blue-600" />
+                </div>
               </div>
               <Table>
                 <TableHeader>
@@ -609,7 +723,10 @@ export default function HRDashboard() {
                 <h2 className="text-3xl font-bold text-green-700">
                   Completed Evaluations
                 </h2>
-                <CheckCircle2 className="h-15 w-15 text-green-600" />
+                <div className="flex items-center gap-4">
+                  
+                  <CheckCircle2 className="h-15 w-15 text-green-600" />
+                </div>
               </div>
               <Table>
                 <TableHeader>
@@ -688,131 +805,192 @@ export default function HRDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {employees.map((employee) => (
-                    <TableRow key={employee.employeeId}>
-                      <TableCell>{employee.employeeId}</TableCell>
-                      <TableCell>{employee.name}</TableCell>
-                      <TableCell>{employee.position.title}</TableCell>
-                      <TableCell>{employee.department.department_name}</TableCell>
-                      <TableCell>{employee.location}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            employee.status === "Active"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {employee.status}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteEmployee(employee.employeeId)}
-                          className="text-red-600 hover:text-white hover:bg-red-500 transition-colors duration-200"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {employees
+                    .filter((employee) => employee.status === "Active")
+                    .map((employee) => (
+                      <TableRow key={employee.id}>
+                        <TableCell>{employee.employeeId}</TableCell>
+                        <TableCell>{employee.name}</TableCell>
+                        <TableCell>{employee.position.title}</TableCell>
+                        <TableCell>{employee.department.department_name}</TableCell>
+                        <TableCell>{employee.location}</TableCell>
+                        <TableCell>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${
+                              employee.status === "Active"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {employee.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedQuarter("Q1")}
+                              className="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                            >
+                              View Quarters
+                            </Button>
+                            {selectedQuarter && (
+                              <QuarterlyReviewModal
+                                isOpen={true}
+                                onClose={() => setSelectedQuarter(null)}
+                                quarter={selectedQuarter}
+                              />
+                            )}
+                            {user?.role === "HR" && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="text-red-600 hover:text-white hover:bg-red-500"
+                                    disabled={isDeleting === employee.employeeId}
+                                  >
+                                    {isDeleting === employee.employeeId ? (
+                                      <span className="animate-spin">⏳</span>
+                                    ) : (
+                                      <UserMinus className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This action cannot be undone. This will permanently delete the employee
+                                      and remove their data from our servers.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteEmployee(employee.employeeId)}
+                                      className="bg-red-500 text-white hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </div>
           </Card>
 
           {/* Add Employee Dialog */}
-          <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
+            <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
             <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add New Employee</DialogTitle>
+                <DialogHeader>
+                  <DialogTitle>Add New Employee</DialogTitle>
                 <DialogDescription>
                   Fill in the details to add a new employee to the system.
                 </DialogDescription>
-              </DialogHeader>
+                </DialogHeader>
               <form onSubmit={handleAddEmployee} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    value={newEmployee.name}
+                    <Input
+                      id="name"
+                      value={newEmployee.name}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, name: e.target.value })
                     }
                     className={formErrors.name ? "border-red-500" : ""}
-                  />
+                    />
                   {formErrors.name && (
                     <p className="text-sm text-red-500">{formErrors.name}</p>
                   )}
-                </div>
+                  </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={newEmployee.email}
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={newEmployee.email}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, email: e.target.value })
                     }
                     className={formErrors.email ? "border-red-500" : ""}
-                  />
+                    />
                   {formErrors.email && (
                     <p className="text-sm text-red-500">{formErrors.email}</p>
                   )}
-                </div>
+                  </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={newEmployee.phone}
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={newEmployee.phone}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, phone: e.target.value })
                     }
                     className={formErrors.phone ? "border-red-500" : ""}
-                  />
+                    />
                   {formErrors.phone && (
                     <p className="text-sm text-red-500">{formErrors.phone}</p>
                   )}
-                </div>
+                  </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="position">Position</Label>
-                  <Input
-                    id="position"
-                    value={newEmployee.position}
+                    <Label htmlFor="position">Position</Label>
+                    <Input
+                      id="position"
+                      value={newEmployee.position}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, position: e.target.value })
                     }
                     className={formErrors.position ? "border-red-500" : ""}
-                  />
+                    />
                   {formErrors.position && (
                     <p className="text-sm text-red-500">{formErrors.position}</p>
                   )}
-                </div>
+                  </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    id="department"
-                    value={newEmployee.department}
+                    <Label htmlFor="department">Department</Label>
+                    <Input
+                      id="department"
+                      value={newEmployee.department}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, department: e.target.value })
                     }
                     className={formErrors.department ? "border-red-500" : ""}
-                  />
+                    />
                   {formErrors.department && (
                     <p className="text-sm text-red-500">{formErrors.department}</p>
                   )}
-                </div>
+                  </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      value={newEmployee.location}
+                    onChange={(e) =>
+                      setNewEmployee({ ...newEmployee, location: e.target.value })
+                    }
+                    className={formErrors.location ? "border-red-500" : ""}
+                    />
+                  {formErrors.location && (
+                    <p className="text-sm text-red-500">{formErrors.location}</p>
+                  )}
+                  </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="Branch">Branch</Label>
                   <Input
-                    id="location"
+                    id="Branch"
                     value={newEmployee.location}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, location: e.target.value })
@@ -827,7 +1005,7 @@ export default function HRDashboard() {
                 <DialogFooter>
                   <Button
                     type="button"
-                    variant="outline"
+                    className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
                     onClick={() => setIsAddEmployeeOpen(false)}
                   >
                     Cancel
@@ -848,9 +1026,9 @@ export default function HRDashboard() {
                   </Button>
                 </DialogFooter>
               </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+              </DialogContent>
+            </Dialog>
+          </div>
       );
     }
 
@@ -915,74 +1093,95 @@ export default function HRDashboard() {
 
         {/* Employee List */}
         <Card className="mt-8 bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-          <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
-            <h2 className="text-3xl font-bold text-blue-600">Employee Management</h2>
-            <Users className="h-15 w-15 text-blue-600" />
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Join Date</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {employees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell>{employee.employeeId}</TableCell>
-                  <TableCell>{employee.name}</TableCell>
-                  <TableCell>{employee.department.department_name}</TableCell>
-                  <TableCell>{employee.position.title}</TableCell>
-                  <TableCell>{employee.email}</TableCell>
-                  <TableCell>{employee.location}</TableCell>
-                  <TableCell>{employee.datehired.date}</TableCell>
-                  <TableCell>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="text-red-600 hover:text-white hover:bg-red-500"
-                          disabled={isDeleting === employee.employeeId}
-                        >
-                          {isDeleting === employee.employeeId ? (
-                            <span className="animate-spin">⏳</span>
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the employee
-                            and remove their data from our servers.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteEmployee(employee.employeeId)}
-                            className="bg-red-500 text-white hover:bg-red-700"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
+            <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
+              <h2 className="text-3xl font-bold text-blue-600">Employee Management</h2>
+              <Users className="h-15 w-15 text-blue-600" />
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Join Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {employees
+                  .filter((employee) => employee.status === "Active")
+                  .map((employee) => (
+                    <TableRow key={employee.id}>
+                      <TableCell>{employee.employeeId}</TableCell>
+                      <TableCell>{employee.name}</TableCell>
+                      <TableCell>{employee.department.department_name}</TableCell>
+                      <TableCell>{employee.position.title}</TableCell>
+                      <TableCell>{employee.email}</TableCell>
+                      <TableCell>{employee.location}</TableCell>
+                      <TableCell>{employee.datehired.date}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedQuarter("Q1")}
+                            className="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                          >
+                            View Quarters
+                          </Button>
+                          {selectedQuarter && (
+                            <QuarterlyReviewModal
+                              isOpen={true}
+                              onClose={() => setSelectedQuarter(null)}
+                              quarter={selectedQuarter}
+                            />
+                          )}
+                          {user?.role === "HR" && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="text-red-600 hover:text-white hover:bg-red-500"
+                                  disabled={isDeleting === employee.employeeId}
+                                >
+                                  {isDeleting === employee.employeeId ? (
+                                    <span className="animate-spin">⏳</span>
+                                  ) : (
+                                    <UserMinus className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the employee
+                                    and remove their data from our servers.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteEmployee(employee.employeeId)}
+                                    className="bg-red-500 text-white hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
     );
   };
 

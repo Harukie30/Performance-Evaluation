@@ -1239,13 +1239,14 @@ export default function DashboardPage() {
                 {user.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <div className="mt-3 lg:mt-0 text-center  lg:text-left flex-1 min-w-0 hidden lg:block">
+            <div className="mt-3 lg:mt-0 text-center lg:text-right flex-1 min-w-0 hidden lg:block">
               <h2 className="font-semibold text-gray-900 truncate text-sm md:text-base">
                 {user.name}
               </h2>
-              <p className="text-xs text-gray-500 truncate">{user.role}</p>
+              <p className="text-xs text-gray-500 left-5 truncate">{user.role}</p>
             </div>
           </div>
+
           {/* Footer */}
           <div className="p-3 lg:p-4 border-t border-gray-100">
             <Button
