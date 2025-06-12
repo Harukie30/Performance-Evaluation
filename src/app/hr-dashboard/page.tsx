@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Users, 
+import {
+  Users,
   UserPlus,
   UserMinus,
   FileText,
@@ -154,7 +154,9 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors duration-200"
                 >
                   <div>
-                    <h4 className="font-medium text-gray-900">{quarter.label}</h4>
+                    <h4 className="font-medium text-gray-900">
+                      {quarter.label}
+                    </h4>
                     <p className="text-sm text-gray-500">
                       {quarter.months} {currentYear}
                     </p>
@@ -168,7 +170,9 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
                           quarter.id as "Q1" | "Q2" | "Q3" | "Q4"
                         )
                       }
-                      disabled={!review?.status || review.status === "not_started"}
+                      disabled={
+                        !review?.status || review.status === "not_started"
+                      }
                       className="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                     >
                       View Details
@@ -205,7 +209,9 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
 
 export default function HRDashboard() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [selectedQuarter, setSelectedQuarter] = useState<"Q1" | "Q2" | "Q3" | "Q4" | null>(null);
+  const [selectedQuarter, setSelectedQuarter] = useState<
+    "Q1" | "Q2" | "Q3" | "Q4" | null
+  >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
@@ -264,12 +270,12 @@ export default function HRDashboard() {
 
   const loadEmployees = async () => {
     try {
-      const response = await fetch('/api/employees');
+      const response = await fetch("/api/employees");
       const data = await response.json();
       setEmployees(data);
       setIsLoading(false);
     } catch (error) {
-      console.error('Failed to load employees:', error);
+      console.error("Failed to load employees:", error);
       setIsLoading(false);
     }
   };
@@ -329,17 +335,17 @@ export default function HRDashboard() {
 
     setIsAdding(true);
     try {
-      const response = await fetch('/api/employees', {
-        method: 'POST',
+      const response = await fetch("/api/employees", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newEmployee),
       });
 
-      if (!response.ok) throw new Error('Failed to add employee');
+      if (!response.ok) throw new Error("Failed to add employee");
 
-      toast.success('Employee added successfully');
+      toast.success("Employee added successfully");
       setIsAddEmployeeOpen(false);
       setNewEmployee({
         name: "",
@@ -351,8 +357,8 @@ export default function HRDashboard() {
       });
       loadEmployees();
     } catch (error) {
-      toast.error('Failed to add employee');
-      console.error('Error adding employee:', error);
+      toast.error("Failed to add employee");
+      console.error("Error adding employee:", error);
     } finally {
       setIsAdding(false);
     }
@@ -362,16 +368,16 @@ export default function HRDashboard() {
     try {
       setIsDeleting(employeeId);
       const response = await fetch(`/api/employees/${employeeId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
-      if (!response.ok) throw new Error('Failed to delete employee');
+      if (!response.ok) throw new Error("Failed to delete employee");
 
-      toast.success('Employee deleted successfully');
+      toast.success("Employee deleted successfully");
       loadEmployees();
     } catch (error) {
-      toast.error('Failed to delete employee');
-      console.error('Error deleting employee:', error);
+      toast.error("Failed to delete employee");
+      console.error("Error deleting employee:", error);
     } finally {
       setIsDeleting(null);
     }
@@ -407,9 +413,12 @@ export default function HRDashboard() {
 
   // Calculate statistics
   const totalEmployees = employees.length;
-  const activeEmployees = employees.filter(e => e.status === "Active").length;
-  const inactiveEmployees = employees.filter(e => e.status !== "Active").length;
-  const activeRate = totalEmployees > 0 ? (activeEmployees / totalEmployees) * 100 : 0;
+  const activeEmployees = employees.filter((e) => e.status === "Active").length;
+  const inactiveEmployees = employees.filter(
+    (e) => e.status !== "Active"
+  ).length;
+  const activeRate =
+    totalEmployees > 0 ? (activeEmployees / totalEmployees) * 100 : 0;
 
   const stats = [
     {
@@ -444,22 +453,25 @@ export default function HRDashboard() {
 
   const renderContent = () => {
     if (activeTab === "dashboard") {
-  return (
+      return (
         <div className="space-y-6">
           {/* Welcome Section */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-              <img
-              src="/images/dataa.png"
-              alt="SMCT Logo"
-              className="h-15 lg:h-15 w-auto transition-opacity duration-300"
-            />
-            
+                <img
+                  src="/images/dataa.png"
+                  alt="SMCT Logo"
+                  className="h-15 lg:h-15 w-auto transition-opacity duration-300"
+                />
               </div>
               <div>
-                <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
-                <p className="text-blue-100">Here's what's happening with your HR dashboard today.</p>
+                <h1 className="text-4xl font-bold mb-2">
+                  Welcome back, {user?.name}!
+                </h1>
+                <p className="text-blue-100">
+                  Here's what's happening with your HR dashboard today.
+                </p>
               </div>
               <div className="bg-white/10 p-4 rounded-xl">
                 <Calendar className="h-8 w-8" />
@@ -472,8 +484,12 @@ export default function HRDashboard() {
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Total Employees</p>
-                  <h3 className="text-3xl font-bold text-blue-600">{employees.length}</h3>
+                  <p className="text-sm font-medium text-blue-600">
+                    Total Employees
+                  </p>
+                  <h3 className="text-3xl font-bold text-blue-600">
+                    {employees.length}
+                  </h3>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
@@ -482,9 +498,11 @@ export default function HRDashboard() {
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Active Employees</p>
+                  <p className="text-sm font-medium text-blue-600">
+                    Active Employees
+                  </p>
                   <h3 className="text-3xl font-bold text-blue-600">
-                    {employees.filter(emp => emp.status === "Active").length}
+                    {employees.filter((emp) => emp.status === "Active").length}
                   </h3>
                 </div>
                 <UserCheck className="h-8 w-8 text-blue-600" />
@@ -494,9 +512,14 @@ export default function HRDashboard() {
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Inactive Employees</p>
+                  <p className="text-sm font-medium text-blue-600">
+                    Inactive Employees
+                  </p>
                   <h3 className="text-3xl font-bold text-blue-600">
-                    {employees.filter(emp => emp.status === "Inactive").length}
+                    {
+                      employees.filter((emp) => emp.status === "Inactive")
+                        .length
+                    }
                   </h3>
                 </div>
                 <UserX className="h-8 w-8 text-blue-600" />
@@ -506,10 +529,17 @@ export default function HRDashboard() {
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Active Rate</p>
+                  <p className="text-sm font-medium text-blue-600">
+                    Active Rate
+                  </p>
                   <h3 className="text-3xl font-bold text-blue-600">
                     {employees.length > 0
-                      ? `${Math.round((employees.filter(emp => emp.status === "Active").length / employees.length) * 100)}%`
+                      ? `${Math.round(
+                          (employees.filter((emp) => emp.status === "Active")
+                            .length /
+                            employees.length) *
+                            100
+                        )}%`
                       : "0%"}
                   </h3>
                 </div>
@@ -521,7 +551,9 @@ export default function HRDashboard() {
           {/* Recent Activity Section */}
           <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
             <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-blue-600">Recent Activity</h2>
+              <h2 className="text-3xl font-bold text-blue-600">
+                Recent Activity
+              </h2>
               <Activity className="h-15 w-15 text-blue-600" />
             </div>
             <div className="p-6">
@@ -537,7 +569,9 @@ export default function HRDashboard() {
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{activity.description}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {activity.description}
+                      </p>
                       <p className="text-sm text-gray-500">
                         {activity.user} • {activity.timestamp}
                       </p>
@@ -563,20 +597,28 @@ export default function HRDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-6">
                 <div>
-                  <Label htmlFor="yourName" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="yourName"
+                    className="text-gray-700 font-medium"
+                  >
                     Your Name
                   </Label>
                   <Input
                     id="yourName"
                     type="text"
                     value={user?.name}
-                    onChange={(e) => setUser(user ? { ...user, name: e.target.value } : null)}
+                    onChange={(e) =>
+                      setUser(user ? { ...user, name: e.target.value } : null)
+                    }
                     className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="password" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="password"
+                    className="text-gray-700 font-medium"
+                  >
                     Password
                   </Label>
                   <div className="flex items-center space-x-2">
@@ -587,14 +629,20 @@ export default function HRDashboard() {
                       disabled
                       className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
-                    <Button variant="link" className="text-blue-500 hover:underline p-0 h-auto">
+                    <Button
+                      variant="link"
+                      className="text-blue-500 hover:underline p-0 h-auto"
+                    >
                       Change
                     </Button>
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="emailAddress" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="emailAddress"
+                    className="text-gray-700 font-medium"
+                  >
                     Email Address
                   </Label>
                   <div className="flex items-center space-x-2">
@@ -602,10 +650,17 @@ export default function HRDashboard() {
                       id="emailAddress"
                       type="email"
                       value={user?.username}
-                      onChange={(e) => setUser(user ? { ...user, username: e.target.value } : null)}
+                      onChange={(e) =>
+                        setUser(
+                          user ? { ...user, username: e.target.value } : null
+                        )
+                      }
                       className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
-                    <Button variant="link" className="text-blue-500 hover:underline p-0 h-auto">
+                    <Button
+                      variant="link"
+                      className="text-blue-500 hover:underline p-0 h-auto"
+                    >
                       Change
                     </Button>
                   </div>
@@ -623,7 +678,7 @@ export default function HRDashboard() {
             </div>
 
             <div className="mt-10 pt-6 border-t border-gray-200 flex justify-end space-x-4">
-                <Button
+              <Button
                 onClick={() => user && handleProfileUpdate(user)}
                 className="px-13 py-2 bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200"
               >
@@ -724,7 +779,6 @@ export default function HRDashboard() {
                   Completed Evaluations
                 </h2>
                 <div className="flex items-center gap-4">
-                  
                   <CheckCircle2 className="h-15 w-15 text-green-600" />
                 </div>
               </div>
@@ -776,7 +830,9 @@ export default function HRDashboard() {
       return (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-800">Employee Management</h1>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Employee Management
+            </h1>
             <Button
               onClick={() => setIsAddEmployeeOpen(true)}
               className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200"
@@ -788,7 +844,9 @@ export default function HRDashboard() {
 
           <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
             <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-blue-600">Active Employees</h2>
+              <h2 className="text-3xl font-bold text-blue-600">
+                Active Employees
+              </h2>
               <Users className="h-15 w-15 text-blue-600" />
             </div>
             <div className="p-6">
@@ -812,7 +870,9 @@ export default function HRDashboard() {
                         <TableCell>{employee.employeeId}</TableCell>
                         <TableCell>{employee.name}</TableCell>
                         <TableCell>{employee.position.title}</TableCell>
-                        <TableCell>{employee.department.department_name}</TableCell>
+                        <TableCell>
+                          {employee.department.department_name}
+                        </TableCell>
                         <TableCell>{employee.location}</TableCell>
                         <TableCell>
                           <span
@@ -848,7 +908,9 @@ export default function HRDashboard() {
                                   <Button
                                     variant="ghost"
                                     className="text-red-600 hover:text-white hover:bg-red-500"
-                                    disabled={isDeleting === employee.employeeId}
+                                    disabled={
+                                      isDeleting === employee.employeeId
+                                    }
                                   >
                                     {isDeleting === employee.employeeId ? (
                                       <span className="animate-spin">⏳</span>
@@ -859,16 +921,25 @@ export default function HRDashboard() {
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogTitle>
+                                      Are you sure?
+                                    </AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      This action cannot be undone. This will permanently delete the employee
-                                      and remove their data from our servers.
+                                      This action cannot be undone. This will
+                                      permanently delete the employee and remove
+                                      their data from our servers.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
                                     <AlertDialogAction
-                                      onClick={() => handleDeleteEmployee(employee.employeeId)}
+                                      onClick={() =>
+                                        handleDeleteEmployee(
+                                          employee.employeeId
+                                        )
+                                      }
                                       className="bg-red-500 text-white hover:bg-red-700"
                                     >
                                       Delete
@@ -887,105 +958,120 @@ export default function HRDashboard() {
           </Card>
 
           {/* Add Employee Dialog */}
-            <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
+          <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
             <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Add New Employee</DialogTitle>
+              <DialogHeader>
+                <DialogTitle>Add New Employee</DialogTitle>
                 <DialogDescription>
                   Fill in the details to add a new employee to the system.
                 </DialogDescription>
-                </DialogHeader>
+              </DialogHeader>
               <form onSubmit={handleAddEmployee} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      value={newEmployee.name}
+                  <Input
+                    id="name"
+                    value={newEmployee.name}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, name: e.target.value })
                     }
                     className={formErrors.name ? "border-red-500" : ""}
-                    />
+                  />
                   {formErrors.name && (
                     <p className="text-sm text-red-500">{formErrors.name}</p>
                   )}
-                  </div>
+                </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newEmployee.email}
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newEmployee.email}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, email: e.target.value })
                     }
                     className={formErrors.email ? "border-red-500" : ""}
-                    />
+                  />
                   {formErrors.email && (
                     <p className="text-sm text-red-500">{formErrors.email}</p>
                   )}
-                  </div>
+                </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={newEmployee.phone}
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={newEmployee.phone}
                     onChange={(e) =>
                       setNewEmployee({ ...newEmployee, phone: e.target.value })
                     }
                     className={formErrors.phone ? "border-red-500" : ""}
-                    />
+                  />
                   {formErrors.phone && (
                     <p className="text-sm text-red-500">{formErrors.phone}</p>
                   )}
-                  </div>
+                </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="position">Position</Label>
-                    <Input
-                      id="position"
-                      value={newEmployee.position}
+                  <Label htmlFor="position">Position</Label>
+                  <Input
+                    id="position"
+                    value={newEmployee.position}
                     onChange={(e) =>
-                      setNewEmployee({ ...newEmployee, position: e.target.value })
+                      setNewEmployee({
+                        ...newEmployee,
+                        position: e.target.value,
+                      })
                     }
                     className={formErrors.position ? "border-red-500" : ""}
-                    />
+                  />
                   {formErrors.position && (
-                    <p className="text-sm text-red-500">{formErrors.position}</p>
+                    <p className="text-sm text-red-500">
+                      {formErrors.position}
+                    </p>
                   )}
-                  </div>
+                </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Input
-                      id="department"
-                      value={newEmployee.department}
+                  <Label htmlFor="department">Department</Label>
+                  <Input
+                    id="department"
+                    value={newEmployee.department}
                     onChange={(e) =>
-                      setNewEmployee({ ...newEmployee, department: e.target.value })
+                      setNewEmployee({
+                        ...newEmployee,
+                        department: e.target.value,
+                      })
                     }
                     className={formErrors.department ? "border-red-500" : ""}
-                    />
+                  />
                   {formErrors.department && (
-                    <p className="text-sm text-red-500">{formErrors.department}</p>
+                    <p className="text-sm text-red-500">
+                      {formErrors.department}
+                    </p>
                   )}
-                  </div>
+                </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Input
-                      id="location"
-                      value={newEmployee.location}
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={newEmployee.location}
                     onChange={(e) =>
-                      setNewEmployee({ ...newEmployee, location: e.target.value })
+                      setNewEmployee({
+                        ...newEmployee,
+                        location: e.target.value,
+                      })
                     }
                     className={formErrors.location ? "border-red-500" : ""}
-                    />
+                  />
                   {formErrors.location && (
-                    <p className="text-sm text-red-500">{formErrors.location}</p>
+                    <p className="text-sm text-red-500">
+                      {formErrors.location}
+                    </p>
                   )}
-                  </div>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="Branch">Branch</Label>
@@ -993,12 +1079,17 @@ export default function HRDashboard() {
                     id="Branch"
                     value={newEmployee.location}
                     onChange={(e) =>
-                      setNewEmployee({ ...newEmployee, location: e.target.value })
+                      setNewEmployee({
+                        ...newEmployee,
+                        location: e.target.value,
+                      })
                     }
                     className={formErrors.location ? "border-red-500" : ""}
                   />
                   {formErrors.location && (
-                    <p className="text-sm text-red-500">{formErrors.location}</p>
+                    <p className="text-sm text-red-500">
+                      {formErrors.location}
+                    </p>
                   )}
                 </div>
 
@@ -1026,9 +1117,9 @@ export default function HRDashboard() {
                   </Button>
                 </DialogFooter>
               </form>
-              </DialogContent>
-            </Dialog>
-          </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       );
     }
 
@@ -1093,95 +1184,102 @@ export default function HRDashboard() {
 
         {/* Employee List */}
         <Card className="mt-8 bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-            <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-blue-600">Employee Management</h2>
-              <Users className="h-15 w-15 text-blue-600" />
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Join Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {employees
-                  .filter((employee) => employee.status === "Active")
-                  .map((employee) => (
-                    <TableRow key={employee.id}>
-                      <TableCell>{employee.employeeId}</TableCell>
-                      <TableCell>{employee.name}</TableCell>
-                      <TableCell>{employee.department.department_name}</TableCell>
-                      <TableCell>{employee.position.title}</TableCell>
-                      <TableCell>{employee.email}</TableCell>
-                      <TableCell>{employee.location}</TableCell>
-                      <TableCell>{employee.datehired.date}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedQuarter("Q1")}
-                            className="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                          >
-                            View Quarters
-                          </Button>
-                          {selectedQuarter && (
-                            <QuarterlyReviewModal
-                              isOpen={true}
-                              onClose={() => setSelectedQuarter(null)}
-                              quarter={selectedQuarter}
-                            />
-                          )}
-                          {user?.role === "HR" && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="text-red-600 hover:text-white hover:bg-red-500"
-                                  disabled={isDeleting === employee.employeeId}
+          <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
+            <h2 className="text-3xl font-bold text-blue-600">
+              Employee Management
+            </h2>
+            <Users className="h-15 w-15 text-blue-600" />
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Employee ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>Position</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Join Date</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {employees
+                .filter((employee) => employee.status === "Active")
+                .map((employee) => (
+                  <TableRow key={employee.id}>
+                    <TableCell>{employee.employeeId}</TableCell>
+                    <TableCell>{employee.name}</TableCell>
+                    <TableCell>{employee.department.department_name}</TableCell>
+                    <TableCell>{employee.position.title}</TableCell>
+                    <TableCell>{employee.email}</TableCell>
+                    <TableCell>{employee.location}</TableCell>
+                    <TableCell>{employee.datehired.date}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedQuarter("Q1")}
+                          className="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                        >
+                          View Quarters
+                        </Button>
+                        {selectedQuarter && (
+                          <QuarterlyReviewModal
+                            isOpen={true}
+                            onClose={() => setSelectedQuarter(null)}
+                            quarter={selectedQuarter}
+                          />
+                        )}
+                        {user?.role === "HR" && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="text-red-600 hover:text-white hover:bg-red-500"
+                                disabled={isDeleting === employee.employeeId}
+                              >
+                                {isDeleting === employee.employeeId ? (
+                                  <span className="animate-spin">⏳</span>
+                                ) : (
+                                  <UserMinus className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Are you sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will
+                                  permanently delete the employee and remove
+                                  their data from our servers.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDeleteEmployee(employee.employeeId)
+                                  }
+                                  className="bg-red-500 text-white hover:bg-red-700"
                                 >
-                                  {isDeleting === employee.employeeId ? (
-                                    <span className="animate-spin">⏳</span>
-                                  ) : (
-                                    <UserMinus className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the employee
-                                    and remove their data from our servers.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteEmployee(employee.employeeId)}
-                                    className="bg-red-500 text-white hover:bg-red-700"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </div>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
     );
   };
 
@@ -1189,16 +1287,24 @@ export default function HRDashboard() {
     <div className="flex h-screen bg-blue-200">
       {/* Sidebar */}
       <div className="fixed md:relative w-full md:w-20 lg:w-64 h-full transition-all duration-300 z-30">
-        <button 
+        <button
           className="md:hidden absolute top-4 right-4 p-2 z-40 text-gray-700 hover:bg-yellow-400 rounded-full"
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         >
-          {isSidebarOpen ? <XIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
+          {isSidebarOpen ? (
+            <XIcon className="w-5 h-5" />
+          ) : (
+            <MenuIcon className="w-5 h-5" />
+          )}
         </button>
 
-        <div className={`bg-yellow-100 shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}>
+        <div
+          className={`bg-yellow-100 shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
+            isSidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }`}
+        >
           <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
             <div className="mb-6 lg:mb-8 flex justify-center">
               <img
@@ -1258,7 +1364,9 @@ export default function HRDashboard() {
               onClick={handleLogout}
             >
               <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-              <span className="ml-0 lg:ml-2 hidden lg:inline-block">Logout</span>
+              <span className="ml-0 lg:ml-2 hidden lg:inline-block">
+                Logout
+              </span>
             </Button>
           </div>
         </div>
@@ -1270,4 +1378,4 @@ export default function HRDashboard() {
       </div>
     </div>
   );
-} 
+}

@@ -209,12 +209,12 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
   const [newEmployee, setNewEmployee] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    position: '',
-    department: '',
-    location: '',
+    name: "",
+    email: "",
+    phone: "",
+    position: "",
+    department: "",
+    location: "",
   });
   const [formErrors, setFormErrors] = useState<{
     name: string;
@@ -224,12 +224,12 @@ export default function DashboardPage() {
     department: string;
     location: string;
   }>({
-    name: '',
-    email: '',
-    phone: '',
-    position: '',
-    department: '',
-    location: '',
+    name: "",
+    email: "",
+    phone: "",
+    position: "",
+    department: "",
+    location: "",
   });
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -367,7 +367,7 @@ export default function DashboardPage() {
         const userData = await response.json();
         console.log("User data:", userData); // Debug log
         setUser(userData);
-        
+
         // Add a small delay to show the loading screen
         setTimeout(() => {
           setIsLoading(false);
@@ -416,31 +416,31 @@ export default function DashboardPage() {
       // After successful addition, reset the form and close the dialog
       setIsAddEmployeeOpen(false);
       setNewEmployee({
-        name: '',
-        email: '',
-        phone: '',
-        position: '',
-        department: '',
-        location: '',
+        name: "",
+        email: "",
+        phone: "",
+        position: "",
+        department: "",
+        location: "",
       });
       setFormErrors({
-        name: '',
-        email: '',
-        phone: '',
-        position: '',
-        department: '',
-        location: '',
+        name: "",
+        email: "",
+        phone: "",
+        position: "",
+        department: "",
+        location: "",
       });
       loadEmployees();
     } catch (error) {
       console.error("Failed to add employee:", error);
       setFormErrors({
         name: error instanceof Error ? error.message : "An error occurred",
-        email: '',
-        phone: '',
-        position: '',
-        department: '',
-        location: '',
+        email: "",
+        phone: "",
+        position: "",
+        department: "",
+        location: "",
       });
     } finally {
       setIsAdding(false);
@@ -595,8 +595,6 @@ export default function DashboardPage() {
                     </Button>
                   </div>
                 </div>
-            
-                
               </div>
 
               {/* Avatar Upload */}
@@ -770,7 +768,10 @@ export default function DashboardPage() {
                 </h2>
                 <div className="flex items-center gap-4">
                   {user?.role === "HR" && (
-                    <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
+                    <Dialog
+                      open={isAddEmployeeOpen}
+                      onOpenChange={setIsAddEmployeeOpen}
+                    >
                       <DialogTrigger asChild>
                         <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black">
                           <UserPlus className="h-5 w-5 mr-2" />
@@ -788,12 +789,22 @@ export default function DashboardPage() {
                               id="name"
                               value={newEmployee.name}
                               onChange={(e) => {
-                                setNewEmployee({ ...newEmployee, name: e.target.value });
-                                if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
+                                setNewEmployee({
+                                  ...newEmployee,
+                                  name: e.target.value,
+                                });
+                                if (formErrors.name)
+                                  setFormErrors({ ...formErrors, name: "" });
                               }}
-                              className={formErrors.name ? "border-red-500" : ""}
+                              className={
+                                formErrors.name ? "border-red-500" : ""
+                              }
                             />
-                            {formErrors.name && <p className="text-sm text-red-500">{formErrors.name}</p>}
+                            {formErrors.name && (
+                              <p className="text-sm text-red-500">
+                                {formErrors.name}
+                              </p>
+                            )}
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
@@ -802,12 +813,22 @@ export default function DashboardPage() {
                               type="email"
                               value={newEmployee.email}
                               onChange={(e) => {
-                                setNewEmployee({ ...newEmployee, email: e.target.value });
-                                if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
+                                setNewEmployee({
+                                  ...newEmployee,
+                                  email: e.target.value,
+                                });
+                                if (formErrors.email)
+                                  setFormErrors({ ...formErrors, email: "" });
                               }}
-                              className={formErrors.email ? "border-red-500" : ""}
+                              className={
+                                formErrors.email ? "border-red-500" : ""
+                              }
                             />
-                            {formErrors.email && <p className="text-sm text-red-500">{formErrors.email}</p>}
+                            {formErrors.email && (
+                              <p className="text-sm text-red-500">
+                                {formErrors.email}
+                              </p>
+                            )}
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="phone">Phone</Label>
@@ -816,12 +837,22 @@ export default function DashboardPage() {
                               type="tel"
                               value={newEmployee.phone}
                               onChange={(e) => {
-                                setNewEmployee({ ...newEmployee, phone: e.target.value });
-                                if (formErrors.phone) setFormErrors({ ...formErrors, phone: '' });
+                                setNewEmployee({
+                                  ...newEmployee,
+                                  phone: e.target.value,
+                                });
+                                if (formErrors.phone)
+                                  setFormErrors({ ...formErrors, phone: "" });
                               }}
-                              className={formErrors.phone ? "border-red-500" : ""}
+                              className={
+                                formErrors.phone ? "border-red-500" : ""
+                              }
                             />
-                            {formErrors.phone && <p className="text-sm text-red-500">{formErrors.phone}</p>}
+                            {formErrors.phone && (
+                              <p className="text-sm text-red-500">
+                                {formErrors.phone}
+                              </p>
+                            )}
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="position">Position</Label>
@@ -829,12 +860,25 @@ export default function DashboardPage() {
                               id="position"
                               value={newEmployee.position}
                               onChange={(e) => {
-                                setNewEmployee({ ...newEmployee, position: e.target.value });
-                                if (formErrors.position) setFormErrors({ ...formErrors, position: '' });
+                                setNewEmployee({
+                                  ...newEmployee,
+                                  position: e.target.value,
+                                });
+                                if (formErrors.position)
+                                  setFormErrors({
+                                    ...formErrors,
+                                    position: "",
+                                  });
                               }}
-                              className={formErrors.position ? "border-red-500" : ""}
+                              className={
+                                formErrors.position ? "border-red-500" : ""
+                              }
                             />
-                            {formErrors.position && <p className="text-sm text-red-500">{formErrors.position}</p>}
+                            {formErrors.position && (
+                              <p className="text-sm text-red-500">
+                                {formErrors.position}
+                              </p>
+                            )}
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="department">Department</Label>
@@ -842,12 +886,25 @@ export default function DashboardPage() {
                               id="department"
                               value={newEmployee.department}
                               onChange={(e) => {
-                                setNewEmployee({ ...newEmployee, department: e.target.value });
-                                if (formErrors.department) setFormErrors({ ...formErrors, department: '' });
+                                setNewEmployee({
+                                  ...newEmployee,
+                                  department: e.target.value,
+                                });
+                                if (formErrors.department)
+                                  setFormErrors({
+                                    ...formErrors,
+                                    department: "",
+                                  });
                               }}
-                              className={formErrors.department ? "border-red-500" : ""}
+                              className={
+                                formErrors.department ? "border-red-500" : ""
+                              }
                             />
-                            {formErrors.department && <p className="text-sm text-red-500">{formErrors.department}</p>}
+                            {formErrors.department && (
+                              <p className="text-sm text-red-500">
+                                {formErrors.department}
+                              </p>
+                            )}
                           </div>
                           <div className="grid gap-2">
                             <Label htmlFor="location">Location</Label>
@@ -855,33 +912,46 @@ export default function DashboardPage() {
                               id="location"
                               value={newEmployee.location}
                               onChange={(e) => {
-                                setNewEmployee({ ...newEmployee, location: e.target.value });
-                                if (formErrors.location) setFormErrors({ ...formErrors, location: '' });
+                                setNewEmployee({
+                                  ...newEmployee,
+                                  location: e.target.value,
+                                });
+                                if (formErrors.location)
+                                  setFormErrors({
+                                    ...formErrors,
+                                    location: "",
+                                  });
                               }}
-                              className={formErrors.location ? "border-red-500" : ""}
+                              className={
+                                formErrors.location ? "border-red-500" : ""
+                              }
                             />
-                            {formErrors.location && <p className="text-sm text-red-500">{formErrors.location}</p>}
+                            {formErrors.location && (
+                              <p className="text-sm text-red-500">
+                                {formErrors.location}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             onClick={() => {
                               setIsAddEmployeeOpen(false);
                               setFormErrors({
-                                name: '',
-                                email: '',
-                                phone: '',
-                                position: '',
-                                department: '',
-                                location: '',
+                                name: "",
+                                email: "",
+                                phone: "",
+                                position: "",
+                                department: "",
+                                location: "",
                               });
                             }}
                             disabled={isAdding}
                           >
                             Cancel
                           </Button>
-                          <Button 
+                          <Button
                             onClick={handleAddEmployee}
                             disabled={isAdding}
                             className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black"
@@ -892,7 +962,7 @@ export default function DashboardPage() {
                                 Adding...
                               </>
                             ) : (
-                              'Add Employee'
+                              "Add Employee"
                             )}
                           </Button>
                         </div>
@@ -922,7 +992,9 @@ export default function DashboardPage() {
                       <TableRow key={employee.id}>
                         <TableCell>{employee.employeeId}</TableCell>
                         <TableCell>{employee.name}</TableCell>
-                        <TableCell>{employee.department.department_name}</TableCell>
+                        <TableCell>
+                          {employee.department.department_name}
+                        </TableCell>
                         <TableCell>{employee.position.title}</TableCell>
                         <TableCell>{employee.email}</TableCell>
                         <TableCell>{employee.location}</TableCell>
@@ -936,7 +1008,9 @@ export default function DashboardPage() {
                                   <Button
                                     variant="ghost"
                                     className="text-red-600 hover:text-white hover:bg-red-500"
-                                    disabled={isDeleting === employee.employeeId}
+                                    disabled={
+                                      isDeleting === employee.employeeId
+                                    }
                                   >
                                     {isDeleting === employee.employeeId ? (
                                       <span className="animate-spin">⏳</span>
@@ -947,16 +1021,25 @@ export default function DashboardPage() {
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogTitle>
+                                      Are you sure?
+                                    </AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      This action cannot be undone. This will permanently delete the employee
-                                      and remove their data from our servers.
+                                      This action cannot be undone. This will
+                                      permanently delete the employee and remove
+                                      their data from our servers.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
                                     <AlertDialogAction
-                                      onClick={() => handleDeleteEmployee(employee.employeeId)}
+                                      onClick={() =>
+                                        handleDeleteEmployee(
+                                          employee.employeeId
+                                        )
+                                      }
                                       className="bg-red-500 text-white hover:bg-red-700"
                                     >
                                       Delete
@@ -1243,7 +1326,9 @@ export default function DashboardPage() {
               <h2 className="font-semibold text-gray-900 truncate text-sm md:text-base">
                 {user.name}
               </h2>
-              <p className="text-xs text-gray-500 left-5 truncate">{user.role}</p>
+              <p className="text-xs text-gray-500 left-5 truncate">
+                {user.role}
+              </p>
             </div>
           </div>
 
