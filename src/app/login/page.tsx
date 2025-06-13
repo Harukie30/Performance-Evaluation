@@ -50,6 +50,8 @@ export default function LoginPage() {
   });
 
   const handleLogin = async (data: LoginFormValues) => {
+    console.log("Form submitted with data:", data);
+    
     if (isLocked) {
       const remainingTime = Math.ceil((lockoutTime! - Date.now()) / 1000);
       toast.error(`Account is locked. Please try again in ${remainingTime} seconds.`);
@@ -57,32 +59,78 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
+    console.log("Starting login process...");
 
     try {
-      const response = await authAPI.login(data.email, data.password);
-      const responseData = response.data;
+      if (!data.email || !data.password) {
+        throw new Error("Email and password are required");
+      }
 
-      // Store remember me preference
+      console.log("Attempting login with:", { email: data.email });
+      const response = await authAPI.login(data.email, data.password);
+      console.log("Raw login response:", response);
+
+      if (!response || !response.data) {
+        console.error("No response or data received");
+        throw new Error("No response from server");
+      }
+
+      console.log("Login response data:", response.data);
+
+      if (!response.data.user) {
+        console.error("No user data in response");
+        throw new Error("Invalid response format from server");
+      }
+
+      const userData = response.data.user;
+      console.log("User data received:", {
+        id: userData.id,
+        email: userData.email,
+        role: userData.role,
+        name: userData.name
+      });
+
+      // Store remember me preference and user data only if remember me is checked
       if (data.rememberMe) {
         localStorage.setItem("rememberMe", "true");
+        localStorage.setItem("userEmail", userData.email);
+        localStorage.setItem("userRole", userData.role);
+        localStorage.setItem("userName", userData.name);
       } else {
+        // Clear any existing stored data
         localStorage.removeItem("rememberMe");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userName");
       }
 
       toast.success("Login successful!");
       
-      // Redirect based on user role
-      if (responseData.role === "HR") {
+      // Redirect based on user role (case-insensitive comparison)
+      const userRole = userData.role.toLowerCase();
+      if (userRole === "hr") {
+        console.log("User is HR, redirecting to HR dashboard");
         router.push("/hr-dashboard");
+      } else if (userRole === "evaluator") {
+        console.log("User is Evaluator, redirecting to evaluator dashboard");
+        router.push("/evaluator-dashboard");
       } else {
+        console.log("User is regular user, redirecting to dashboard");
         router.push("/dashboard");
       }
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Login error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        stack: error.stack
+      });
       
       setLoginAttempts((prev) => {
         const newAttempts = prev + 1;
+        console.log(`Login attempt ${newAttempts} failed`);
         if (newAttempts >= 5) {
+          console.log("Account locked due to too many failed attempts");
           setIsLocked(true);
           setLockoutTime(Date.now() + 15 * 60 * 1000); // 15 minutes lockout
           setTimeout(() => {
@@ -94,7 +142,8 @@ export default function LoginPage() {
         return newAttempts;
       });
 
-      toast.error(error.response?.data?.error || "Invalid credentials");
+      const errorMessage = error.response?.data?.error || error.message || "Invalid credentials";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +215,22 @@ export default function LoginPage() {
             </motion.div>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6">
+              <form 
+                onSubmit={(e) => {
+                  console.log("Form submit event triggered");
+                  e.preventDefault();
+                  form.handleSubmit(handleLogin)();
+                }} 
+                className="space-y-6"
+                onKeyPress={(e) => {
+                  console.log("Key pressed:", e.key);
+                  if (e.key === 'Enter' && !isLoading && !isLocked) {
+                    console.log("Enter key pressed, submitting form");
+                    e.preventDefault();
+                    form.handleSubmit(handleLogin)();
+                  }
+                }}
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -253,7 +317,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full bg-blue-500 text-white hover:bg-green-500 transition-colors"
                   disabled={isLoading || isLocked}
                 >
                   {isLoading ? (

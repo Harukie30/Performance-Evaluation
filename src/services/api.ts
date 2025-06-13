@@ -23,6 +23,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Clear any stored user data
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("userName");
       // Handle unauthorized access
       window.location.href = '/login';
     }
@@ -32,13 +36,47 @@ api.interceptors.response.use(
 
 // Auth API calls
 export const authAPI = {
-  login: (email: string, password: string) => 
-    api.post('/auth/login', { email, password }),
+  login: async (email: string, password: string) => {
+    try {
+      console.log("Making login API call...");
+      const response = await api.post('/auth/login', { email, password });
+      console.log("Login API response:", response);
+      return response;
+    } catch (error: any) {
+      console.error("Login API error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      throw error;
+    }
+  },
   register: (userData: { email: string; password: string; role: string }) =>
     api.post('/auth/register', userData),
-  me: () => api.get('/auth/me'),
+  me: async () => {
+    try {
+      const response = await api.get('/auth/me');
+      return response;
+    } catch (error) {
+      console.error("Get current user error:", error);
+      throw error;
+    }
+  },
   getCurrentUser: () => api.get('/auth/me'),
-  logout: () => api.post('/auth/logout'),
+  logout: async () => {
+    try {
+      await api.post('/auth/logout');
+      // Clear any stored user data
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("userName");
+      window.location.href = '/login';
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if the API call fails, redirect to login
+      window.location.href = '/login';
+    }
+  },
 };
 
 // Employee API calls

@@ -31,14 +31,14 @@ export async function POST(request: Request) {
     })).toString('base64');
 
     // Set the token in a cookie
-    const response = NextResponse.json(user);
+    const response = NextResponse.json({ user });
     response.cookies.set({
       name: "token",
       value: token,
       httpOnly: true,
       path: "/",
       maxAge: 86400, // 24 hours
-      sameSite: "strict",
+      sameSite: "lax",
       secure: process.env.NODE_ENV === "production"
     });
 

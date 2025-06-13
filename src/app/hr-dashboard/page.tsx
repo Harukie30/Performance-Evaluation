@@ -250,25 +250,33 @@ export default function HRDashboard() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await authAPI.getCurrentUser();
-        if (response.data) {
-          setUser(response.data);
-          await loadEmployees();
-          await loadEvaluations();
-          await loadActivities();
-        } else {
-          router.push("/login");
+        const response = await authAPI.me();
+        const userData = response.data;
+        
+        if (!userData || userData.role.toLowerCase() !== 'hr') {
+          console.log("Unauthorized access, redirecting to login");
+          router.push('/login');
+          return;
         }
+
+        setUser(userData);
+        setIsLoading(false);
       } catch (error) {
         console.error("Auth check failed:", error);
-        router.push("/login");
-      } finally {
-        setIsLoading(false);
+        router.push('/login');
       }
     };
 
     checkAuth();
   }, [router]);
+
+  useEffect(() => {
+    if (user) {
+      loadEmployees();
+      loadEvaluations();
+      loadActivities();
+    }
+  }, [user]);
 
   const loadEmployees = async () => {
     try {

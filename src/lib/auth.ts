@@ -12,7 +12,7 @@ const USERS = [
   {
     id: "2",
     email: "hr@smct.com",
-    password: "hr123",
+    password: "hr123456",
     role: "HR",
     name: "HR Manager",
     department: "Human Resources",
@@ -29,7 +29,7 @@ const USERS = [
   {
     id: "3",
     email: "evaluator@smct.com",
-    password: "eval123",
+    password: "eval12345",
     role: "evaluator",
     name: "John Evaluator",
     department: "Operations",
@@ -52,10 +52,13 @@ export const auth = {
       throw new Error("Invalid email or password");
     }
 
+    // Normalize the role to uppercase for consistency
+    const normalizedRole = user.role.toUpperCase();
+
     return {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: normalizedRole,
       name: user.name,
       department: user.department,
       permissions: user.permissions
