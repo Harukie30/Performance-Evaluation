@@ -223,15 +223,14 @@ export default function PerformanceForm4({
                   </td>
 
                   <td className="p-2 border align-top">
-                    Actively participates in team meetings, projects, and
-                    collaborative activities
+                    <div className="text-md text-black">
+                      Actively participates in team activities and contributes to team goals
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md">
-                      Welcomes changes in work processes, procedures, or tools
-                      without resistance. Maintains a cooperative attitude when
-                      asked to adjust to new ways of working.
-                    </p>
+                    <div className="text-md text-black">
+                      Engages in team discussions, shares ideas, and supports team initiatives
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -292,17 +291,14 @@ export default function PerformanceForm4({
                   </td>
 
                   <td className="p-2 border align-top">
-                    Interacts with coworkers in a positive and constructive
-                    manner. Contributes to fostering a positive and inclusive
-                    team culture
+                    <div className="text-md text-black">
+                      Promotes a positive and collaborative team environment
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md ">
-                      Quickly adjusts to changes in job assignments, schedules,
-                      or unexpected demands. Helps cover additional
-                      responsibilities during staffing shortages or high
-                      workloads.
-                    </p>
+                    <div className="text-md text-black">
+                      Encourages teamwork, celebrates team successes, and helps resolve conflicts
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -363,14 +359,14 @@ export default function PerformanceForm4({
                   </td>
 
                   <td className="p-2 border align-top">
-                    Communicates openly and clearly with team members
+                    <div className="text-md text-black">
+                      Communicates openly and clearly with team members
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md">
-                      Remains focused and effective during periods of high
-                      stress or uncertainty. Completes tasks or meets deadlines
-                      when faced with unforeseen obstacles.
-                    </p>
+                    <div className="text-md text-black">
+                      Shares information effectively, listens actively, and provides constructive feedback
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField

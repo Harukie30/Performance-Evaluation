@@ -216,10 +216,14 @@ export default function PerformanceForm6({
                   </td>
 
                   <td className="p-2 border align-top">
-                    Follows Company Policies
+                    <div className="text-md text-black">
+                      Demonstrates honesty and integrity in all actions
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-md">
-                    Complies with company rules, regulations, and memorandums
+                    <div className="text-md text-black">
+                      Acts with honesty, maintains confidentiality, and upholds ethical standards
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -281,11 +285,14 @@ export default function PerformanceForm6({
                     &ldquo;Professionalism (L.E.A.D.E.R.)&rdquo;
                   </td>
                   <td className="p-2 border align-top">
-                    Professionalism (L.E.A.D.E.R.)
+                    <div className="text-md text-black">
+                      Maintains professional conduct and appearance
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-md">
-                    Maintains a high level of professionalism in all work
-                    interactions
+                    <div className="text-md text-black">
+                      Presents a professional image, demonstrates appropriate behavior, and represents the company positively
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -347,14 +354,18 @@ export default function PerformanceForm6({
                     &ldquo;Accountability for Mistakes (L.E.A.D.E.R.)&rdquo;
                   </td>
                   <td className="p-2 border align-top">
-                    Takes responsibility for errors and actively works to
-                    correct mistakes
+                    <div className="text-md text-black">
+                      Takes responsibility for errors and actively works to
+                      correct mistakes
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-md">
-                    Acknowledges errors promptly, communicates about corrective
-                    actions, and learns from the experience. Takes ownership of
-                    mistakes and actively seeks ways to prevent future
-                    occurences.
+                    <div className="text-md text-black">
+                      Acknowledges errors promptly, communicates about corrective
+                      actions, and learns from the experience. Takes ownership of
+                      mistakes and actively seeks ways to prevent future
+                      occurences.
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -416,13 +427,17 @@ export default function PerformanceForm6({
                     &ldquo;Respect for Others (L.E.A.D.E.R.)&rdquo;
                   </td>
                   <td className="p-2 border align-top">
-                    Treats all individuals fairly and with respect, regardless
-                    of background or position
+                    <div className="text-md text-black">
+                      Treats all individuals fairly and with respect, regardless
+                      of background or position
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-md">
-                    Demonstrates unbiased decision-making and avoids favoritism
-                    in interactions with team members. Treats all coworkers and
-                    suppliers respectfully, with dignity and fairness.
+                    <div className="text-md text-black">
+                      Demonstrates unbiased decision-making and avoids favoritism
+                      in interactions with team members. Treats all coworkers and
+                      suppliers respectfully, with dignity and fairness.
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField

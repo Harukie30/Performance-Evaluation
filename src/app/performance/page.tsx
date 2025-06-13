@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Stepper } from "@/components/ui/stepper";
@@ -13,26 +13,22 @@ import PerformanceForm6 from "@/components/performance-form6";
 import PerformanceForm7 from "@/components/performance-form7";
 import FinalResult from "@/components/FinalResult";
 import { PerformanceFormValues } from "@/lib/validation-schema/form-schema";
+import { useSearchParams } from "next/navigation";
 
 export default function PerformanceReviewPage() {
   const [activePart, setActivePart] = useState(1);
   const totalSteps = 8;
-
   const [formData, setFormData] = useState<PerformanceFormValues>({
     employeeId: "",
     employeeName: 0,
     position: "",
     department: "",
+    immediateSupervisorInput: "",
+    performanceCoverage: "",
     reviewDate: new Date(),
     datehired: new Date(),
     reviewType: "quarterly",
-    reviewPeriod: "Q1 2023",
-    immediateSupervisorInput: "",
-    performanceCoverage: "",
-    ForRegular: "Q1 2023",
-    jobKnowledge: 0,
-    qualityOfWork: 0,
-    promptnessOfWork: 0,
+    reviewPeriod: "",
     attendance: 0,
     punctuality: 0,
     correctiveActionWarningReprimandsOralOrWritten: 0,
@@ -41,7 +37,20 @@ export default function PerformanceReviewPage() {
     courteous: 0,
     communication: 0,
     initiative: 0,
-    // Quality of Work section
+    jobKnowledge: 0,
+    promptnessOfWork: 0,
+    qualityOfWork: 0,
+    jobKnowledgeComments: "",
+    qualityofworkComments: "",
+    promptnessofworkComments: "",
+    punctualityComments: "",
+    attendanceComments: "",
+    correctiveactionComments: "",
+    honestyComments: "",
+    loyaltyComments: "",
+    courteousComments: "",
+    communicationComments: "",
+    initiativeComments: "",
     qualityMeetsStandards: 0,
     qualityMeetsStandardsComments: "",
     qualityTimeliness: 0,
@@ -52,14 +61,12 @@ export default function PerformanceReviewPage() {
     qualityConsistencyComments: "",
     qualityJobTargets: 0,
     qualityJobTargetsComments: "",
-    // Adaptability section
     adaptabilityOpenness: 0,
     adaptabilityOpennessComments: "",
     adaptabilityFlexibility: 0,
     adaptabilityFlexibilityComments: "",
     adaptabilityResilience: 0,
     adaptabilityResilienceComments: "",
-    // Part IV - Teamwork
     activeParticipationScore: 0,
     activeParticipationRating: "N/A",
     activeParticipationExample: "",
@@ -72,7 +79,6 @@ export default function PerformanceReviewPage() {
     effectiveCommunicationRating: "N/A",
     effectiveCommunicationExample: "",
     effectiveCommunicationExplanation: "",
-    // Part V - Reliability
     consistentAttendanceScore: 0,
     consistentAttendanceExplanation: "",
     punctualityScore: 0,
@@ -81,7 +87,6 @@ export default function PerformanceReviewPage() {
     followsThroughExplanation: "",
     reliableHandlingScore: 0,
     reliableHandlingExplanation: "",
-    // Part VI - Ethical & Professional Behavior
     ethicalFollowsPoliciesScore: 0,
     ethicalFollowsPoliciesExplanation: "",
     ethicalProfessionalismScore: 0,
@@ -90,7 +95,6 @@ export default function PerformanceReviewPage() {
     ethicalAccountabilityExplanation: "",
     ethicalRespectScore: 0,
     ethicalRespectExplanation: "",
-    // Part VII - Customer Service
     customerListeningScore: 0,
     customerListeningExplanation: "",
     customerProblemSolvingScore: 0,
@@ -101,7 +105,9 @@ export default function PerformanceReviewPage() {
     customerProfessionalAttitudeExplanation: "",
     customerTimelyResolutionScore: 0,
     customerTimelyResolutionExplanation: "",
-    // Part VIII - Overall Assessment
+    overallTeamworkScore: 0,
+    overallReliabilityScore: 0,
+    overallCustomerServiceScore: 0,
     overallPerformanceScore: 0,
     overallPerformanceRating: "N/A",
     overallPerformanceExplanation: "",
@@ -109,27 +115,31 @@ export default function PerformanceReviewPage() {
     areasForImprovement: "",
     developmentGoals: "",
     additionalComments: "",
-    // Comments
-    jobKnowledgeComments: "",
-    qualityofworkComments: "",
-    promptnessofworkComments: "",
-    punctualityComments: "",
-    attendanceComments: "",
-    correctiveactionComments: "",
-    honestyComments: "",
-    loyaltyComments: "",
-    courteousComments: "",
-    communicationComments: "",
-    initiativeComments: "",
+    comments: "",
     strengths: "",
     improvements: "",
-    goals: "",
-    comments: "",
-    // Calculated Overall Scores
-    overallTeamworkScore: 0,
-    overallReliabilityScore: 0,
-    overallCustomerServiceScore: 0,
+    goals: ""
   });
+  const searchParams = useSearchParams();
+  
+  // Get employee data from URL parameters
+  const employeeId = searchParams.get('employeeId');
+  const employeeName = searchParams.get('employeeName');
+  const department = searchParams.get('department');
+  const position = searchParams.get('position');
+
+  // Pre-fill form data if URL parameters exist
+  useEffect(() => {
+    if (employeeId && employeeName && department && position) {
+      setFormData(prevData => ({
+        ...prevData,
+        employeeId: decodeURIComponent(employeeId),
+        employeeName: parseInt(decodeURIComponent(employeeName)),
+        department: decodeURIComponent(department),
+        position: decodeURIComponent(position)
+      }));
+    }
+  }, [employeeId, employeeName, department, position]);
 
   const handleFormComplete = (data: Partial<PerformanceFormValues>) => {
     setFormData((prevData) => {

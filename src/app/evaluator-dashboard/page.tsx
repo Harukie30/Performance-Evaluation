@@ -291,8 +291,12 @@ export default function EvaluatorDashboard() {
     setActiveTab(tab);
   };
 
-  const handleNewEvaluation = () => {
-    router.push("/performance");
+  const handleNewEvaluation = (employee?: Employee) => {
+    if (employee) {
+      router.push(`/performance?employeeId=${encodeURIComponent(employee.employeeId)}&employeeName=${encodeURIComponent(employee.id.toString())}&department=${encodeURIComponent(employee.department.department_name)}&position=${encodeURIComponent(employee.position.title)}`);
+    } else {
+      router.push('/performance');
+    }
   };
 
   const handleViewEvaluation = (id: string) => {
@@ -312,11 +316,11 @@ export default function EvaluatorDashboard() {
   // Calculate statistics
   const stats: Stat[] = [
     {
-      title: "Total Evaluations",
-      value: evaluations.length,
+      title: "Number of Employees",
+      value: employees.length,
       icon: <Users className="h-6 w-6" />,
       color: "bg-blue-100 text-blue-600",
-      description: "Total number of evaluations",
+      description: "Total number of employees in the system",
     },
     {
       title: "Completed",
@@ -992,9 +996,9 @@ export default function EvaluatorDashboard() {
                           <Button
                             className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
                             size="sm"
-                            onClick={() => handleNewEvaluation()}
+                            onClick={() => handleNewEvaluation(employee)}
                           >
-                            New Evaluation
+                            Evaluate
                           </Button>
                         </div>
                       </TableCell>
@@ -1078,7 +1082,7 @@ export default function EvaluatorDashboard() {
             </div>
 
             <Button
-              onClick={handleNewEvaluation}
+              onClick={() => handleNewEvaluation()}
               className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
             >
               New Evaluation

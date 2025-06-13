@@ -216,17 +216,17 @@ export default function PerformanceForm7({
                     Listening & Understanding
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Listens to customers and displays understanding of
                       customer needs and concerns
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Repeats or summarizes customer concerns to ensure complete
                       understanding before responding. Expresses genuine concern
                       and seeks to understand the customer`s perspective.
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -289,17 +289,17 @@ export default function PerformanceForm7({
                     Problem-Solving for Customer Satisfaction
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Proactively identifies and solves customer problems to
                       ensure satisfaction
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Takes initiative to resolve issues and prevent future
                       challenges for the customer. Offers alternative solutions
                       when standard resolutions are not enough.
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -362,18 +362,18 @@ export default function PerformanceForm7({
                     Product Knowledge for Customer Support (L.E.A.D.E.R)
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Possesses comprehensive product knowledge to assist
                       customers effectively
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Demonstrates a deep understanding of products and/or
                       services, enabling accurate and helpful guidance. Suggests
                       the most suitable product or service based on customer
                       requirements.
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -436,17 +436,17 @@ export default function PerformanceForm7({
                     Positive and Professional Attitude (L.E.A.D.E.R)
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Maintains a positive and professional demeanor,
                       particularly during customer interactions
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Represents the organization positively. Remains courteous
                       and patient, even with challenging customers or in
                       stressful situations.
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -509,16 +509,16 @@ export default function PerformanceForm7({
                     Timely Resolution of Customer Issues (L.E.A.D.E.R)
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Resolves customer issues promptly and efficiently
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Addresses and resolves customer complaints or concerns
                       within established timeframes. Ensures follow-ups are
                       conducted for unresolved issues until completion.
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField

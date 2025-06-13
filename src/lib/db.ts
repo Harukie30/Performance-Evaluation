@@ -40,7 +40,7 @@ interface PerformanceReview {
   dateHired?: string;
   immediateSupervisor?: string;
   performanceCoverage?: string;
-  // ... other fields from your schema
+  submittedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -205,13 +205,13 @@ export default function PerformanceForm5({
                     Consistent Attendance
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Demonstrates regular attendance by being present at work
                       as scheduled
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Has not taken any unplanned absences and follows the
                       company`s attendance policy.
                       <br />
@@ -226,7 +226,7 @@ export default function PerformanceForm5({
                       (4) 2 absences in a quarter
                       <br />
                       (5) 1 absence or no absence in a quarter
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -290,13 +290,13 @@ export default function PerformanceForm5({
                     Punctuality
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Arrives at work and meetings on time or before the
                       scheduled time
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Consistently arrives at work on time, ready to begin work
                       promptly.
                       <br />
@@ -311,7 +311,7 @@ export default function PerformanceForm5({
                       (4) 2-3 lates in a month
                       <br />
                       (5) 1 late or never late in a month
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -373,16 +373,16 @@ export default function PerformanceForm5({
                     Follows Through on Commitments
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Follows through on assignments from and commitments made
                       to coworkers or superiors
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Delivers on commitments, ensuring that expectations are
                       met or exceeded.
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField
@@ -444,17 +444,14 @@ export default function PerformanceForm5({
                     Reliable Handling of Routine Tasks
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
+                    <div className="text-md text-black">
                       Demonstrates reliability in completing routine tasks
-                      without oversight
-                    </p>
+                    </div>
                   </td>
                   <td className="p-2 border align-top">
-                    <p className="text-md text-black">
-                      Consistently manages day-to-day responsibilities without
-                      requiring constant supervision. Ensures regular tasks are
-                      handled on schedule with no reminders needed.
-                    </p>
+                    <div className="text-md text-black">
+                      Handles regular responsibilities consistently and without supervision
+                    </div>
                   </td>
                   <td className="p-2 border align-top text-center">
                     <FormField

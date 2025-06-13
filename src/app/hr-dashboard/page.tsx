@@ -251,10 +251,25 @@ export default function HRDashboard() {
     const checkAuth = async () => {
       try {
         const response = await authAPI.me();
-        const userData = response.data;
         
-        if (!userData || userData.role.toLowerCase() !== 'hr') {
-          console.log("Unauthorized access, redirecting to login");
+        if (!response || !response.data) {
+          console.log("No response data received");
+          router.push('/login');
+          return;
+        }
+
+        const userData = response.data;
+        console.log("Auth response:", userData);
+
+        if (!userData.role) {
+          console.log("No role found in user data");
+          router.push('/login');
+          return;
+        }
+
+        const userRole = userData.role.toLowerCase();
+        if (userRole !== 'hr') {
+          console.log("Unauthorized role:", userRole);
           router.push('/login');
           return;
         }
@@ -280,11 +295,19 @@ export default function HRDashboard() {
 
   const loadEmployees = async () => {
     try {
+      setIsLoading(true);
       const response = await employeeAPI.getAll();
-      setEmployees(response.data);
+      if (response.data) {
+        setEmployees(response.data);
+      } else {
+        console.error("No data received from employee API");
+        toast.error("Failed to load employees");
+      }
     } catch (error) {
       console.error("Failed to load employees:", error);
       toast.error("Failed to load employees");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -852,12 +875,13 @@ export default function HRDashboard() {
       return (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-black ">
+            <h1 className="text-3xl font-bold text-black">
               Employee Management
             </h1>
             <Button
               onClick={() => setIsAddEmployeeOpen(true)}
               className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200"
+              disabled={isLoading}
             >
               <Plus className="h-5 w-5 mr-4" />
               Add Employee
@@ -872,109 +896,119 @@ export default function HRDashboard() {
               <Users className="h-15 w-15 text-blue-600" />
             </div>
             <div className="p-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Position</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employees
-                    .filter((employee) => employee.status === "Active")
-                    .map((employee) => (
-                      <TableRow key={employee.id}>
-                        <TableCell>{employee.employeeId}</TableCell>
-                        <TableCell>{employee.name}</TableCell>
-                        <TableCell>{employee.position.title}</TableCell>
-                        <TableCell>
-                          {employee.department.department_name}
-                        </TableCell>
-                        <TableCell>{employee.location}</TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              employee.status === "Active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {employee.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => setSelectedQuarter("Q1")}
-                              className=" bg-blue-500 text-white hover:bg-green-400 hover:text-white transition-colors duration-200"
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                  <span className="ml-2 text-gray-600">Loading employees...</span>
+                </div>
+              ) : employees.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No employees found
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Employee ID</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {employees
+                      .filter((employee) => employee.status === "Active")
+                      .map((employee) => (
+                        <TableRow key={employee.id}>
+                          <TableCell>{employee.employeeId}</TableCell>
+                          <TableCell>{employee.name}</TableCell>
+                          <TableCell>{employee.position.title}</TableCell>
+                          <TableCell>
+                            {employee.department.department_name}
+                          </TableCell>
+                          <TableCell>{employee.location}</TableCell>
+                          <TableCell>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                employee.status === "Active"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
                             >
-                              View Quarters
-                            </Button>
-                            {selectedQuarter && (
-                              <QuarterlyReviewModal
-                                isOpen={true}
-                                onClose={() => setSelectedQuarter(null)}
-                                quarter={selectedQuarter}
-                              />
-                            )}
-                            {user?.role === "HR" && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    className="text-red-600 hover:text-white hover:bg-red-500"
-                                    disabled={
-                                      isDeleting === employee.employeeId
-                                    }
-                                  >
-                                    {isDeleting === employee.employeeId ? (
-                                      <span className="animate-spin">⏳</span>
-                                    ) : (
-                                      <UserMinus className="h-6 w-6" />
-                                    )}
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="bg-white">
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Are you sure?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This action cannot be undone. This will
-                                      permanently delete the employee and remove
-                                      their data from our servers.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel className="border-0 bg-blue-500 hover:bg-green-400 text-white hover:text-white">
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() =>
-                                        handleDeleteEmployee(
-                                          employee.employeeId
-                                        )
-                                      }
-                                      className="bg-red-500 text-white hover:bg-red-700"
+                              {employee.status}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => setSelectedQuarter("Q1")}
+                                className="bg-blue-500 text-white hover:bg-green-400 hover:text-white transition-colors duration-200"
+                                disabled={isLoading}
+                              >
+                                View Quarters
+                              </Button>
+                              {selectedQuarter && (
+                                <QuarterlyReviewModal
+                                  isOpen={true}
+                                  onClose={() => setSelectedQuarter(null)}
+                                  quarter={selectedQuarter}
+                                />
+                              )}
+                              {user?.role === "HR" && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      className="text-red-600 hover:text-white hover:bg-red-500"
+                                      disabled={isDeleting === employee.employeeId || isLoading}
                                     >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
+                                      {isDeleting === employee.employeeId ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <UserMinus className="h-6 w-6" />
+                                      )}
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent className="bg-white">
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Are you sure?
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This action cannot be undone. This will
+                                        permanently delete the employee and remove
+                                        their data from our servers.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel className="border-0 bg-blue-500 hover:bg-green-400 text-white hover:text-white">
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() =>
+                                          handleDeleteEmployee(
+                                            employee.employeeId
+                                          )
+                                        }
+                                        className="bg-red-500 text-white hover:bg-red-700"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              )}
             </div>
           </Card>
 
@@ -1259,16 +1293,16 @@ export default function HRDashboard() {
                               <Button
                                 variant="ghost"
                                 className="text-red-600 hover:text-white hover:bg-red-500"
-                                disabled={isDeleting === employee.employeeId}
+                                disabled={isDeleting === employee.employeeId || isLoading}
                               >
                                 {isDeleting === employee.employeeId ? (
-                                  <span className="animate-spin">⏳</span>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
-                                  <UserMinus className="h-4 w-4" />
+                                  <UserMinus className="h-6 w-6" />
                                 )}
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="bg-white">
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
                                   Are you sure?
@@ -1320,7 +1354,7 @@ export default function HRDashboard() {
         </button>
 
         <div
-          className={`bg-yellow-100 shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
+          className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
             isSidebarOpen
               ? "translate-x-0"
               : "-translate-x-full md:translate-x-0"

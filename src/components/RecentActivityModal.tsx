@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { FileText, Clock, CheckCircle2, Search, Filter } from "lucide-react";
+import { FileText, Clock, CheckCircle2, Search, Filter, Loader2 } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,9 +17,11 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
+type ActivityType = "evaluation" | "update" | "completion";
+
 interface RecentActivity {
   id: string;
-  type: "evaluation" | "update" | "completion";
+  type: ActivityType;
   description: string;
   timestamp: string;
   employeeName: string;
@@ -29,18 +31,20 @@ interface RecentActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
   activities: RecentActivity[];
+  isLoading?: boolean;
 }
 
 export default function RecentActivityModal({
   isOpen,
   onClose,
   activities,
+  isLoading = false,
 }: RecentActivityModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<string>("all");
+  const [filterType, setFilterType] = useState<ActivityType | "all">("all");
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
 
-  const getActivityIcon = (type: string) => {
+  const getActivityIcon = (type: ActivityType) => {
     switch (type) {
       case "evaluation":
         return <FileText className="h-5 w-5 text-blue-600" />;
@@ -48,12 +52,10 @@ export default function RecentActivityModal({
         return <Clock className="h-5 w-5 text-yellow-600" />;
       case "completion":
         return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-      default:
-        return null;
     }
   };
 
-  const getActivityColor = (type: string) => {
+  const getActivityColor = (type: ActivityType) => {
     switch (type) {
       case "evaluation":
         return "bg-blue-100";
@@ -61,12 +63,10 @@ export default function RecentActivityModal({
         return "bg-yellow-100";
       case "completion":
         return "bg-green-100";
-      default:
-        return "bg-gray-100";
     }
   };
 
-  const getActivityTypeLabel = (type: string) => {
+  const getActivityTypeLabel = (type: ActivityType) => {
     switch (type) {
       case "evaluation":
         return "Evaluation";
@@ -74,8 +74,6 @@ export default function RecentActivityModal({
         return "Update";
       case "completion":
         return "Completion";
-      default:
-        return type;
     }
   };
 
@@ -85,15 +83,8 @@ export default function RecentActivityModal({
     }
 
     try {
-      // First try parsing as ISO string
-      let date = parseISO(timestamp);
+      const date = parseISO(timestamp);
       
-      // If that fails, try creating a new Date
-      if (!isValid(date)) {
-        date = new Date(timestamp);
-      }
-
-      // Final validation
       if (!isValid(date)) {
         console.warn("Invalid timestamp:", timestamp);
         return "Invalid date";
@@ -108,9 +99,13 @@ export default function RecentActivityModal({
 
   const filteredActivities = activities
     .filter((activity) => {
+      const searchTermLower = searchTerm.toLowerCase();
+      const descriptionLower = (activity.description || '').toLowerCase();
+      const employeeNameLower = (activity.employeeName || '').toLowerCase();
+      
       const matchesSearch = 
-        activity.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        activity.employeeName.toLowerCase().includes(searchTerm.toLowerCase());
+        descriptionLower.includes(searchTermLower) ||
+        employeeNameLower.includes(searchTermLower);
       
       const matchesFilter = 
         filterType === "all" || activity.type === filterType;
@@ -119,17 +114,18 @@ export default function RecentActivityModal({
     })
     .sort((a, b) => {
       try {
-        const dateA = new Date(a.timestamp).getTime();
-        const dateB = new Date(b.timestamp).getTime();
+        const dateA = new Date(a.timestamp || '').getTime();
+        const dateB = new Date(b.timestamp || '').getTime();
         
         if (isNaN(dateA) || isNaN(dateB)) {
-          return 0; // Keep original order if dates are invalid
+          console.warn("Invalid date found during sorting:", { a: a.timestamp, b: b.timestamp });
+          return 0;
         }
         
         return sortBy === "newest" ? dateB - dateA : dateA - dateB;
       } catch (error) {
         console.error("Error sorting activities:", error);
-        return 0; // Keep original order on error
+        return 0;
       }
     });
 
@@ -149,10 +145,15 @@ export default function RecentActivityModal({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
+              disabled={isLoading}
             />
           </div>
           <div className="flex gap-4">
-            <Select value={filterType} onValueChange={setFilterType}>
+            <Select 
+              value={filterType} 
+              onValueChange={(value: ActivityType | "all") => setFilterType(value)}
+              disabled={isLoading}
+            >
               <SelectTrigger className="w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filter by type" />
@@ -164,7 +165,11 @@ export default function RecentActivityModal({
                 <SelectItem value="completion">Completions</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={sortBy} onValueChange={(value: "newest" | "oldest") => setSortBy(value)}>
+            <Select 
+              value={sortBy} 
+              onValueChange={(value: "newest" | "oldest") => setSortBy(value)}
+              disabled={isLoading}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -178,7 +183,12 @@ export default function RecentActivityModal({
 
         {/* Activity List */}
         <div className="space-y-4">
-          {filteredActivities.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading activities...</span>
+            </div>
+          ) : filteredActivities.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No activities found matching your criteria
             </div>
@@ -218,7 +228,11 @@ export default function RecentActivityModal({
             <p className="text-sm text-gray-500">
               Showing {filteredActivities.length} of {activities.length} activities
             </p>
-            <Button className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black" onClick={onClose}>
+            <Button 
+              className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black" 
+              onClick={onClose}
+              disabled={isLoading}
+            >
               Close
             </Button>
           </div>

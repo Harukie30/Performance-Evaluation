@@ -1,6 +1,6 @@
 // src/components/performance-form.tsx
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import employeeNames from "../data/users.json";
 import { Card, CardContent } from "@/components/ui/card";
 import RatingScale from "@/app/constants/rating-scale";
@@ -42,7 +42,6 @@ import {
   PerformanceFormValues,
 } from "../lib/validation-schema/form-schema";
 
-import { useState } from "react";
 import { Resolver } from "react-hook-form";
 
 
@@ -87,14 +86,34 @@ export default function PerformanceForm({
   onComplete,
   formData,
 }: PerformanceFormType): React.JSX.Element {
-  const [employeeId, setEmployeeId] = useState(0);
+  const [employeeId, setEmployeeId] = useState<number>(formData.employeeName || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<PerformanceFormValues>({
     resolver: zodResolver(formSchema) as Resolver<PerformanceFormValues>,
-    defaultValues: formData,
+    defaultValues: {
+      ...formData,
+      employeeName: formData.employeeName || 0,
+    },
   });
+
+  // Set initial employee data if provided
+  useEffect(() => {
+    if (formData.employeeName) {
+      const employee = employeeNames.find(emp => emp.id === formData.employeeName);
+      if (employee) {
+        setEmployeeId(employee.id);
+        form.setValue("employeeName", employee.id);
+        form.setValue("employeeId", employee.employeeId);
+        form.setValue("position", employee.position?.title || "");
+        form.setValue("department", employee.department?.department_name || "");
+        if (employee.datehired?.date) {
+          form.setValue("datehired", new Date(employee.datehired.date));
+        }
+      }
+    }
+  }, [formData, form]);
 
   const onSubmit = form.handleSubmit(async (values: PerformanceFormValues) => {
     try {
@@ -306,50 +325,46 @@ export default function PerformanceForm({
                 <FormItem className="flex flex-col">
                   <FormLabel>Employee Name</FormLabel>
                   <Select
-                    value={field.value.toString()}
+                    value={field.value?.toString() || "0"}
                     onValueChange={(selectedId: string) => {
                       const name = employeeNames.find(
                         (name) => name.id === Number(selectedId)
                       );
-                      form.setValue("employeeName", Number(name?.id));
-                      form.setValue("employeeId", name?.employeeId as string);
-                      form.setValue("position", name?.position?.title || "");
-                      form.setValue(
-                        "department",
-                        name?.department?.department_name || ""
-                      );
-                      if (name?.datehired?.date) {
+                      if (name) {
+                        form.setValue("employeeName", Number(name.id));
+                        form.setValue("employeeId", name.employeeId);
+                        form.setValue("position", name.position?.title || "");
                         form.setValue(
-                          "datehired",
-                          new Date(name?.datehired.date)
+                          "department",
+                          name.department?.department_name || ""
                         );
+                        if (name.datehired?.date) {
+                          form.setValue(
+                            "datehired",
+                            new Date(name.datehired.date)
+                          );
+                        }
+                        setEmployeeId(Number(name.id));
+                        setError(null);
                       }
-                      setEmployeeId(Number(name?.id));
-                      setError(null); // ✅ Close popover
                     }}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a employee">
-                        {employeeNames.find((emp) => emp.id === field.value)
-                          ?.name || undefined}
+                      <SelectValue>
+                        {employeeNames.find((emp) => emp.id === field.value)?.name || "Select an employee"}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>All Employees</SelectLabel>
-
-                        {employeeNames.map((item: Employee, index: number) => (
-                          <SelectItem
-                            key={index.toString()}
-                            value={item.id.toString()}
-                          >
-                            {item.name}
+                        <SelectLabel>Employees</SelectLabel>
+                        {employeeNames.map((employee) => (
+                          <SelectItem key={employee.id} value={employee.id.toString()}>
+                            {employee.name}
                           </SelectItem>
                         ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-
                   <FormMessage />
                 </FormItem>
               );
