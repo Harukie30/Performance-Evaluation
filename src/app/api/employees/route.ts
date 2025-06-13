@@ -60,7 +60,7 @@ const writeEmployeesData = (data: Employee[]) => {
 // GET /api/employees
 export async function GET(request: NextRequest) {
   try {
-    const employees = await db.employees.findMany();
+    const employees = readEmployeesData();
     return NextResponse.json(employees);
   } catch (error) {
     console.error("Error fetching employees:", error);
@@ -108,9 +108,48 @@ export async function GET_BY_ID(request: ServerNextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const employee = await db.employees.create(data);
-    return NextResponse.json(employee, { status: 201 });
+    const validatedData = employeeSchema.parse(data);
+    
+    // Read existing employees
+    const employees = readEmployeesData();
+    
+    // Generate new employee ID
+    const newEmployeeId = String(employees.length + 1).padStart(3, '0');
+    
+    // Create new employee object
+    const newEmployee: Employee = {
+      id: employees.length + 1,
+      employeeId: newEmployeeId,
+      name: validatedData.name,
+      email: validatedData.email,
+      phone: validatedData.phone,
+      position: {
+        title: validatedData.position
+      },
+      department: {
+        department_name: validatedData.department
+      },
+      location: validatedData.location,
+      status: "Active",
+      datehired: {
+        date: new Date().toISOString().split('T')[0]
+      }
+    };
+    
+    // Add new employee to the array
+    employees.push(newEmployee);
+    
+    // Write updated data back to file
+    writeEmployeesData(employees);
+    
+    return NextResponse.json(newEmployee, { status: 201 });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid input", details: error.errors },
+        { status: 400 }
+      );
+    }
     console.error("Error creating employee:", error);
     return NextResponse.json(
       { error: "Failed to create employee" },

@@ -44,6 +44,8 @@ export function LoginForm() {
       // Redirect based on role
       if (userResponse.data.role === "hr") {
         router.push("/hr-dashboard");
+      } else if (userResponse.data.role === "evaluator") {
+        router.push("/evaluator-dashboard");
       } else {
         router.push("/dashboard");
       }

@@ -1027,7 +1027,7 @@ export default function FinalResults({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          employeeId: initialForm.employeeName,
+          employeeId: initialForm.employeeId,
           position: initialForm.position,
           department: initialForm.department,
           reviewType: initialForm.reviewType || "",
@@ -1100,7 +1100,7 @@ export default function FinalResults({
           areasForImprovement: initialForm.areasForImprovement,
           additionalComments: initialForm.additionalComments,
 
-          status: "Pending HR Review",
+          status: "completed",
           submittedAt: new Date().toISOString(),
         }),
       });
@@ -1114,10 +1114,10 @@ export default function FinalResults({
       const result = await response.json();
       console.log("Review submitted successfully:", result);
 
-      toast.success("Performance review submitted to HR for approval!");
+      toast.success("Performance review completed successfully!");
       setShowConfirmDialog(false);
-      // Redirect to dashboard after successful submission
-      router.push("/dashboard");
+      // Redirect to evaluator dashboard after successful submission
+      router.push("/evaluator-dashboard");
     } catch (error) {
       console.error("Error submitting review:", error);
       toast.error(error instanceof Error ? error.message : "Failed to submit performance review");

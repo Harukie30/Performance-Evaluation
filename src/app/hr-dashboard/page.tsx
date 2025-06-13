@@ -314,7 +314,11 @@ export default function HRDashboard() {
   const loadEvaluations = async () => {
     try {
       const response = await reviewAPI.getAll();
-      setEvaluations(response.data);
+      // Filter evaluations to only show completed ones for HR
+      const completedEvaluations = response.data.filter(
+        (evaluation: Evaluation) => evaluation.status === "completed"
+      );
+      setEvaluations(completedEvaluations);
     } catch (error) {
       console.error("Failed to load evaluations:", error);
       toast.error("Failed to load evaluations");
@@ -732,123 +736,51 @@ export default function HRDashboard() {
 
     if (activeTab === "evaluations") {
       return (
-        <Tabs defaultValue="pending" className="space-y-4">
-          <div>
-            <h2 className="text-3xl font-bold text-black ">
-              Employee Evaluations
-            </h2>
-          </div>
-          <TabsList className="space-x-4 bg-gray-200 p-1 rounded-lg">
-            <TabsTrigger
-              value="pending"
-              className="flex-1 py-2 px-4 rounded-md text-gray-700 data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
-            >
-              Pending Evaluations
-            </TabsTrigger>
-            <TabsTrigger
-              value="completed"
-              className="flex-1 py-2 px-4 rounded-md text-gray-700 data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
-            >
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-black">
               Completed Evaluations
-            </TabsTrigger>
-          </TabsList>
+            </h1>
+          </div>
 
-          <TabsContent value="pending" key="pending">
-            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-              <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-blue-600">
-                  Pending Evaluations
-                </h2>
-                <div className="flex items-center gap-4">
-                  <Button
-                    onClick={handleNewEvaluation}
-                    className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black"
-                  >
-                    <FileText className="h-5 w-5 mr-2" />
-                    New Evaluation
-                  </Button>
-                  <FileText className="h-15 w-15 text-blue-600" />
+          <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
+            <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
+              <h2 className="text-3xl font-bold text-blue-600">
+                Completed Evaluations
+              </h2>
+              <CheckCircle2 className="h-15 w-15 text-blue-600" />
+            </div>
+            <div className="p-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                  <span className="ml-2 text-gray-600">Loading evaluations...</span>
                 </div>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee Name</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Review Period</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Modified</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {evaluations
-                    .filter((evaluation) => evaluation.status !== "completed")
-                    .map((evaluation) => (
-                      <TableRow key={evaluation.id}>
-                        <TableCell>{evaluation.employeeName}</TableCell>
-                        <TableCell>{evaluation.department}</TableCell>
-                        <TableCell>{evaluation.reviewPeriod}</TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              evaluation.status === "draft"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-blue-100 text-blue-800"
-                            }`}
-                          >
-                            Pending
-                          </span>
-                        </TableCell>
-                        <TableCell>{evaluation.lastModified}</TableCell>
-                        <TableCell>
-                          <Button
-                            className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
-                            size="sm"
-                            onClick={() => handleNewEvaluation()}
-                          >
-                            New Evaluation
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="completed" key="completed">
-            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-              <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-green-700">
-                  Completed Evaluations
-                </h2>
-                <div className="flex items-center gap-4">
-                  <CheckCircle2 className="h-15 w-15 text-green-600" />
+              ) : evaluations.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No completed evaluations found
                 </div>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee Name</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Review Period</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Modified</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {evaluations
-                    .filter((evaluation) => evaluation.status === "completed")
-                    .map((evaluation) => (
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Employee Name</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Review Period</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Last Modified</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {evaluations.map((evaluation) => (
                       <TableRow key={evaluation.id}>
                         <TableCell>{evaluation.employeeName}</TableCell>
                         <TableCell>{evaluation.department}</TableCell>
                         <TableCell>{evaluation.reviewPeriod}</TableCell>
                         <TableCell>
                           <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                            completed
+                            Completed
                           </span>
                         </TableCell>
                         <TableCell>{evaluation.lastModified}</TableCell>
@@ -858,16 +790,17 @@ export default function HRDashboard() {
                             size="sm"
                             onClick={() => handleViewEvaluation(evaluation.id)}
                           >
-                            View
+                            View Details
                           </Button>
                         </TableCell>
                       </TableRow>
                     ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </Card>
+        </div>
       );
     }
 

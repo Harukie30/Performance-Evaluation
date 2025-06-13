@@ -34,9 +34,23 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // Check role-based access for dashboard
+    // Check role-based access for specific routes
+    if (request.nextUrl.pathname.startsWith("/hr-dashboard")) {
+      if (user.role.toLowerCase() !== "hr") {
+        console.log("Unauthorized role for HR dashboard:", user.role);
+        return NextResponse.redirect(new URL("/login", request.url));
+      }
+    }
+
+    if (request.nextUrl.pathname.startsWith("/evaluator-dashboard")) {
+      if (user.role.toLowerCase() !== "evaluator") {
+        console.log("Unauthorized role for evaluator dashboard:", user.role);
+        return NextResponse.redirect(new URL("/login", request.url));
+      }
+    }
+
     if (request.nextUrl.pathname.startsWith("/dashboard")) {
-      if (user.role !== "evaluator" && user.role !== "hr" && user.role !== "admin") {
+      if (user.role.toLowerCase() !== "evaluator" && user.role.toLowerCase() !== "hr" && user.role.toLowerCase() !== "admin") {
         console.log("Unauthorized role for dashboard:", user.role);
         return NextResponse.redirect(new URL("/login", request.url));
       }

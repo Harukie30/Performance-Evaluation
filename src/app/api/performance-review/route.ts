@@ -15,6 +15,7 @@ interface Employee {
   department: string;
   position: string;
   performance_reviews?: Review[];
+  status: string;
 }
 
 interface Review {
@@ -151,7 +152,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const review = await db.performanceReviews.create(data);
+    
+    // Create the performance review
+    const review = await db.performanceReviews.create({
+      ...data,
+      status: "completed",
+      submittedAt: new Date().toISOString()
+    });
+
+    // Update the employee's status in the database
+    const database = await readJsonFile<{ employees: Employee[] }>(DATA_FILE_PATH);
+    const employeeIndex = database.employees.findIndex((emp: Employee) => emp.id === data.employeeId);
+    if (employeeIndex !== -1) {
+      database.employees[employeeIndex].status = "Evaluated";
+      await writeJsonFile(DATA_FILE_PATH, database);
+    }
+
     return NextResponse.json(review, { status: 201 });
   } catch (error) {
     console.error("Error creating review:", error);
