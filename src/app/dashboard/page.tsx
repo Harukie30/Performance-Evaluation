@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import usersData from "@/data/users.json";
+import { employeeAPI, reviewAPI, authAPI } from "@/services/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -219,9 +219,7 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>(
-    []
-  );
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
@@ -266,182 +264,58 @@ export default function DashboardPage() {
     { id: "profile", label: "Profile", icon: User },
   ];
 
-  const loadEmployees = async () => {
-    try {
-      // Add quarterly reviews to employee data with more realistic mock data
-      const employeesWithReviews = usersData.map(
-        (employee: Employee, index: number) => {
-          // Generate different review statuses based on employee index to create variety
-          const getQuarterStatus = (quarter: number) => {
-            const statuses = ["completed", "in_progress", "not_started"];
-            const statusIndex = (index + quarter) % 3;
-            return statuses[statusIndex];
-          };
-
-          // Generate dates for completed and in-progress reviews
-          const getReviewDate = (quarter: number) => {
-            const status = getQuarterStatus(quarter);
-            if (status === "not_started") return undefined;
-
-            try {
-              const currentDate = new Date();
-              const month = (quarter - 1) * 3 + 1; // Q1: Jan(1), Q2: Apr(4), Q3: Jul(7), Q4: Oct(10)
-              const reviewDate = new Date(
-                currentDate.getFullYear(),
-                month - 1,
-                15
-              );
-
-              // For completed reviews, set date in the past
-              if (status === "completed") {
-                reviewDate.setDate(reviewDate.getDate() - 15);
-              }
-
-              // Validate the date before returning
-              if (isNaN(reviewDate.getTime())) {
-                console.error("Invalid date generated for quarter", quarter);
-                return undefined;
-              }
-
-              return reviewDate.toISOString();
-            } catch (error) {
-              console.error("Error generating review date:", error);
-              return undefined;
-            }
-          };
-
-          return {
-            ...employee,
-            quarterlyReviews: {
-              Q1: {
-                status: getQuarterStatus(1),
-                date: getReviewDate(1),
-              },
-              Q2: {
-                status: getQuarterStatus(2),
-                date: getReviewDate(2),
-              },
-              Q3: {
-                status: getQuarterStatus(3),
-                date: getReviewDate(3),
-              },
-              Q4: {
-                status: getQuarterStatus(4),
-                date: getReviewDate(4),
-              },
-            },
-          };
-        }
-      );
-
-      setEmployees(employeesWithReviews);
-
-      // Create evaluations based on employees data
-      const currentDate = new Date();
-      const currentQuarter = Math.floor(currentDate.getMonth() / 3) + 1;
-      const currentYear = currentDate.getFullYear();
-      const reviewPeriod = `Q${currentQuarter} ${currentYear}`;
-
-      const initialEvaluations = employeesWithReviews.map(
-        (employee: Employee, index: number) => {
-          try {
-            const lastModified = new Date(Date.now() - index * 86400000);
-            if (isNaN(lastModified.getTime())) {
-              console.error("Invalid lastModified date generated for evaluation", index);
-              return null;
-            }
-            return {
-              id: `eval-${index + 1}`,
-              employeeId: employee.employeeId,
-              employeeName: employee.name,
-              department: employee.department.department_name,
-              reviewPeriod,
-              status: (index % 3 === 0
-                ? "completed"
-                : index % 3 === 1
-                ? "submitted"
-                : "draft") as "completed" | "submitted" | "draft",
-              lastModified: lastModified.toISOString().split("T")[0],
-            };
-          } catch (error) {
-            console.error("Error generating evaluation date:", error);
-            return null;
-          }
-        }
-      ).filter((evaluation): evaluation is NonNullable<typeof evaluation> => evaluation !== null);
-
-      const recentActivities = employeesWithReviews
-        .slice(0, 3)
-        .map((employee: Employee, index: number) => {
-          try {
-            // Create a valid date by subtracting days from current date
-            const timestamp = new Date();
-            timestamp.setDate(timestamp.getDate() - index);
-            
-            // Validate the timestamp
-            if (isNaN(timestamp.getTime())) {
-              console.error("Invalid timestamp generated for activity", index);
-              return null;
-            }
-
-            // Format the timestamp as ISO string
-            const formattedTimestamp = timestamp.toISOString();
-
-            return {
-              id: `act-${index + 1}`,
-              type: (index === 0
-                ? "evaluation"
-                : index === 1
-                ? "update"
-                : "completion") as "evaluation" | "update" | "completion",
-              description:
-                index === 0
-                  ? "New evaluation created"
-                  : index === 1
-                  ? "Evaluation updated"
-                  : "Evaluation completed",
-              timestamp: formattedTimestamp,
-              employeeName: employee.name,
-            };
-          } catch (error) {
-            console.error("Error generating activity timestamp:", error);
-            return null;
-          }
-        })
-        .filter((activity): activity is NonNullable<typeof activity> => activity !== null);
-
-      setEvaluations(initialEvaluations);
-      setRecentActivities(recentActivities);
-    } catch (error) {
-      console.error("Failed to load employees:", error);
-    }
-  };
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/check");
-        if (!response.ok) {
+        const response = await authAPI.me();
+        if (response.data) {
+          setUser(response.data);
+          await loadEmployees();
+          await loadEvaluations();
+          await loadRecentActivities();
+        } else {
           router.push("/login");
-          return;
         }
-        const userData = await response.json();
-        console.log("User data:", userData); // Debug log
-        setUser(userData);
-
-        // Add a small delay to show the loading screen
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
       } catch (error) {
         console.error("Auth check failed:", error);
         router.push("/login");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     checkAuth();
-    loadEmployees();
   }, [router]);
+
+  const loadEmployees = async () => {
+    try {
+      const response = await employeeAPI.getAll();
+      setEmployees(response.data);
+    } catch (error) {
+      console.error("Failed to load employees:", error);
+      toast.error("Failed to load employees");
+    }
+  };
+
+  const loadEvaluations = async () => {
+    try {
+      const response = await reviewAPI.getAll();
+      setEvaluations(response.data);
+    } catch (error) {
+      console.error("Failed to load evaluations:", error);
+      toast.error("Failed to load evaluations");
+    }
+  };
+
+  const loadRecentActivities = async () => {
+    try {
+      const response = await reviewAPI.getRecent();
+      setRecentActivities(response.data);
+    } catch (error) {
+      console.error("Failed to load recent activities:", error);
+      toast.error("Failed to load recent activities");
+    }
+  };
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -458,10 +332,14 @@ export default function DashboardPage() {
     router.push(`/performance/view?id=${id}`);
   };
 
-  const handleLogout = () => {
-    // Clear cookies and redirect to login
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Logout failed");
+    }
   };
 
   const handleProfileUpdate = (updatedUser: User) => {
@@ -470,56 +348,40 @@ export default function DashboardPage() {
 
   const handleAddEmployee = async () => {
     try {
-      setIsAdding(true);
-      // Implement the logic to add a new employee
-      // This is a placeholder and should be replaced with actual implementation
-      console.log("Adding new employee:", newEmployee);
-      // After successful addition, reset the form and close the dialog
-      setIsAddEmployeeOpen(false);
-      setNewEmployee({
-        name: "",
-        email: "",
-        phone: "",
-        position: "",
-        department: "",
-        location: "",
-      });
-      setFormErrors({
-        name: "",
-        email: "",
-        phone: "",
-        position: "",
-        department: "",
-        location: "",
-      });
-      loadEmployees();
+      setIsLoading(true);
+      const response = await employeeAPI.create(newEmployee);
+      if (response.data) {
+        toast.success("Employee added successfully");
+        setIsAddEmployeeOpen(false);
+        setNewEmployee({
+          name: "",
+          email: "",
+          phone: "",
+          position: "",
+          department: "",
+          location: "",
+        });
+        await loadEmployees();
+      }
     } catch (error) {
       console.error("Failed to add employee:", error);
-      setFormErrors({
-        name: error instanceof Error ? error.message : "An error occurred",
-        email: "",
-        phone: "",
-        position: "",
-        department: "",
-        location: "",
-      });
+      toast.error("Failed to add employee");
     } finally {
-      setIsAdding(false);
+      setIsLoading(false);
     }
   };
 
   const handleDeleteEmployee = async (employeeId: string) => {
     try {
-      setIsDeleting(employeeId);
-      // Implement the logic to delete an employee
-      // This is a placeholder and should be replaced with actual implementation
-      console.log("Deleting employee:", employeeId);
-      // After successful deletion, reset the deletion state
-      setIsDeleting(null);
-      loadEmployees();
+      setIsLoading(true);
+      await employeeAPI.delete(employeeId);
+      toast.success("Employee deleted successfully");
+      await loadEmployees();
     } catch (error) {
       console.error("Failed to delete employee:", error);
-      setIsDeleting(null);
+      toast.error("Failed to delete employee");
+    } finally {
+      setIsLoading(false);
     }
   };
 

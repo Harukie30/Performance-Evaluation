@@ -62,6 +62,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/LoadingScreen";
 import { QuarterlyReviewModal } from "@/components/QuarterlyReviewModal";
+import { employeeAPI, reviewAPI, authAPI } from "@/services/api";
 
 interface Employee {
   id: number;
@@ -249,33 +250,53 @@ export default function HRDashboard() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/check");
-        if (!response.ok) {
+        const response = await authAPI.getCurrentUser();
+        if (response.data) {
+          setUser(response.data);
+          await loadEmployees();
+          await loadEvaluations();
+          await loadActivities();
+        } else {
           router.push("/login");
-          return;
         }
-        const userData = await response.json();
-        setUser(userData);
-        setIsLoading(false);
       } catch (error) {
         console.error("Auth check failed:", error);
         router.push("/login");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     checkAuth();
-    loadEmployees();
   }, [router]);
 
   const loadEmployees = async () => {
     try {
-      const response = await fetch("/api/employees");
-      const data = await response.json();
-      setEmployees(data);
-      setIsLoading(false);
+      const response = await employeeAPI.getAll();
+      setEmployees(response.data);
     } catch (error) {
       console.error("Failed to load employees:", error);
-      setIsLoading(false);
+      toast.error("Failed to load employees");
+    }
+  };
+
+  const loadEvaluations = async () => {
+    try {
+      const response = await reviewAPI.getAll();
+      setEvaluations(response.data);
+    } catch (error) {
+      console.error("Failed to load evaluations:", error);
+      toast.error("Failed to load evaluations");
+    }
+  };
+
+  const loadActivities = async () => {
+    try {
+      const response = await reviewAPI.getRecent();
+      setActivities(response.data);
+    } catch (error) {
+      console.error("Failed to load activities:", error);
+      toast.error("Failed to load activities");
     }
   };
 
@@ -328,36 +349,25 @@ export default function HRDashboard() {
   };
 
   const handleAddEmployee = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsAdding(true);
     try {
-      const response = await fetch("/api/employees", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEmployee),
-      });
-
-      if (!response.ok) throw new Error("Failed to add employee");
-
-      toast.success("Employee added successfully");
-      setIsAddEmployeeOpen(false);
-      setNewEmployee({
-        name: "",
-        email: "",
-        phone: "",
-        position: "",
-        department: "",
-        location: "",
-      });
-      loadEmployees();
+      setIsAdding(true);
+      const response = await employeeAPI.create(newEmployee);
+      if (response.data) {
+        toast.success("Employee added successfully");
+        setIsAddEmployeeOpen(false);
+        setNewEmployee({
+          name: "",
+          email: "",
+          phone: "",
+          position: "",
+          department: "",
+          location: "",
+        });
+        await loadEmployees();
+      }
     } catch (error) {
+      console.error("Failed to add employee:", error);
       toast.error("Failed to add employee");
-      console.error("Error adding employee:", error);
     } finally {
       setIsAdding(false);
     }
@@ -366,25 +376,25 @@ export default function HRDashboard() {
   const handleDeleteEmployee = async (employeeId: string) => {
     try {
       setIsDeleting(employeeId);
-      const response = await fetch(`/api/employees/${employeeId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete employee");
-
+      await employeeAPI.delete(employeeId);
       toast.success("Employee deleted successfully");
-      loadEmployees();
+      await loadEmployees();
     } catch (error) {
+      console.error("Failed to delete employee:", error);
       toast.error("Failed to delete employee");
-      console.error("Error deleting employee:", error);
     } finally {
       setIsDeleting(null);
     }
   };
 
-  const handleLogout = () => {
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Logout failed");
+    }
   };
 
   const handleTabChange = (tab: string) => {

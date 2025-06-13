@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { z } from "zod";
 import { readJsonFile, writeJsonFile } from "@/lib/utils";
+import { db } from "@/lib/db";
 
 // Path to JSON data file
 const DATA_FILE_PATH = path.join(process.cwd(), 'src/data/users.json');
@@ -131,31 +132,10 @@ export async function GET(request: NextRequest) {
     const employeeId = searchParams.get("employeeId");
     const status = searchParams.get("status");
 
-    const data = await readJsonFile<DataFile>(DATA_FILE_PATH);
-    const employees = data.employees || [];
-
-    // Get all reviews from all employees
-    let reviews = employees.flatMap((employee: Employee) => {
-      const employeeReviews = employee.performance_reviews || [];
-      return employeeReviews.map((review: Review) => ({
-        ...review,
-        employee: {
-          id: employee.id,
-          name: employee.name,
-          email: employee.email,
-          department: employee.department,
-          position: employee.position,
-        },
-      }));
+    const reviews = await db.performanceReviews.findMany({
+      employeeId: employeeId || undefined,
+      status: status || undefined,
     });
-
-    // Apply filters
-    if (employeeId) {
-      reviews = reviews.filter((review: Review) => review.employeeId === Number(employeeId));
-    }
-    if (status) {
-      reviews = reviews.filter((review: Review) => review.status === status);
-    }
 
     return NextResponse.json(reviews);
   } catch (error) {
@@ -170,50 +150,11 @@ export async function GET(request: NextRequest) {
 // POST /api/performance-review
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-      const validatedData = reviewSchema.parse(body);
-
-    const data = await readJsonFile<DataFile>(DATA_FILE_PATH);
-    const employees = data.employees || [];
-
-    // Find the employee
-    const employeeIndex = employees.findIndex(
-      (emp: Employee) => emp.id === validatedData.employeeId
-    );
-
-    if (employeeIndex === -1) {
-        return NextResponse.json(
-        { error: "Employee not found" },
-          { status: 404 }
-        );
-      }
-
-      // Create new review
-      const newReview: Review = {
-        id: Date.now().toString(),
-      ...validatedData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-    };
-
-    // Add review to employee's performance_reviews array
-    if (!employees[employeeIndex].performance_reviews) {
-      employees[employeeIndex].performance_reviews = [];
-    }
-    employees[employeeIndex].performance_reviews.push(newReview);
-
-    // Save updated data
-    await writeJsonFile(DATA_FILE_PATH, { ...data, employees });
-
-    return NextResponse.json(newReview);
+    const data = await request.json();
+    const review = await db.performanceReviews.create(data);
+    return NextResponse.json(review, { status: 201 });
   } catch (error) {
     console.error("Error creating review:", error);
-    if (error instanceof z.ZodError) {
-        return NextResponse.json(
-        { error: "Invalid review data", details: error.errors },
-          { status: 400 }
-        );
-      }
     return NextResponse.json(
       { error: "Failed to create review" },
       { status: 500 }
@@ -221,145 +162,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/performance-review
+// PUT /api/performance-review/[id]
 export async function PUT(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const reviewId = searchParams.get("id");
-
-    if (!reviewId) {
-      return NextResponse.json(
-        { error: "Review ID is required" },
-        { status: 400 }
-      );
-    }
-
-    const body = await request.json();
-    const validatedData = reviewSchema.partial().parse(body);
-
-    const data = await readJsonFile<DataFile>(DATA_FILE_PATH);
-    const employees = data.employees || [];
-    
-    // Find the employee and review
-    let reviewFound = false;
-    for (const employee of employees) {
-      if (!employee.performance_reviews) continue;
-      
-      const reviewIndex = employee.performance_reviews.findIndex(
-        (review: Review) => review.id === reviewId
-      );
-
-      if (reviewIndex !== -1) {
-        // Update review
-        employee.performance_reviews[reviewIndex] = {
-          ...employee.performance_reviews[reviewIndex],
-          ...validatedData,
-          updatedAt: new Date().toISOString(),
-        };
-        reviewFound = true;
-        break;
-      }
-    }
-
-    if (!reviewFound) {
-      return NextResponse.json(
-        { error: "Review not found" },
-        { status: 404 }
-      );
-    }
-
-    // Save updated data
-    await writeJsonFile(DATA_FILE_PATH, { ...data, employees });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error updating review:", error);
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid review data", details: error.errors },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json(
-      { error: "Failed to update review" },
-      { status: 500 }
-    );
-  }
-}
-
-// PATCH /api/performance-review
-export async function PATCH(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const reviewId = searchParams.get("id");
-    
-    if (!reviewId) {
-      return NextResponse.json(
-        { error: "Review ID is required" },
-        { status: 400 }
-      );
-    }
-
-    const body = await request.json();
-    const { status, hrComments } = body;
-
-    if (!status || !["Completed", "Rejected"].includes(status)) {
-      return NextResponse.json(
-        { error: "Invalid status" },
-        { status: 400 }
-      );
-    }
-
-    const data = await readJsonFile<DataFile>(DATA_FILE_PATH);
-    const employees = data.employees || [];
-
-    // Find the employee and review
-    let reviewFound = false;
-    for (const employee of employees) {
-      if (!employee.performance_reviews) continue;
-      
-      const reviewIndex = employee.performance_reviews.findIndex(
-        (review: Review) => review.id === reviewId
-      );
-
-      if (reviewIndex !== -1) {
-        // Update review status and HR comments
-        employee.performance_reviews[reviewIndex] = {
-          ...employee.performance_reviews[reviewIndex],
-          status,
-          hrComments: hrComments || "",
-          updatedAt: new Date().toISOString(),
-        };
-        reviewFound = true;
-        break;
-      }
-    }
-
-    if (!reviewFound) {
-      return NextResponse.json(
-        { error: "Review not found" },
-        { status: 404 }
-      );
-    }
-
-    // Save updated data
-    await writeJsonFile(DATA_FILE_PATH, { ...data, employees });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error updating review status:", error);
-    return NextResponse.json(
-      { error: "Failed to update review status" },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/performance-review
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+    const data = await request.json();
 
     if (!id) {
       return NextResponse.json(
@@ -368,35 +176,32 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Read current data
-    const usersData = await readJsonFile<DataFile>(DATA_FILE_PATH);
-    
-    // Find and remove the review
-    let reviewFound = false;
-    for (const employee of usersData.employees) {
-      if (employee.performance_reviews) {
-        const reviewIndex = employee.performance_reviews.findIndex((r: Review) => r.id === id);
-        if (reviewIndex !== -1) {
-          employee.performance_reviews.splice(reviewIndex, 1);
-          reviewFound = true;
-          break;
-        }
-      }
-    }
+    const review = await db.performanceReviews.update(id, data);
+    return NextResponse.json(review);
+  } catch (error) {
+    console.error("Error updating review:", error);
+    return NextResponse.json(
+      { error: "Failed to update review" },
+      { status: 500 }
+    );
+  }
+}
 
-    if (!reviewFound) {
+// DELETE /api/performance-review/[id]
+export async function DELETE(request: NextRequest) {
+  try {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
+
+    if (!id) {
       return NextResponse.json(
-        { error: "Review not found" },
-        { status: 404 }
+        { error: "Review ID is required" },
+        { status: 400 }
       );
     }
 
-    // Write updated data back to file
-    await writeJsonFile(DATA_FILE_PATH, usersData);
-
-    return NextResponse.json({
-      message: "Performance review deleted successfully"
-    });
+    await db.performanceReviews.delete(id);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting review:", error);
     return NextResponse.json(

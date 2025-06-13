@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verify } from "jsonwebtoken";
 import { JWTPayload } from "@/types/auth";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,14 +20,7 @@ export async function GET(request: NextRequest) {
     const decoded = verify(token, process.env.JWT_SECRET || "your-secret-key") as JWTPayload;
 
     // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-      },
-    });
+    const user = await db.users.findUnique({ id: decoded.userId });
 
     if (!user) {
       return NextResponse.json(

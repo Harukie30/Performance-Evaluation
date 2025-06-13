@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import type { NextRequest as ServerNextRequest } from "next/server";
 import { z } from "zod";
 import fs from 'fs';
 import path from 'path';
@@ -57,17 +58,21 @@ const writeEmployeesData = (data: Employee[]) => {
 };
 
 // GET /api/employees
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const employees = readEmployeesData();
+    const employees = await db.employees.findMany();
     return NextResponse.json(employees);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch employees" }, { status: 500 });
+    console.error("Error fetching employees:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch employees" },
+      { status: 500 }
+    );
   }
 }
 
 // GET /api/employees/[id]
-export async function GET_BY_ID(request: NextRequest) {
+export async function GET_BY_ID(request: ServerNextRequest) {
   try {
     const url = new URL(request.url);
     const employeeId = url.pathname.split('/').pop();
@@ -100,50 +105,17 @@ export async function GET_BY_ID(request: NextRequest) {
 }
 
 // POST /api/employees
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const validatedData = employeeSchema.parse(body);
-    const employees = readEmployeesData();
-    
-    // Generate a new employee ID
-    const newEmployeeId = `EMP${String(employees.length + 1).padStart(3, '0')}`;
-    
-    // Create new employee object
-    const newEmployee: Employee = {
-      id: employees.length + 1,
-      employeeId: newEmployeeId,
-      name: validatedData.name,
-      email: validatedData.email,
-      phone: validatedData.phone,
-      position: {
-        title: validatedData.position
-      },
-      department: {
-        department_name: validatedData.department
-      },
-      location: validatedData.location,
-      status: "Active",
-      datehired: {
-        date: new Date().toISOString().split('T')[0]
-      }
-    };
-
-    // Add new employee to the array
-    employees.push(newEmployee);
-    
-    // Save updated data
-    writeEmployeesData(employees);
-
-    return NextResponse.json(newEmployee);
+    const data = await request.json();
+    const employee = await db.employees.create(data);
+    return NextResponse.json(employee, { status: 201 });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input", details: error.errors },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json({ error: "Failed to add employee" }, { status: 500 });
+    console.error("Error creating employee:", error);
+    return NextResponse.json(
+      { error: "Failed to create employee" },
+      { status: 500 }
+    );
   }
 }
 
@@ -206,7 +178,7 @@ export async function PUT(request: NextRequest) {
 }
 
 // DELETE /api/employees/[employeeId]
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const employeeId = url.pathname.split('/').pop();
