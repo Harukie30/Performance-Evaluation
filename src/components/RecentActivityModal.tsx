@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FileText, Clock, CheckCircle2, Search, Filter } from "lucide-react";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -79,6 +79,33 @@ export default function RecentActivityModal({
     }
   };
 
+  const formatTimestamp = (timestamp: string): string => {
+    if (!timestamp) {
+      return "No date available";
+    }
+
+    try {
+      // First try parsing as ISO string
+      let date = parseISO(timestamp);
+      
+      // If that fails, try creating a new Date
+      if (!isValid(date)) {
+        date = new Date(timestamp);
+      }
+
+      // Final validation
+      if (!isValid(date)) {
+        console.warn("Invalid timestamp:", timestamp);
+        return "Invalid date";
+      }
+
+      return format(date, "MMM d, yyyy h:mm a");
+    } catch (error) {
+      console.error("Error formatting timestamp:", error);
+      return "Invalid date";
+    }
+  };
+
   const filteredActivities = activities
     .filter((activity) => {
       const matchesSearch = 
@@ -91,9 +118,19 @@ export default function RecentActivityModal({
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
-      const dateA = new Date(a.timestamp).getTime();
-      const dateB = new Date(b.timestamp).getTime();
-      return sortBy === "newest" ? dateB - dateA : dateA - dateB;
+      try {
+        const dateA = new Date(a.timestamp).getTime();
+        const dateB = new Date(b.timestamp).getTime();
+        
+        if (isNaN(dateA) || isNaN(dateB)) {
+          return 0; // Keep original order if dates are invalid
+        }
+        
+        return sortBy === "newest" ? dateB - dateA : dateA - dateB;
+      } catch (error) {
+        console.error("Error sorting activities:", error);
+        return 0; // Keep original order on error
+      }
     });
 
   return (
@@ -106,12 +143,12 @@ export default function RecentActivityModal({
         {/* Filters and Search */}
         <div className="flex flex-col sm:flex-row gap-4 mt-6 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w- text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search activities..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-20"
+              className="pl-10"
             />
           </div>
           <div className="flex gap-4">
@@ -163,7 +200,7 @@ export default function RecentActivityModal({
                       </span>
                     </div>
                     <span className="text-sm text-gray-500 whitespace-nowrap ml-4">
-                      {format(new Date(activity.timestamp), "MMM d, yyyy h:mm a")}
+                      {formatTimestamp(activity.timestamp)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1">

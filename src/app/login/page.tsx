@@ -23,20 +23,28 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      console.log("Attempting login with:", { email, password });
+      
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        credentials: "include", // Important: include cookies in the request
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error("Invalid credentials");
+        console.error("Login failed:", data);
+        throw new Error(data.error || "Invalid credentials");
       }
 
-      const user = await response.json();
-      Cookies.set("user", JSON.stringify(user), {
+      console.log("Login successful:", data);
+      
+      // Store user data in cookie
+      Cookies.set("user", JSON.stringify(data), {
         expires: 7,
         path: "/",
         sameSite: "lax",
@@ -48,7 +56,7 @@ export default function LoginPage() {
       // Add a delay before navigation to show the loading screen
       setTimeout(() => {
         // Redirect based on user role
-        if (user.role === "HR") {
+        if (data.role === "HR") {
           router.push("/hr-dashboard");
         } else {
           router.push("/dashboard");
@@ -56,7 +64,7 @@ export default function LoginPage() {
       }, 2000);
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Invalid username or password");
+      toast.error(error instanceof Error ? error.message : "Invalid username or password");
       setIsLoading(false);
     }
   };

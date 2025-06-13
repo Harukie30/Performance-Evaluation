@@ -119,6 +119,21 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
     { id: "Q4", label: "Fourth Quarter", months: "Oct - Dec" },
   ];
 
+  const formatReviewDate = (dateString?: string) => {
+    if (!dateString) return "Not started";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.error("Invalid review date:", dateString);
+        return "Invalid date";
+      }
+      return date.toLocaleDateString();
+    } catch (error) {
+      console.error("Error formatting review date:", error);
+      return "Invalid date";
+    }
+  };
+
   return (
     <>
       <Dialog>
@@ -150,6 +165,11 @@ const QuarterViewModal = ({ employee }: { employee: Employee }) => {
                     <p className="text-sm text-gray-500">
                       {quarter.months} {currentYear}
                     </p>
+                    {review?.date && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Last updated: {formatReviewDate(review.date)}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -263,20 +283,31 @@ export default function DashboardPage() {
             const status = getQuarterStatus(quarter);
             if (status === "not_started") return undefined;
 
-            const currentDate = new Date();
-            const month = (quarter - 1) * 3 + 1; // Q1: Jan(1), Q2: Apr(4), Q3: Jul(7), Q4: Oct(10)
-            const reviewDate = new Date(
-              currentDate.getFullYear(),
-              month - 1,
-              15
-            );
+            try {
+              const currentDate = new Date();
+              const month = (quarter - 1) * 3 + 1; // Q1: Jan(1), Q2: Apr(4), Q3: Jul(7), Q4: Oct(10)
+              const reviewDate = new Date(
+                currentDate.getFullYear(),
+                month - 1,
+                15
+              );
 
-            // For completed reviews, set date in the past
-            if (status === "completed") {
-              reviewDate.setDate(reviewDate.getDate() - 15);
+              // For completed reviews, set date in the past
+              if (status === "completed") {
+                reviewDate.setDate(reviewDate.getDate() - 15);
+              }
+
+              // Validate the date before returning
+              if (isNaN(reviewDate.getTime())) {
+                console.error("Invalid date generated for quarter", quarter);
+                return undefined;
+              }
+
+              return reviewDate.toISOString();
+            } catch (error) {
+              console.error("Error generating review date:", error);
+              return undefined;
             }
-
-            return reviewDate.toISOString();
           };
 
           return {
@@ -312,41 +343,72 @@ export default function DashboardPage() {
       const reviewPeriod = `Q${currentQuarter} ${currentYear}`;
 
       const initialEvaluations = employeesWithReviews.map(
-        (employee: Employee, index: number) => ({
-          id: `eval-${index + 1}`,
-          employeeId: employee.employeeId,
-          employeeName: employee.name,
-          department: employee.department.department_name,
-          reviewPeriod,
-          status: (index % 3 === 0
-            ? "completed"
-            : index % 3 === 1
-            ? "submitted"
-            : "draft") as "completed" | "submitted" | "draft",
-          lastModified: new Date(Date.now() - index * 86400000)
-            .toISOString()
-            .split("T")[0],
-        })
-      );
+        (employee: Employee, index: number) => {
+          try {
+            const lastModified = new Date(Date.now() - index * 86400000);
+            if (isNaN(lastModified.getTime())) {
+              console.error("Invalid lastModified date generated for evaluation", index);
+              return null;
+            }
+            return {
+              id: `eval-${index + 1}`,
+              employeeId: employee.employeeId,
+              employeeName: employee.name,
+              department: employee.department.department_name,
+              reviewPeriod,
+              status: (index % 3 === 0
+                ? "completed"
+                : index % 3 === 1
+                ? "submitted"
+                : "draft") as "completed" | "submitted" | "draft",
+              lastModified: lastModified.toISOString().split("T")[0],
+            };
+          } catch (error) {
+            console.error("Error generating evaluation date:", error);
+            return null;
+          }
+        }
+      ).filter((evaluation): evaluation is NonNullable<typeof evaluation> => evaluation !== null);
 
       const recentActivities = employeesWithReviews
         .slice(0, 3)
-        .map((employee: Employee, index: number) => ({
-          id: `act-${index + 1}`,
-          type: (index === 0
-            ? "evaluation"
-            : index === 1
-            ? "update"
-            : "completion") as "evaluation" | "update" | "completion",
-          description:
-            index === 0
-              ? "New evaluation created"
-              : index === 1
-              ? "Evaluation updated"
-              : "Evaluation completed",
-          timestamp: new Date(Date.now() - index * 86400000).toLocaleString(),
-          employeeName: employee.name,
-        }));
+        .map((employee: Employee, index: number) => {
+          try {
+            // Create a valid date by subtracting days from current date
+            const timestamp = new Date();
+            timestamp.setDate(timestamp.getDate() - index);
+            
+            // Validate the timestamp
+            if (isNaN(timestamp.getTime())) {
+              console.error("Invalid timestamp generated for activity", index);
+              return null;
+            }
+
+            // Format the timestamp as ISO string
+            const formattedTimestamp = timestamp.toISOString();
+
+            return {
+              id: `act-${index + 1}`,
+              type: (index === 0
+                ? "evaluation"
+                : index === 1
+                ? "update"
+                : "completion") as "evaluation" | "update" | "completion",
+              description:
+                index === 0
+                  ? "New evaluation created"
+                  : index === 1
+                  ? "Evaluation updated"
+                  : "Evaluation completed",
+              timestamp: formattedTimestamp,
+              employeeName: employee.name,
+            };
+          } catch (error) {
+            console.error("Error generating activity timestamp:", error);
+            return null;
+          }
+        })
+        .filter((activity): activity is NonNullable<typeof activity> => activity !== null);
 
       setEvaluations(initialEvaluations);
       setRecentActivities(recentActivities);
@@ -757,7 +819,7 @@ export default function DashboardPage() {
         <Tabs defaultValue="active" className="space-y-4">
           <div>
             <h2 className="font-bold text-3xl">
-              Employee Section
+              Employees 
             </h2>
           </div>
           <TabsList className="bg-gray-200 p-1 rounded-lg">
