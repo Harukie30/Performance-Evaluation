@@ -189,6 +189,34 @@ export default function EvaluatorDashboard() {
     checkAuth();
   }, [router]);
 
+  // Load evaluations and recent activities
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Load evaluations
+        const evaluationsResponse = await fetch('/api/performance-review');
+        if (evaluationsResponse.ok) {
+          const evaluationsData = await evaluationsResponse.json();
+          setEvaluations(evaluationsData);
+        }
+
+        // Load recent activities
+        const activitiesResponse = await fetch('/api/recent-activities');
+        if (activitiesResponse.ok) {
+          const activitiesData = await activitiesResponse.json();
+          setRecentActivities(activitiesData);
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        toast.error('Failed to load dashboard data');
+      }
+    };
+
+    if (user) {
+      loadData();
+    }
+  }, [user]);
+
   const verifyEmployeeData = (employees: Employee[]) => {
     console.group('Employee Data Verification');
     console.log('Total employees:', employees.length);
@@ -338,7 +366,7 @@ export default function EvaluatorDashboard() {
     },
     {
       title: "Completion Rate",
-      value: `${((evaluations.filter((e) => e.status === "completed").length / evaluations.length) * 100).toFixed(1)}%`,
+      value: evaluations.length > 0 ? `${((evaluations.filter((e) => e.status === "completed").length / evaluations.length) * 100).toFixed(1)}%` : "0",
       icon: <BarChart3 className="h-6 w-6" />,
       color: "bg-purple-100 text-purple-600",
       description: "Overall completion percentage",
@@ -1112,7 +1140,7 @@ export default function EvaluatorDashboard() {
         </div>
 
         {/* Recent Activity */}
-        <div className="grid grid-cols-1 gap-6">
+        <div className="space-y-4">
           <Card className="overflow-hidden bg-white border-0 shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -1130,45 +1158,51 @@ export default function EvaluatorDashboard() {
                 </Button>
               </div>
 
-              <div className="space-y-3">
-                {recentActivities.slice(0, 3).map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200"
-                  >
-                    <div className={`p-2 rounded-full ${
-                      activity.type === "evaluation"
-                        ? "bg-blue-100 text-blue-600"
-                        : activity.type === "update"
-                        ? "bg-yellow-100 text-yellow-600"
-                        : "bg-green-100 text-green-600"
-                    }`}>
-                      {activity.type === "evaluation" ? (
-                        <FileText className="h-4 w-4" />
-                      ) : activity.type === "update" ? (
-                        <Clock className="h-4 w-4" />
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                        <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                          {activity.description}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(activity.timestamp).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">{activity.employeeName}</p>
-                    </div>
+              <div className="space-y-4">
+                {recentActivities.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No recent activities to display
                   </div>
-                ))}
+                ) : (
+                  recentActivities.slice(0, 3).map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200"
+                    >
+                      <div className={`p-2 rounded-full ${
+                        activity.type === "evaluation"
+                          ? "bg-blue-100 text-blue-600"
+                          : activity.type === "update"
+                          ? "bg-yellow-100 text-yellow-600"
+                          : "bg-green-100 text-green-600"
+                      }`}>
+                        {activity.type === "evaluation" ? (
+                          <FileText className="h-4 w-4" />
+                        ) : activity.type === "update" ? (
+                          <Clock className="h-4 w-4" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                          <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                            {activity.description}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(activity.timestamp).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">{activity.employeeName}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </Card>

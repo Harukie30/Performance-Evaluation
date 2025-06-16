@@ -36,6 +36,11 @@ import {
   Loader2,
   Trash2,
   Eye,
+  FileCheck,
+  Search,
+  Briefcase,
+  Target,
+  Star,
 } from "lucide-react";
 import {
   Dialog,
@@ -63,6 +68,7 @@ import { toast } from "sonner";
 import LoadingScreen from "@/components/LoadingScreen";
 import { QuarterlyReviewModal } from "@/components/QuarterlyReviewModal";
 import { employeeAPI, reviewAPI, authAPI } from "@/services/api";
+import RecentActivityModal from "@/components/RecentActivityModal";
 
 interface Employee {
   id: number;
@@ -110,10 +116,17 @@ interface Evaluation {
 
 interface Activity {
   id: string;
-  type: string;
+  type: "evaluation" | "update" | "completion";
   description: string;
   timestamp: string;
   user: string;
+  employeeName: string;
+  status?: string;
+  department?: string;
+  position?: string;
+  reviewPeriod?: string;
+  score?: number;
+  comments?: string;
 }
 
 const QuarterViewModal = ({ employee }: { employee: Employee }) => {
@@ -214,7 +227,7 @@ export default function HRDashboard() {
     "Q1" | "Q2" | "Q3" | "Q4" | null
   >(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false);
   const [newEmployee, setNewEmployee] = useState({
     name: "",
@@ -238,6 +251,8 @@ export default function HRDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const router = useRouter();
 
   const navItems = [
@@ -327,8 +342,69 @@ export default function HRDashboard() {
 
   const loadActivities = async () => {
     try {
-      const response = await reviewAPI.getRecent();
-      setActivities(response.data);
+      // For testing, let's create some sample activities with different timestamps
+      const sampleActivities: Activity[] = [
+        {
+          id: "1",
+          type: "evaluation" as const,
+          description: "Completed quarterly review for John Doe",
+          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+          user: "HR Manager",
+          employeeName: "John Doe",
+          status: "completed",
+          department: "Engineering",
+          position: "Senior Developer",
+          reviewPeriod: "Q1 2024",
+          score: 85,
+          comments: "Excellent performance in Q1"
+        },
+        {
+          id: "2",
+          type: "update" as const,
+          description: "Updated performance metrics for Jane Smith",
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+          user: "HR Manager",
+          employeeName: "Jane Smith",
+          status: "in_progress",
+          department: "Marketing",
+          position: "Marketing Manager",
+          reviewPeriod: "Q1 2024",
+          score: 92,
+          comments: "Great progress on marketing campaigns"
+        },
+        {
+          id: "3",
+          type: "completion" as const,
+          description: "Finalized annual review for Mike Johnson",
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+          user: "HR Manager",
+          employeeName: "Mike Johnson",
+          status: "completed",
+          department: "Sales",
+          position: "Sales Director",
+          reviewPeriod: "Annual 2023",
+          score: 88,
+          comments: "Outstanding sales performance"
+        }
+      ];
+
+      // Use sample data for now
+      setActivities(sampleActivities);
+
+      // Uncomment this when the API is ready
+      // const response = await reviewAPI.getRecent();
+      // const transformedActivities = response.data.map((activity: any) => ({
+      //   ...activity,
+      //   employeeName: activity.employeeName || activity.user,
+      //   timestamp: activity.timestamp ? new Date(activity.timestamp).toISOString() : new Date().toISOString(),
+      //   status: activity.status || 'completed',
+      //   department: activity.department || 'General',
+      //   position: activity.position || 'Not specified',
+      //   reviewPeriod: activity.reviewPeriod || 'Current Period',
+      //   score: activity.score || 0,
+      //   comments: activity.comments || ''
+      // }));
+      // setActivities(transformedActivities);
     } catch (error) {
       console.error("Failed to load activities:", error);
       toast.error("Failed to load activities");
@@ -451,6 +527,13 @@ export default function HRDashboard() {
     setUser(updatedUser);
   };
 
+  // Filter employees based on search query
+  const filteredEmployees = employees.filter((employee) =>
+    employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    employee.department.department_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (!user || isLoading) {
     return <LoadingScreen />;
   }
@@ -492,6 +575,13 @@ export default function HRDashboard() {
       icon: <BarChart3 className="h-6 w-6" />,
       color: "bg-purple-100 text-purple-600",
       description: "Percentage of active employees",
+    },
+    {
+      title: "Received Reviews",
+      value: evaluations.filter(e => e.status === "completed").length,
+      icon: <FileCheck className="h-6 w-6" />,
+      color: "bg-emerald-100 text-emerald-600",
+      description: "Number of completed performance reviews",
     },
   ];
 
@@ -593,35 +683,165 @@ export default function HRDashboard() {
           </div>
 
           {/* Recent Activity Section */}
-          <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-            <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-blue-600">
-                Recent Activity
-              </h2>
-              <Activity className="h-15 w-15 text-blue-600" />
-            </div>
+          <Card className="overflow-hidden bg-white border-0 shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div className="p-6">
-              <div className="space-y-4">
-                {activities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  <h2 className="text-2xl font-semibold">Recent Activity</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-blue-500 text-white hover:text-white hover:bg-red-500 group transition-all duration-200"
+                    onClick={() => setIsActivityModalOpen(true)}
                   >
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <Activity className="h-5 w-5 text-blue-600" />
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">
-                        {activity.description}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {activity.user} • {activity.timestamp}
-                      </p>
-                    </div>
+                    View All
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {activities.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No recent activities to display
                   </div>
-                ))}
+                ) : (
+                  activities.slice(0, 3).map((activity) => {
+                    // Get relative time (e.g., "2 hours ago")
+                    const getRelativeTime = (date: Date) => {
+                      const now = new Date();
+                      const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+                      
+                      if (diffInSeconds < 60) return 'just now';
+                      if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+                      if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+                      if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+                      if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 604800)} weeks ago`;
+                      if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`;
+                      return `${Math.floor(diffInSeconds / 31536000)} years ago`;
+                    };
+
+                    const activityDate = new Date(activity.timestamp);
+                    const relativeTime = getRelativeTime(activityDate);
+
+                    // Format the time with more detail
+                    const formattedTime = activityDate.toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: true
+                    });
+
+                    const formattedDate = activityDate.toLocaleDateString("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric"
+                    });
+
+                    return (
+                      <div
+                        key={activity.id}
+                        className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200"
+                      >
+                        <div className={`p-2 rounded-full ${
+                          activity.type === "evaluation"
+                            ? "bg-blue-100 text-blue-600"
+                            : activity.type === "update"
+                            ? "bg-yellow-100 text-yellow-600"
+                            : "bg-green-100 text-green-600"
+                        }`}>
+                          {activity.type === "evaluation" ? (
+                            <FileText className="h-4 w-4" />
+                          ) : activity.type === "update" ? (
+                            <Clock className="h-4 w-4" />
+                          ) : (
+                            <CheckCircle2 className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                            <div className="space-y-2">
+                              <div>
+                                <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                                  {activity.description}
+                                </p>
+                                {activity.comments && (
+                                  <p className="text-sm text-gray-600 mt-1 italic">
+                                    "{activity.comments}"
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <User className="h-4 w-4" />
+                                  <span>{activity.employeeName}</span>
+                                </div>
+                                <span>•</span>
+                                <div className="flex items-center gap-1">
+                                  <Briefcase className="h-4 w-4" />
+                                  <span>{activity.department}</span>
+                                </div>
+                                <span>•</span>
+                                <div className="flex items-center gap-1">
+                                  <Target className="h-4 w-4" />
+                                  <span>{activity.position}</span>
+                                </div>
+                                {activity.reviewPeriod && (
+                                  <>
+                                    <span>•</span>
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="h-4 w-4" />
+                                      <span>{activity.reviewPeriod}</span>
+                                    </div>
+                                  </>
+                                )}
+                                {activity.score !== undefined && (
+                                  <>
+                                    <span>•</span>
+                                    <div className="flex items-center gap-1">
+                                      <Star className="h-4 w-4 text-yellow-500" />
+                                      <span>Score: {activity.score}</span>
+                                    </div>
+                                  </>
+                                )}
+                                {activity.status && (
+                                  <>
+                                    <span>•</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${
+                                      activity.status === "completed"
+                                        ? "bg-green-100 text-green-800"
+                                        : activity.status === "in_progress"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-gray-100 text-gray-800"
+                                    }`}>
+                                      {activity.status}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-1 min-w-[200px]">
+                              <div className="text-right">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {relativeTime}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {formattedTime}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  {formattedDate}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </Card>
@@ -821,128 +1041,115 @@ export default function HRDashboard() {
             </Button>
           </div>
 
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Input
+              type="text"
+              placeholder="Search employees by name, email, or department..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-full max-w-md"
+            />
+          </div>
+
           <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
             <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-blue-600">
-                Active Employees
+              <h2 className="text-3xl font-bold text-green-700">
+                Employee Management
               </h2>
-              <Users className="h-15 w-15 text-blue-600" />
+              <Users className="h-15 w-15 text-green-600" />
             </div>
-            <div className="p-6">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  <span className="ml-2 text-gray-600">Loading employees...</span>
-                </div>
-              ) : employees.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No employees found
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Employee ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {employees
-                      .filter((employee) => employee.status === "Active")
-                      .map((employee) => (
-                        <TableRow key={employee.id}>
-                          <TableCell>{employee.employeeId}</TableCell>
-                          <TableCell>{employee.name}</TableCell>
-                          <TableCell>{employee.position.title}</TableCell>
-                          <TableCell>
-                            {employee.department.department_name}
-                          </TableCell>
-                          <TableCell>{employee.location}</TableCell>
-                          <TableCell>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs ${
-                                employee.status === "Active"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {employee.status}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredEmployees.map((employee) => (
+                  <TableRow key={employee.id}>
+                    <TableCell>{employee.name}</TableCell>
+                    <TableCell>{employee.email}</TableCell>
+                    <TableCell>{employee.department.department_name}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          employee.status === "Active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {employee.status}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => setSelectedQuarter("Q1")}
+                          className="bg-blue-500 text-white hover:bg-green-400 hover:text-white transition-colors duration-200"
+                          disabled={isLoading}
+                        >
+                          View Quarters
+                        </Button>
+                        {selectedQuarter && (
+                          <QuarterlyReviewModal
+                            isOpen={true}
+                            onClose={() => setSelectedQuarter(null)}
+                            quarter={selectedQuarter}
+                          />
+                        )}
+                        {user?.role === "HR" && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
                               <Button
-                                size="sm"
-                                onClick={() => setSelectedQuarter("Q1")}
-                                className="bg-blue-500 text-white hover:bg-green-400 hover:text-white transition-colors duration-200"
-                                disabled={isLoading}
+                                variant="ghost"
+                                className="text-red-600 hover:text-white hover:bg-red-500"
+                                disabled={isDeleting === employee.employeeId || isLoading}
                               >
-                                View Quarters
+                                {isDeleting === employee.employeeId ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <UserMinus className="h-6 w-6" />
+                                )}
                               </Button>
-                              {selectedQuarter && (
-                                <QuarterlyReviewModal
-                                  isOpen={true}
-                                  onClose={() => setSelectedQuarter(null)}
-                                  quarter={selectedQuarter}
-                                />
-                              )}
-                              {user?.role === "HR" && (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      className="text-red-600 hover:text-white hover:bg-red-500"
-                                      disabled={isDeleting === employee.employeeId || isLoading}
-                                    >
-                                      {isDeleting === employee.employeeId ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <UserMinus className="h-6 w-6" />
-                                      )}
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent className="bg-white">
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>
-                                        Are you sure?
-                                      </AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        This action cannot be undone. This will
-                                        permanently delete the employee and remove
-                                        their data from our servers.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel className="border-0 bg-blue-500 hover:bg-green-400 text-white hover:text-white">
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() =>
-                                          handleDeleteEmployee(
-                                            employee.employeeId
-                                          )
-                                        }
-                                        className="bg-red-500 text-white hover:bg-red-700"
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-white">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Are you sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will
+                                  permanently delete the employee and remove
+                                  their data from our servers.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDeleteEmployee(employee.employeeId)
+                                  }
+                                  className="bg-red-500 text-white hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </Card>
 
           {/* Add Employee Dialog */}
@@ -1267,6 +1474,13 @@ export default function HRDashboard() {
             </TableBody>
           </Table>
         </Card>
+
+        {/* Recent Activity Modal */}
+        <RecentActivityModal
+          isOpen={isActivityModalOpen}
+          onClose={() => setIsActivityModalOpen(false)}
+          activities={activities}
+        />
       </div>
     );
   };

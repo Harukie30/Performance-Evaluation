@@ -18,18 +18,13 @@ export async function GET() {
 // POST /api/recent-activities
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
-    
-    // Create the recent activity
-    const activity = await db.recentActivities.create({
-      type: data.type,
-      description: data.description,
-      timestamp: data.timestamp,
-      employeeName: data.employeeName,
-      employeeId: data.employeeId
-    });
+    const activity = await request.json();
+    console.log("Received activity data:", activity);
 
-    return NextResponse.json(activity, { status: 201 });
+    const createdActivity = await db.recentActivities.create(activity);
+    console.log("Created activity:", createdActivity);
+
+    return NextResponse.json(createdActivity);
   } catch (error) {
     console.error("Error creating recent activity:", error);
     return NextResponse.json(

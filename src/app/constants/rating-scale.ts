@@ -1,14 +1,14 @@
 export default function RatingScale(rate: number): string {
   if (rate >= 0 && rate <= 1) {
-    return "BS (Basic)";
+    return "Unsatisfactory";
   } else if (rate >= 1 && rate <= 2) {
-    return "ID (Intermediate)";
+    return "Needs Improvement";
   } else if (rate >= 2 && rate <= 3) {
-    return "UI (Upper Intermediate)";
+    return "Meets Expectations";
   } else if (rate >= 3 && rate <= 4) {
-    return "AD (Advanced)";
+    return "Eceeds Expectations";
   } else if (rate >= 4 && rate <= 5) {
-    return "EX (Expert)";
+    return "Outstanding";
   } else {
     // Handle cases outside expected range
 

@@ -78,9 +78,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(reviews);
   } catch (error) {
-    console.error("Error fetching reviews:", error);
+    console.error("Error fetching performance reviews:", error);
     return NextResponse.json(
-      { error: "Failed to fetch reviews" },
+      { error: "Failed to fetch performance reviews" },
       { status: 500 }
     );
   }
@@ -89,53 +89,17 @@ export async function GET(request: NextRequest) {
 // POST /api/performance-review
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
-    console.log("Received review data:", data);
+    const review = await request.json();
+    console.log("Received review data:", review);
 
-    // Validate the data
-    try {
-      reviewSchema.parse(data);
-    } catch (validationError) {
-      console.error("Validation error:", validationError);
-      return NextResponse.json(
-        { error: "Invalid review data", details: validationError },
-        { status: 400 }
-      );
-    }
+    const createdReview = await db.performanceReviews.create(review);
+    console.log("Created review:", createdReview);
 
-    // Create the performance review
-    const review = await db.performanceReviews.create({
-      ...data,
-      status: "completed",
-      submittedAt: new Date().toISOString()
-    });
-    console.log("Created review:", review);
-
-    // Update the employee's status in the database
-    try {
-      const database = await readJsonFile<{ employees: Employee[] }>(DATA_FILE_PATH);
-      const employeeIndex = database.employees.findIndex((emp: Employee) => emp.id === data.employeeId);
-      
-      if (employeeIndex !== -1) {
-        database.employees[employeeIndex].status = "Evaluated";
-        await writeJsonFile(DATA_FILE_PATH, database);
-        console.log("Updated employee status in database");
-      } else {
-        console.warn("Employee not found in database:", data.employeeId);
-      }
-    } catch (dbError) {
-      console.error("Error updating employee status:", dbError);
-      // Don't fail the request if employee status update fails
-    }
-
-    return NextResponse.json(review, { status: 201 });
+    return NextResponse.json(createdReview);
   } catch (error) {
-    console.error("Error creating review:", error);
+    console.error("Error creating performance review:", error);
     return NextResponse.json(
-      { 
-        error: "Failed to create review",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
+      { error: "Failed to create performance review" },
       { status: 500 }
     );
   }

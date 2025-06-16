@@ -1,38 +1,105 @@
+import { z } from "zod";
 import fs from 'fs';
 import path from 'path';
-import crypto from 'crypto';
-import { readJsonFile, writeJsonFile } from './file-utils';
 
-const DB_FILE_PATH = path.join(process.cwd(), 'src/data/db.json');
-
-// Define the data structure
-interface Database {
-  performanceReviews: PerformanceReview[];
-  recentActivities: RecentActivity[];
+// Custom UUID generator function
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 
-interface PerformanceReview {
+// Database types
+export interface PerformanceReview {
   id: string;
   employeeId: string;
   position: string;
   department: string;
   reviewType: string;
-  dateHired?: string;
-  immediateSupervisor?: string;
-  performanceCoverage?: string;
+  dateHired: string;
+  immediateSupervisor: string;
+  performanceCoverage: string;
+  jobKnowledge: number;
+  qualityOfWork: number;
+  promptnessOfWork: number;
+  qualityMeetsStandards: number;
+  qualityTimeliness: number;
+  qualityWorkOutputVolume: number;
+  qualityConsistency: number;
+  qualityJobTargets: number;
+  adaptabilityOpenness: number;
+  adaptabilityFlexibility: number;
+  adaptabilityResilience: number;
+  activeParticipationScore: number;
+  positiveTeamCultureScore: number;
+  effectiveCommunicationScore: number;
+  consistentAttendanceScore: number;
+  punctualityScore: number;
+  followsThroughScore: number;
+  reliableHandlingScore: number;
+  ethicalFollowsPoliciesScore: number;
+  ethicalProfessionalismScore: number;
+  ethicalAccountabilityScore: number;
+  ethicalRespectScore: number;
+  customerListeningScore: number;
+  customerProblemSolvingScore: number;
+  customerProductKnowledgeScore: number;
+  customerProfessionalAttitudeScore: number;
+  customerTimelyResolutionScore: number;
+  jobKnowledgeComments: string;
+  promptnessofworkComments: string;
+  qualityofworkComments: string;
+  qualityMeetsStandardsComments: string;
+  qualityTimelinessComments: string;
+  qualityWorkOutputVolumeComments: string;
+  qualityConsistencyComments: string;
+  qualityJobTargetsComments: string;
+  adaptabilityOpennessComments: string;
+  adaptabilityFlexibilityComments: string;
+  adaptabilityResilienceComments: string;
+  activeParticipationExplanation: string;
+  positiveTeamCultureExplanation: string;
+  effectiveCommunicationExplanation: string;
+  consistentAttendanceExplanation: string;
+  punctualityExplanation: string;
+  followsThroughExplanation: string;
+  reliableHandlingExplanation: string;
+  ethicalFollowsPoliciesExplanation: string;
+  ethicalProfessionalismExplanation: string;
+  ethicalAccountabilityExplanation: string;
+  ethicalRespectExplanation: string;
+  customerListeningExplanation: string;
+  customerProblemSolvingExplanation: string;
+  customerProductKnowledgeExplanation: string;
+  customerProfessionalAttitudeExplanation: string;
+  customerTimelyResolutionExplanation: string;
+  finalScore: number;
+  finalRating: string;
+  finalPercentage: number;
+  areasForImprovement: string;
+  additionalComments: string;
   status: string;
   submittedAt: string;
-  // Add other fields as needed
 }
 
-interface RecentActivity {
+export interface RecentActivity {
   id: string;
   type: string;
   description: string;
   timestamp: string;
   employeeName: string;
   employeeId: string;
+  reviewId?: string;
 }
+
+interface Database {
+  performanceReviews: PerformanceReview[];
+  recentActivities: RecentActivity[];
+}
+
+const DB_FILE_PATH = path.join(process.cwd(), 'src/data/db.json');
 
 // Initialize database if it doesn't exist
 async function initializeDatabase() {
@@ -46,8 +113,8 @@ async function initializeDatabase() {
         performanceReviews: [],
         recentActivities: []
       };
-      await writeJsonFile(DB_FILE_PATH, initialData);
-      console.log("Database initialized successfully");
+      await fs.promises.writeFile(DB_FILE_PATH, JSON.stringify(initialData, null, 2));
+      console.log("Database initialized with empty data");
     }
   } catch (error) {
     console.error("Error initializing database:", error);
@@ -58,22 +125,40 @@ async function initializeDatabase() {
 // Initialize database on module load
 initializeDatabase().catch(console.error);
 
+// Helper functions for database operations
+async function readDatabase(): Promise<Database> {
+  try {
+    const data = await fs.promises.readFile(DB_FILE_PATH, 'utf-8');
+    const parsed = JSON.parse(data);
+    console.log("Read database:", parsed);
+    return parsed;
+  } catch (error) {
+    console.error("Error reading database:", error);
+    return { performanceReviews: [], recentActivities: [] };
+  }
+}
+
+async function writeDatabase(data: Database): Promise<void> {
+  try {
+    await fs.promises.writeFile(DB_FILE_PATH, JSON.stringify(data, null, 2));
+    console.log("Wrote to database:", data);
+  } catch (error) {
+    console.error("Error writing to database:", error);
+    throw new Error("Failed to write to database");
+  }
+}
+
 export const db = {
   performanceReviews: {
     async findMany(filters?: { employeeId?: string; status?: string }) {
       try {
-        const data = await readJsonFile<Database>(DB_FILE_PATH);
+        const data = await readDatabase();
         let reviews = data.performanceReviews || [];
         
-        // Apply filters if provided
         if (filters) {
           reviews = reviews.filter(review => {
-            if (filters.employeeId && review.employeeId !== filters.employeeId) {
-              return false;
-            }
-            if (filters.status && review.status !== filters.status) {
-              return false;
-            }
+            if (filters.employeeId && review.employeeId !== filters.employeeId) return false;
+            if (filters.status && review.status !== filters.status) return false;
             return true;
           });
         }
@@ -87,72 +172,61 @@ export const db = {
 
     async create(review: Omit<PerformanceReview, "id">) {
       try {
-        // Ensure database is initialized
-        await initializeDatabase();
-        
-        const data = await readJsonFile<Database>(DB_FILE_PATH);
+        const data = await readDatabase();
         const newReview = {
           ...review,
-          id: crypto.randomUUID(),
+          id: generateUUID(),
         };
-        
-        data.performanceReviews = data.performanceReviews || [];
-        data.performanceReviews.push(newReview);
-        
-        await writeJsonFile(DB_FILE_PATH, data);
-        console.log("Created performance review:", newReview);
+        data.performanceReviews = [...(data.performanceReviews || []), newReview];
+        await writeDatabase(data);
+        console.log("Created new performance review:", newReview);
         return newReview;
       } catch (error) {
         console.error("Error creating performance review:", error);
-        throw new Error(`Failed to create performance review: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error("Failed to create performance review");
       }
     },
 
-    async update(id: string, data: Partial<PerformanceReview>) {
+    async update(id: string, review: Partial<PerformanceReview>) {
       try {
-        const dbData = await readJsonFile<Database>(DB_FILE_PATH);
-        const index = dbData.performanceReviews.findIndex(review => review.id === id);
-        
+        const data = await readDatabase();
+        const index = data.performanceReviews.findIndex(r => r.id === id);
         if (index === -1) {
-          throw new Error(`Review with id ${id} not found`);
+          throw new Error("Review not found");
         }
-
-        dbData.performanceReviews[index] = {
-          ...dbData.performanceReviews[index],
-          ...data,
+        data.performanceReviews[index] = {
+          ...data.performanceReviews[index],
+          ...review,
         };
-
-        await writeJsonFile(DB_FILE_PATH, dbData);
-        return dbData.performanceReviews[index];
+        await writeDatabase(data);
+        return data.performanceReviews[index];
       } catch (error) {
         console.error("Error updating performance review:", error);
-        throw error;
+        throw new Error("Failed to update performance review");
       }
     },
 
     async delete(id: string) {
       try {
-        const dbData = await readJsonFile<Database>(DB_FILE_PATH);
-        const index = dbData.performanceReviews.findIndex(review => review.id === id);
-        
-        if (index === -1) {
-          throw new Error(`Review with id ${id} not found`);
-        }
-
-        dbData.performanceReviews.splice(index, 1);
-        await writeJsonFile(DB_FILE_PATH, dbData);
+        const data = await readDatabase();
+        data.performanceReviews = data.performanceReviews.filter(r => r.id !== id);
+        await writeDatabase(data);
       } catch (error) {
         console.error("Error deleting performance review:", error);
-        throw error;
+        throw new Error("Failed to delete performance review");
       }
-    }
+    },
   },
 
   recentActivities: {
     async findMany() {
       try {
-        const data = await readJsonFile<Database>(DB_FILE_PATH);
-        return data.recentActivities || [];
+        const data = await readDatabase();
+        const activities = data.recentActivities || [];
+        console.log("Found recent activities:", activities);
+        return activities.sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
       } catch (error) {
         console.error("Error reading recent activities:", error);
         return [];
@@ -161,25 +235,19 @@ export const db = {
 
     async create(activity: Omit<RecentActivity, "id">) {
       try {
-        // Ensure database is initialized
-        await initializeDatabase();
-        
-        const data = await readJsonFile<Database>(DB_FILE_PATH);
+        const data = await readDatabase();
         const newActivity = {
           ...activity,
-          id: crypto.randomUUID(),
+          id: generateUUID(),
         };
-        
-        data.recentActivities = data.recentActivities || [];
-        data.recentActivities.push(newActivity);
-        
-        await writeJsonFile(DB_FILE_PATH, data);
-        console.log("Created recent activity:", newActivity);
+        data.recentActivities = [...(data.recentActivities || []), newActivity];
+        await writeDatabase(data);
+        console.log("Created new recent activity:", newActivity);
         return newActivity;
       } catch (error) {
         console.error("Error creating recent activity:", error);
-        throw new Error(`Failed to create recent activity: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error("Failed to create recent activity");
       }
-    }
-  }
+    },
+  },
 }; 

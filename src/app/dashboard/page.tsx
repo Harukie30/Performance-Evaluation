@@ -424,7 +424,7 @@ export default function DashboardPage() {
     },
     {
       title: "Completion Rate",
-      value: `${completionRate.toFixed(1)}%`,
+      value: totalEvaluations > 0 ? `${completionRate.toFixed(1)}%` : "0",
       icon: <BarChart3 className="h-6 w-6" />,
       color: "bg-purple-100 text-purple-600",
       description: "Overall completion percentage",
