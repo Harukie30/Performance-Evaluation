@@ -1114,6 +1114,25 @@ export default function FinalResults({
       const result = await response.json();
       console.log("Review submitted successfully:", result);
 
+      // Create a recent activity
+      const activityResponse = await fetch("/api/recent-activities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "evaluation",
+          description: `Performance review submitted for ${employeeName?.name || 'Employee'}`,
+          timestamp: new Date().toISOString(),
+          employeeName: employeeName?.name || 'Employee',
+          employeeId: initialForm.employeeId
+        }),
+      });
+
+      if (!activityResponse.ok) {
+        console.error("Failed to create recent activity");
+      }
+
       toast.success("Performance review completed successfully!");
       setShowConfirmDialog(false);
       // Redirect to evaluator dashboard after successful submission

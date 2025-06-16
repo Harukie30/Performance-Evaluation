@@ -50,80 +50,16 @@ interface DataFile {
 
 // Schema for review validation
 const reviewSchema = z.object({
-  employeeId: z.union([z.string(), z.number()]),
+  employeeId: z.string(),
   position: z.string(),
   department: z.string(),
-  reviewType: z.string().optional(),
-  dateHired: z.date().optional(),
+  reviewType: z.string(),
+  dateHired: z.string().optional(),
   immediateSupervisor: z.string().optional(),
   performanceCoverage: z.string().optional(),
-  
-  jobKnowledge: z.number().optional(),
-  qualityOfWork: z.number().optional(),
-  promptnessOfWork: z.number().optional(),
-  qualityMeetsStandards: z.number().optional(),
-  qualityTimeliness: z.number().optional(),
-  qualityWorkOutputVolume: z.number().optional(),
-  qualityConsistency: z.number().optional(),
-  qualityJobTargets: z.number().optional(),
-  adaptabilityOpenness: z.number().optional(),
-  adaptabilityFlexibility: z.number().optional(),
-  adaptabilityResilience: z.number().optional(),
-  activeParticipationScore: z.number().optional(),
-  positiveTeamCultureScore: z.number().optional(),
-  effectiveCommunicationScore: z.number().optional(),
-  consistentAttendanceScore: z.number().optional(),
-  punctualityScore: z.number().optional(),
-  followsThroughScore: z.number().optional(),
-  reliableHandlingScore: z.number().optional(),
-  ethicalFollowsPoliciesScore: z.number().optional(),
-  ethicalProfessionalismScore: z.number().optional(),
-  ethicalAccountabilityScore: z.number().optional(),
-  ethicalRespectScore: z.number().optional(),
-  customerListeningScore: z.number().optional(),
-  customerProblemSolvingScore: z.number().optional(),
-  customerProductKnowledgeScore: z.number().optional(),
-  customerProfessionalAttitudeScore: z.number().optional(),
-  customerTimelyResolutionScore: z.number().optional(),
-
-  jobKnowledgeComments: z.string().optional(),
-  promptnessofworkComments: z.string().optional(),
-  qualityofworkComments: z.string().optional(),
-  qualityMeetsStandardsComments: z.string().optional(),
-  qualityTimelinessComments: z.string().optional(),
-  qualityWorkOutputVolumeComments: z.string().optional(),
-  qualityConsistencyComments: z.string().optional(),
-  qualityJobTargetsComments: z.string().optional(),
-  adaptabilityOpennessComments: z.string().optional(),
-  adaptabilityFlexibilityComments: z.string().optional(),
-  adaptabilityResilienceComments: z.string().optional(),
-  activeParticipationExplanation: z.string().optional(),
-  positiveTeamCultureExplanation: z.string().optional(),
-  effectiveCommunicationExplanation: z.string().optional(),
-  consistentAttendanceExplanation: z.string().optional(),
-  punctualityExplanation: z.string().optional(),
-  followsThroughExplanation: z.string().optional(),
-  reliableHandlingExplanation: z.string().optional(),
-  ethicalFollowsPoliciesExplanation: z.string().optional(),
-  ethicalProfessionalismExplanation: z.string().optional(),
-  ethicalAccountabilityExplanation: z.string().optional(),
-  ethicalRespectExplanation: z.string().optional(),
-  customerListeningExplanation: z.string().optional(),
-  customerProblemSolvingExplanation: z.string().optional(),
-  customerProductKnowledgeExplanation: z.string().optional(),
-  customerProfessionalAttitudeExplanation: z.string().optional(),
-  customerTimelyResolutionExplanation: z.string().optional(),
-
-  finalScore: z.number().optional(),
-  finalRating: z.string().optional(),
-  finalPercentage: z.number().optional(),
-  areasForImprovement: z.string().optional(),
-  additionalComments: z.string().optional(),
-
-  status: z.enum(["Pending", "In Progress", "Completed", "Pending HR Review", "Rejected"]).default("Pending HR Review"),
-  submittedAt: z.string().optional(),
-  comments: z.string().optional(),
-  hrComments: z.string().optional(),
+  status: z.string(),
+  submittedAt: z.string(),
+  // Add other fields as needed
 });
 
 // GET /api/performance-review
@@ -133,10 +69,12 @@ export async function GET(request: NextRequest) {
     const employeeId = searchParams.get("employeeId");
     const status = searchParams.get("status");
 
-    const reviews = await db.performanceReviews.findMany({
-      employeeId: employeeId || undefined,
-      status: status || undefined,
-    });
+    const reviews = await db.performanceReviews.findMany(
+      employeeId || status ? {
+        employeeId: employeeId || undefined,
+        status: status || undefined,
+      } : undefined
+    );
 
     return NextResponse.json(reviews);
   } catch (error) {
@@ -152,27 +90,52 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    
+    console.log("Received review data:", data);
+
+    // Validate the data
+    try {
+      reviewSchema.parse(data);
+    } catch (validationError) {
+      console.error("Validation error:", validationError);
+      return NextResponse.json(
+        { error: "Invalid review data", details: validationError },
+        { status: 400 }
+      );
+    }
+
     // Create the performance review
     const review = await db.performanceReviews.create({
       ...data,
       status: "completed",
       submittedAt: new Date().toISOString()
     });
+    console.log("Created review:", review);
 
     // Update the employee's status in the database
-    const database = await readJsonFile<{ employees: Employee[] }>(DATA_FILE_PATH);
-    const employeeIndex = database.employees.findIndex((emp: Employee) => emp.id === data.employeeId);
-    if (employeeIndex !== -1) {
-      database.employees[employeeIndex].status = "Evaluated";
-      await writeJsonFile(DATA_FILE_PATH, database);
+    try {
+      const database = await readJsonFile<{ employees: Employee[] }>(DATA_FILE_PATH);
+      const employeeIndex = database.employees.findIndex((emp: Employee) => emp.id === data.employeeId);
+      
+      if (employeeIndex !== -1) {
+        database.employees[employeeIndex].status = "Evaluated";
+        await writeJsonFile(DATA_FILE_PATH, database);
+        console.log("Updated employee status in database");
+      } else {
+        console.warn("Employee not found in database:", data.employeeId);
+      }
+    } catch (dbError) {
+      console.error("Error updating employee status:", dbError);
+      // Don't fail the request if employee status update fails
     }
 
     return NextResponse.json(review, { status: 201 });
   } catch (error) {
     console.error("Error creating review:", error);
     return NextResponse.json(
-      { error: "Failed to create review" },
+      { 
+        error: "Failed to create review",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 }
     );
   }
