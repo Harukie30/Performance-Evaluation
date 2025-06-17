@@ -24,6 +24,8 @@ interface EvaluationResult {
   }[];
   totalScore: number;
   comments: string;
+  keyAchievements?: string[];
+  areasForImprovement?: string[];
 }
 
 export default function PerformanceReviewPage({ params }: { params: Promise<{ id: string }> }) {
@@ -51,385 +53,181 @@ export default function PerformanceReviewPage({ params }: { params: Promise<{ id
   }, [id]);
 
   const handlePrint = () => {
-    if (!evaluation) return;
-    
     const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Performance Review Summary</title>
-            <style>
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Performance Review - ${evaluation?.employeeName || 'Employee'}</title>
+          <style>
+            @media print {
               @page {
                 size: A4;
-                margin: 1.2cm;
+                margin: 1.5cm;
               }
+              
               body {
-                font-family: 'Segoe UI', Arial, sans-serif;
-                font-size: 10pt;
-                line-height: 1.4;
-                margin: 0;
-                padding: 0;
-                color: #2d3748;
-                background-color: #ffffff;
-                max-width: 100%;
-              }
-              .header {
-                text-align: center;
-                margin-bottom: 25px;
-                padding-bottom: 15px;
-                border-bottom: 2px solid #e2e8f0;
-              }
-              h1 {
-                font-size: 20pt;
-                font-weight: 600;
-                color: #1a365d;
-                margin: 0 0 8px 0;
-                letter-spacing: -0.5px;
-              }
-              .subtitle {
+                font-family: 'Geist', sans-serif;
                 font-size: 11pt;
-                color: #4a5568;
-                margin: 0;
+                line-height: 1.4;
+                color: #000;
+                background: #fff;
               }
-              h2 {
-                font-size: 13pt;
-                font-weight: 600;
-                color: #2c5282;
-                margin: 20px 0 12px 0;
-                padding-bottom: 6px;
-                border-bottom: 2px solid #e2e8f0;
+
+              .print-header {
+                text-align: center;
+                margin-bottom: 2rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid #000;
               }
-              .section {
-                margin-bottom: 20px;
-                page-break-inside: avoid;
-                background-color: #ffffff;
-                border-radius: 6px;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-                padding: 15px;
-              }
-              .employee-info {
+
+              .employee-section {
                 display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-                margin-bottom: 15px;
-              }
-              .info-item {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                padding: 8px;
-                background-color: #f7fafc;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+                margin-bottom: 2rem;
+                padding: 1rem;
+                border: 1px solid #ddd;
                 border-radius: 4px;
               }
-              .info-label {
-                font-weight: 600;
-                color: #4a5568;
-                min-width: 110px;
-                font-size: 9.5pt;
-              }
-              .info-value {
-                color: #2d3748;
-                font-size: 9.5pt;
-              }
-              .score-section {
-                margin: 15px 0;
-                page-break-inside: avoid;
-                background-color: #f7fafc;
-                border-radius: 6px;
-                padding: 12px;
-              }
-              .score-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 8px;
-                padding-bottom: 6px;
-                border-bottom: 1px solid #e2e8f0;
-              }
-              .score-category {
-                font-weight: 600;
-                color: #2c5282;
-                font-size: 10pt;
-              }
-              .score-value {
-                font-weight: 600;
-                color: #2d3748;
-                background-color: #ebf8ff;
-                padding: 3px 10px;
-                border-radius: 4px;
-                font-size: 9.5pt;
-              }
-              .comments {
-                margin-top: 12px;
-                padding: 12px;
-                background-color: #ffffff;
-                border-radius: 4px;
-                border: 1px solid #e2e8f0;
-                font-size: 9.5pt;
-              }
-              .comments-label {
-                font-weight: 600;
-                color: #4a5568;
-                margin-bottom: 6px;
-                font-size: 9.5pt;
-              }
-              .total-score {
-                text-align: center;
+
+              .section-title {
                 font-size: 14pt;
-                font-weight: 600;
-                margin: 25px 0;
-                padding: 15px;
-                background: linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%);
-                color: white;
-                border-radius: 6px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                font-weight: bold;
+                margin: 1.5rem 0 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid #000;
               }
+
               .rating-scale {
-                display: flex;
-                justify-content: space-between;
-                margin: 15px 0;
-                padding: 12px;
-                background-color: #f7fafc;
-                border-radius: 6px;
+                margin: 1rem 0;
+                padding: 1rem;
+                background: #f8f9fa;
+                border: 1px solid #ddd;
               }
-              .rating-item {
-                text-align: center;
-                padding: 8px;
-                flex: 1;
+
+              .performance-category {
+                margin-bottom: 1.5rem;
+                page-break-inside: avoid;
               }
-              .rating-value {
-                font-weight: 600;
-                color: #2c5282;
-                margin-bottom: 4px;
-                font-size: 9.5pt;
+
+              .performance-category h3 {
+                font-size: 12pt;
+                margin-bottom: 0.5rem;
+                color: #1a1a1a;
               }
-              .rating-label {
-                font-size: 8.5pt;
-                color: #4a5568;
+
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 1rem 0;
               }
+
+              th, td {
+                border: 1px solid #ddd;
+                padding: 0.5rem;
+                text-align: left;
+              }
+
+              th {
+                background: #f8f9fa;
+                font-weight: bold;
+              }
+
+              .no-print {
+                display: none;
+              }
+
               .page-break {
                 page-break-before: always;
               }
-              .two-column {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+
+              .signature-section {
+                margin-top: 3rem;
+                page-break-inside: avoid;
               }
-              .full-width {
-                grid-column: 1 / -1;
-              }
-              @media print {
-                .no-print {
-                  display: none;
-                }
-                body {
-                  -webkit-print-color-adjust: exact;
-                  print-color-adjust: exact;
-                }
-                .section {
-                  box-shadow: none;
-                  border: 1px solid #e2e8f0;
-                }
-                .page-break {
-                  margin-top: 20px;
-                }
-              }
-              .employee-section {
-                background: linear-gradient(to right, #f8fafc, #ffffff);
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 25px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-              }
-              .employee-header {
-                display: flex;
-                align-items: center;
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-                border-bottom: 2px solid #e2e8f0;
-              }
-              .employee-title {
-                font-size: 16pt;
-                font-weight: 600;
-                color: #1a365d;
-                margin: 0;
-              }
-              .employee-subtitle {
-                font-size: 11pt;
-                color: #4a5568;
-                margin: 5px 0 0 0;
-              }
-              .employee-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-              }
-              .info-group {
-                background-color: #ffffff;
-                border-radius: 6px;
-                padding: 12px;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-              }
-              .info-group-title {
-                font-size: 10pt;
-                font-weight: 600;
-                color: #2c5282;
-                margin-bottom: 10px;
-                padding-bottom: 5px;
-                border-bottom: 1px solid #e2e8f0;
-              }
-              .info-item {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 8px;
-                background-color: #f8fafc;
-                border-radius: 4px;
-                margin-bottom: 8px;
-              }
-              .info-item:last-child {
-                margin-bottom: 0;
-              }
-              .info-label {
-                font-weight: 600;
-                color: #4a5568;
-                min-width: 120px;
-                font-size: 9.5pt;
-              }
-              .info-value {
-                color: #2d3748;
-                font-size: 9.5pt;
-                flex: 1;
-              }
-              .status-badge {
-                display: inline-block;
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 9pt;
-                font-weight: 500;
-                background-color: #e6fffa;
-                color: #2c7a7b;
-              }
-              .status-badge.completed {
-                background-color: #c6f6d5;
-                color: #2f855a;
-              }
-              .status-badge.pending {
-                background-color: #fefcbf;
-                color: #975a16;
+
+              .signature-line {
+                border-top: 1px solid #000;
+                margin-top: 3rem;
+                padding-top: 0.5rem;
               }
             </style>
           </head>
           <body>
-            <div class="header">
-              <h1>Performance Review Summary</h1>
-              <p class="subtitle">${evaluation.ForRegular}</p>
+            <div class="print-header">
+              <h1>Performance Review</h1>
+              <p>${evaluation?.employeeName || 'Employee'} - ${evaluation?.department || 'Department'}</p>
             </div>
-            
+
             <div class="employee-section">
-              <div class="employee-header">
-                <div>
-                  <h2 class="employee-title">${evaluation.employeeName}</h2>
-                  <p class="employee-subtitle">${evaluation.department}</p>
-                </div>
+              <div>
+                <h3>Personal Information</h3>
+                <p><strong>Employee ID:</strong> ${evaluation?.employeeId || 'N/A'}</p>
+                <p><strong>Department:</strong> ${evaluation?.department || 'N/A'}</p>
               </div>
-              
-              <div class="employee-grid">
-                <div class="info-group">
-                  <div class="info-group-title">Personal Information</div>
-                  <div class="info-item">
-                    <span class="info-label">Employee ID:</span>
-                    <span class="info-value">${evaluation.employeeId || 'N/A'}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Department:</span>
-                    <span class="info-value">${evaluation.department}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Review Period:</span>
-                    <span class="info-value">${evaluation.ForRegular}</span>
-                  </div>
-                </div>
-
-                <div class="info-group">
-                  <div class="info-group-title">Review Details</div>
-                  <div class="info-item">
-                    <span class="info-label">Status:</span>
-                    <span class="info-value">
-                      <span class="status-badge ${evaluation.status.toLowerCase()}">${evaluation.status}</span>
-                    </span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Last Modified:</span>
-                    <span class="info-value">${evaluation.lastModified}</span>
-                  </div>
-                </div>
+              <div>
+                <h3>Review Details</h3>
+                <p><strong>Review Period:</strong> ${evaluation?.ForRegular || 'N/A'}</p>
+                <p><strong>Status:</strong> ${evaluation?.status || 'N/A'}</p>
+                <p><strong>Last Modified:</strong> ${evaluation?.lastModified ? new Date(evaluation.lastModified).toLocaleDateString() : 'N/A'}</p>
               </div>
             </div>
 
-            <div class="section">
-              <h2>Performance Scores</h2>
-              <div class="two-column">
-                ${evaluation.scores.map(score => `
-                  <div class="score-section">
-                    <div class="score-header">
-                      <span class="score-category">${score.category}</span>
-                      <span class="score-value">Score: ${score.score}/5 (Weight: ${score.weight}%)</span>
-                    </div>
-                    <div class="comments">
-                      <div class="comments-label">Comments:</div>
-                      ${score.comments}
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-
+            <div class="section-title">Overall Rating</div>
             <div class="rating-scale">
-              <div class="rating-item">
-                <div class="rating-value">1-1.5</div>
-                <div class="rating-label">Basic (BS)</div>
-              </div>
-              <div class="rating-item">
-                <div class="rating-value">1.6-2.5</div>
-                <div class="rating-label">Intermediate (ID)</div>
-              </div>
-              <div class="rating-item">
-                <div class="rating-value">2.6-3.5</div>
-                <div class="rating-label">Upper Intermediate (UI)</div>
-              </div>
-              <div class="rating-item">
-                <div class="rating-value">3.6-4.5</div>
-                <div class="rating-label">Advanced (AD)</div>
-              </div>
-              <div class="rating-item">
-                <div class="rating-value">4.6-5.0</div>
-                <div class="rating-label">Expert (EX)</div>
-              </div>
+              <p><strong>Overall Score:</strong> ${evaluation?.totalScore.toFixed(2) || 'N/A'}</p>
+              <p><strong>Rating Scale:</strong> 1-5 (1: Needs Improvement, 5: Outstanding)</p>
             </div>
 
-            <div class="total-score">
-              Total Score: ${evaluation.totalScore.toFixed(2)}/5.00
-            </div>
+            <div class="section-title">Performance Metrics</div>
+            ${evaluation?.scores.map(score => `
+              <div class="performance-category">
+                <h3>${score.category || 'N/A'}</h3>
+                <p><strong>Score:</strong> ${score.score || 'N/A'}</p>
+                <p><strong>Comments:</strong> ${score.comments || 'N/A'}</p>
+              </div>
+            `).join('') || 'No performance metrics available'}
 
-            <div class="section">
-              <h2>Additional Comments</h2>
-              <div class="comments">
-                ${evaluation.comments}
+            <div class="section-title">Key Achievements</div>
+            <ul>
+              ${evaluation?.keyAchievements?.length ? evaluation.keyAchievements.map(achievement => `
+                <li>${achievement || 'N/A'}</li>
+              `).join('') : 'No key achievements recorded'}
+            </ul>
+
+            <div class="section-title">Areas for Improvement</div>
+            <ul>
+              ${evaluation?.areasForImprovement?.length ? evaluation.areasForImprovement.map(area => `
+                <li>${area || 'N/A'}</li>
+              `).join('') : 'No areas for improvement recorded'}
+            </ul>
+
+            <div class="section-title">Evaluator Comments</div>
+            <p>${evaluation?.comments || 'No evaluator comments available'}</p>
+
+            <div class="signature-section">
+              <div class="signature-line">
+                <p><strong>Evaluator Signature</strong></p>
+                <p>Date: _________________</p>
+              </div>
+              <div class="signature-line">
+                <p><strong>Employee Signature</strong></p>
+                <p>Date: _________________</p>
               </div>
             </div>
           </body>
         </html>
       `);
-      printWindow.document.close();
-      printWindow.focus();
-      
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-      }, 250);
-    }
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
 
   const handleDownload = () => {

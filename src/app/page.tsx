@@ -20,7 +20,6 @@ import {
 
 import { HelpCircleIcon, MailIcon } from "lucide-react";
 
-
 const faqs = [
   {
     question: "How long does a review take?",
@@ -82,8 +81,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-     
-       
+
       <header className="container mx-auto px-4 py-16 md:py-24 text-center pt-24">
         <div className="max-w-3xl mx-auto">
           <Badge
@@ -141,8 +139,6 @@ export default function Home() {
         </div>
       </header>
       {/* End of Section */}
-
-      
 
       {/* Features Section */}
       <motion.div
@@ -546,9 +542,7 @@ export default function Home() {
               fairness, clarity, and growth in mind.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button
-                className="h-14 px-10 text-lg font-medium bg-white hover:bg-amber-300 text-slate-900 transition-colors shadow-lg hover:shadow-xl"
-              >
+              <Button className="h-14 px-10 text-lg font-medium bg-white hover:bg-amber-300 text-slate-900 transition-colors shadow-lg hover:shadow-xl">
                 <a href="/login">Begin Employee Review</a>
               </Button>
             </div>
