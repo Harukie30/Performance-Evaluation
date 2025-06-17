@@ -86,7 +86,7 @@ export default function Home() {
         <div className="max-w-3xl mx-auto">
           <Badge
             variant="outline"
-            className="mb-5 px-4 py-1.5 rounded-full border border-blue-300 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold uppercase tracking-wide"
+            className="mb-5 px-4 py-1.5 rounded-full border border-blue-100 bg-blue-300 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold uppercase tracking-wide"
           >
             Performance Management System
           </Badge>
@@ -239,9 +239,12 @@ export default function Home() {
                       {feature.description}
                     </p>
                     <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 w-full text-center">
-                      <button className="text-blue-600 dark:text-blue-400 font-medium text-sm hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
+                      <Link
+                        href="/feedback"
+                        className="text-blue-600 dark:text-blue-400 font-medium text-sm hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                      >
                         Learn more →
-                      </button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
