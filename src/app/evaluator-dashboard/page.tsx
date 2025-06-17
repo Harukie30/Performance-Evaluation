@@ -52,6 +52,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { QuarterlyReviewModal } from "@/components/QuarterlyReviewModal";
 import RecentActivityModal from "@/components/RecentActivityModal";
@@ -98,7 +99,7 @@ interface Evaluation {
   employeeId: string;
   employeeName: string;
   department: string;
-  reviewPeriod: string;
+  ForRegular?: "Q1 2023" | "Q2 2023" | "Q3 2023" | "Q4 2023" | "Q1 2024" | "Q2 2024";
   status: "draft" | "submitted" | "completed";
   lastModified: string;
 }
@@ -138,6 +139,22 @@ interface RecentActivity {
   employeeName: string;
 }
 
+interface EvaluationResult {
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  ForRegular: string;
+  status: string;
+  lastModified: string;
+  scores: {
+    category: string;
+    score: number;
+    weight: number;
+  }[];
+  totalScore: number;
+  comments: string;
+}
+
 type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
 
 export default function EvaluatorDashboard() {
@@ -157,6 +174,8 @@ export default function EvaluatorDashboard() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isQuarterModalOpen, setIsQuarterModalOpen] = useState(false);
   const [selectedQuarter, setSelectedQuarter] = useState<null | 'Q1' | 'Q2' | 'Q3' | 'Q4'>('Q1');
+  const [selectedEvaluation, setSelectedEvaluation] = useState<EvaluationResult | null>(null);
+  const [showResultsModal, setShowResultsModal] = useState(false);
   const router = useRouter();
 
   const navItems = [
@@ -359,14 +378,16 @@ export default function EvaluatorDashboard() {
     },
     {
       title: "Pending",
-      value: evaluations.filter((e) => e.status === "draft").length,
+      value: employees.length - evaluations.filter((e) => e.status === "completed").length,
       icon: <Clock className="h-6 w-6" />,
       color: "bg-yellow-100 text-yellow-600",
-      description: "Evaluations awaiting completion",
+      description: "Employees awaiting evaluation",
     },
     {
       title: "Completion Rate",
-      value: evaluations.length > 0 ? `${((evaluations.filter((e) => e.status === "completed").length / evaluations.length) * 100).toFixed(1)}%` : "0",
+      value: employees.length > 0 
+        ? `${((evaluations.filter((e) => e.status === "completed").length / employees.length) * 100).toFixed(1)}%` 
+        : "0",
       icon: <BarChart3 className="h-6 w-6" />,
       color: "bg-purple-100 text-purple-600",
       description: "Overall completion percentage",
@@ -514,6 +535,108 @@ export default function EvaluatorDashboard() {
   };
 
   const quarters: Quarter[] = ["Q1", "Q2", "Q3", "Q4"];
+
+  const handleViewResults = async (evaluation: Evaluation) => {
+    try {
+      console.log('Fetching evaluation details for:', evaluation.id);
+      const response = await fetch(`/api/performance-review/${evaluation.id}`);
+      console.log('API Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        throw new Error(errorData.error || 'Failed to fetch evaluation details');
+      }
+      
+      const data = await response.json();
+      console.log('Received evaluation data:', data);
+      
+      setSelectedEvaluation(data);
+      setShowResultsModal(true);
+    } catch (error) {
+      console.error('Error fetching evaluation details:', error);
+      toast.error("Failed to load evaluation details");
+    }
+  };
+
+  const ResultsModal = ({ evaluation, onClose }: { evaluation: EvaluationResult | null, onClose: () => void }) => {
+    if (!evaluation) return null;
+
+    return (
+      <Dialog open={showResultsModal} onOpenChange={setShowResultsModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-blue-600">
+              Evaluation Results
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Employee Information */}
+            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div>
+                <h3 className="font-semibold text-gray-600">Employee</h3>
+                <p className="text-lg">{evaluation.employeeName}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-600">Department</h3>
+                <p className="text-lg">{evaluation.department}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-600">For Regular</h3>
+                <p className="text-lg">{evaluation.ForRegular}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-600">Status</h3>
+                <p className="text-lg">{evaluation.status}</p>
+              </div>
+            </div>
+
+            {/* Scores Table */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-gray-800">Performance Scores</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Weight</TableHead>
+                    <TableHead>Weighted Score</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {evaluation.scores.map((score, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{score.category}</TableCell>
+                      <TableCell>{score.score}</TableCell>
+                      <TableCell>{score.weight}%</TableCell>
+                      <TableCell>{(score.score * score.weight / 100).toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="font-bold">
+                    <TableCell colSpan={3}>Total Score</TableCell>
+                    <TableCell>{evaluation.totalScore.toFixed(2)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Comments */}
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-gray-800">Comments</h3>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="whitespace-pre-wrap">{evaluation.comments}</p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={onClose}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   const renderContent = () => {
     if (!user) return null;
@@ -1004,34 +1127,42 @@ export default function EvaluatorDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredAndSortedEmployees.map((employee) => (
-                    <TableRow key={employee.id}>
-                      <TableCell>{employee.name}</TableCell>
-                      <TableCell>{employee.department.department_name}</TableCell>
-                      <TableCell>{employee.position.title}</TableCell>
-                      <TableCell>{employee.email}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          employee.status === "Active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}>
-                          {employee.status}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
-                            size="sm"
-                            onClick={() => handleNewEvaluation(employee)}
-                          >
-                            Evaluate
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {filteredAndSortedEmployees
+                    .filter((employee: Employee) => {
+                      // Only show employees who haven't been evaluated yet
+                      const hasEvaluation = evaluations.some(
+                        (evaluation) => evaluation.employeeId === employee.employeeId && evaluation.status === "completed"
+                      );
+                      return !hasEvaluation;
+                    })
+                    .map((employee) => (
+                      <TableRow key={employee.id}>
+                        <TableCell>{employee.name}</TableCell>
+                        <TableCell>{employee.department.department_name}</TableCell>
+                        <TableCell>{employee.position.title}</TableCell>
+                        <TableCell>{employee.email}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            employee.status === "Active"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}>
+                            {employee.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
+                              size="sm"
+                              onClick={() => handleNewEvaluation(employee)}
+                            >
+                              Evaluate
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </Card>
@@ -1048,7 +1179,7 @@ export default function EvaluatorDashboard() {
                   <TableRow>
                     <TableHead>Employee Name</TableHead>
                     <TableHead>Department</TableHead>
-                    <TableHead>Review Period</TableHead>
+                    <TableHead>For Regular</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Last Modified</TableHead>
                     <TableHead>Actions</TableHead>
@@ -1061,21 +1192,21 @@ export default function EvaluatorDashboard() {
                       <TableRow key={evaluation.id}>
                         <TableCell>{evaluation.employeeName}</TableCell>
                         <TableCell>{evaluation.department}</TableCell>
-                        <TableCell>{evaluation.reviewPeriod}</TableCell>
-                        <TableCell>
-                          <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                            completed
-                          </span>
-                        </TableCell>
+                        <TableCell>{evaluation.ForRegular}</TableCell>
+                        <TableCell>{evaluation.status}</TableCell>
                         <TableCell>{evaluation.lastModified}</TableCell>
                         <TableCell>
-                          <Button
-                            className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
-                            size="sm"
-                            onClick={() => handleViewEvaluation(evaluation.id)}
-                          >
-                            View
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              
+                              size="sm"
+                              onClick={() => router.push(`/performance/${evaluation.id}`)}
+                              className="flex items-center gap-2 bg-blue-500 text-white hover:text-black hover:bg-yellow-400"
+                            >
+                              <Eye className="h-4 w-4" />
+                              Review Summary
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1214,6 +1345,15 @@ export default function EvaluatorDashboard() {
           onClose={() => setIsActivityModalOpen(false)}
           activities={recentActivities}
         />
+
+        {/* Results Modal */}
+        <ResultsModal 
+          evaluation={selectedEvaluation} 
+          onClose={() => {
+            setShowResultsModal(false);
+            setSelectedEvaluation(null);
+          }} 
+        />
       </div>
     );
   };
@@ -1239,7 +1379,7 @@ export default function EvaluatorDashboard() {
         </button>
 
         {/* Sidebar Container */}
-        <div className={`bg-yellow-100 shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
+        <div className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}>
           <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
@@ -1253,7 +1393,7 @@ export default function EvaluatorDashboard() {
             </div>
 
             {/* Navigation */}
-            <nav className="space-y-1 bg-blue-100 rounded-2xl">
+            <nav className="space-y-1 bg-blue-200 rounded-2xl">
               {navItems.map((item) => (
                 <Button
                   key={item.id}
@@ -1281,7 +1421,7 @@ export default function EvaluatorDashboard() {
           </div>
 
           {/* User Profile */}
-          <div className="flex flex-col items-center lg:flex-row lg:items-start gap-4 mb-8 p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex flex-col items-center lg:flex-row lg:items-start gap-4 mb-8 p-4 rounded-xl bg-white border border-gray-400 shadow-sm hover:shadow-md transition-shadow">
             <div className="relative">
               <Avatar className="h-14 w-14 flex-shrink-0">
                 <AvatarImage

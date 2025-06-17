@@ -21,6 +21,7 @@ export interface PerformanceReview {
   dateHired: string;
   immediateSupervisor: string;
   performanceCoverage: string;
+  reviewPeriod: string;
   jobKnowledge: number;
   qualityOfWork: number;
   promptnessOfWork: number;
@@ -82,6 +83,9 @@ export interface PerformanceReview {
   additionalComments: string;
   status: string;
   submittedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  ForRegular?: "Q1 2023" | "Q2 2023" | "Q3 2023" | "Q4 2023" | "Q1 2024" | "Q2 2024";
 }
 
 export interface RecentActivity {
@@ -167,6 +171,20 @@ export const db = {
       } catch (error) {
         console.error("Error reading performance reviews:", error);
         return [];
+      }
+    },
+
+    async findById(id: string) {
+      try {
+        const data = await readDatabase();
+        const review = data.performanceReviews.find(r => r.id === id);
+        if (!review) {
+          throw new Error("Review not found");
+        }
+        return review;
+      } catch (error) {
+        console.error("Error finding review by ID:", error);
+        throw error;
       }
     },
 

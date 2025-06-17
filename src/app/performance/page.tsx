@@ -28,7 +28,7 @@ export default function PerformanceReviewPage() {
     reviewDate: new Date(),
     datehired: new Date(),
     reviewType: "quarterly",
-    reviewPeriod: "",
+    
     attendance: 0,
     punctuality: 0,
     correctiveActionWarningReprimandsOralOrWritten: 0,

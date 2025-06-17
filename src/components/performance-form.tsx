@@ -91,7 +91,7 @@ export default function PerformanceForm({
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<PerformanceFormValues>({
-    resolver: zodResolver(formSchema) as Resolver<PerformanceFormValues>,
+    resolver: zodResolver(formSchema) as unknown as Resolver<PerformanceFormValues>,
     defaultValues: {
       ...formData,
       employeeName: formData.employeeName || 0,
@@ -138,6 +138,11 @@ export default function PerformanceForm({
         "promptnessOfWork",
       ];
 
+      // Add ForRegular to required fields if review type is quarterly
+      if (values.reviewType === "quarterly") {
+        requiredFields.push("ForRegular");
+      }
+
       const missingFields = requiredFields.filter(
         (field) => !values[field as keyof PerformanceFormValues]
       );
@@ -157,6 +162,8 @@ export default function PerformanceForm({
         jobKnowledge: values.jobKnowledge || 0,
         qualityOfWork: values.qualityOfWork || 0,
         promptnessOfWork: values.promptnessOfWork || 0,
+        // Include ForRegular field
+        ForRegular: values.ForRegular || formData.ForRegular,
       };
 
       await onComplete(updatedValues);
@@ -1001,6 +1008,8 @@ export default function PerformanceForm({
                 jobKnowledge: formState.jobKnowledge || 0,
                 qualityOfWork: formState.qualityOfWork || 0,
                 promptnessOfWork: formState.promptnessOfWork || 0,
+                // Include ForRegular field
+                ForRegular: formState.ForRegular || formData.ForRegular,
               };
 
               onComplete(updatedValues);

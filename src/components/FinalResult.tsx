@@ -296,7 +296,7 @@ export default function FinalResults({
                     <p><strong style="color: #4b5563; width: 120px; display: inline-block;">For Probationary:</strong> ${initialForm.ForProbationary || ""}</p>
                   ` : ''}
                   ${initialForm.reviewType === "annual" ? `
-                    <p><strong style="color: #4b5563; width: 120px; display: inline-block;">Annual Review:</strong> ${initialForm.reviewPeriod || ""}</p>
+                    <p><strong style="color: #4b5563; width: 120px; display: inline-block;">Annual Review:</strong> ${getCurrentQuarter()}</p>
                     ${initialForm.otherReviewType ? `
                       <p><strong style="color: #4b5563; width: 120px; display: inline-block;">Review Type:</strong> ${initialForm.otherReviewType}</p>
                     ` : ''}
@@ -1018,91 +1018,106 @@ export default function FinalResults({
     }, 250);
   };
 
+  // Add the getCurrentQuarter function
+  function getCurrentQuarter() {
+    const now = new Date();
+    const month = now.getMonth();
+    const year = now.getFullYear();
+    
+    let quarter = 'Q1';
+    if (month >= 3 && month <= 5) quarter = 'Q2';
+    else if (month >= 6 && month <= 8) quarter = 'Q3';
+    else if (month >= 9 && month <= 11) quarter = 'Q4';
+    
+    return `${quarter} ${year}`;
+  }
+
   const handleSubmitFinalReview = async () => {
     try {
       setIsSubmitting(true);
+      const payload = {
+        employeeId: initialForm.employeeId,
+        employeeName: initialForm.employeeName,
+        position: initialForm.position,
+        department: initialForm.department,
+        immediateSupervisor: initialForm.immediateSupervisorInput,
+        performanceCoverage: initialForm.performanceCoverage,
+        ForRegular: initialForm.ForRegular || getCurrentQuarter(),
+        // Scores - Ensure all numeric values are valid numbers
+        jobKnowledge: Number(initialForm.jobKnowledge) || 0,
+        qualityOfWork: Number(initialForm.qualityOfWork) || 0,
+        promptnessOfWork: Number(initialForm.promptnessOfWork) || 0,
+        qualityMeetsStandards: Number(initialForm.qualityMeetsStandards) || 0,
+        qualityTimeliness: Number(initialForm.qualityTimeliness) || 0,
+        qualityWorkOutputVolume: Number(initialForm.qualityWorkOutputVolume) || 0,
+        qualityConsistency: Number(initialForm.qualityConsistency) || 0,
+        qualityJobTargets: Number(initialForm.qualityJobTargets) || 0,
+        adaptabilityOpenness: Number(initialForm.adaptabilityOpenness) || 0,
+        adaptabilityFlexibility: Number(initialForm.adaptabilityFlexibility) || 0,
+        adaptabilityResilience: Number(initialForm.adaptabilityResilience) || 0,
+        activeParticipationScore: Number(initialForm.activeParticipationScore) || 0,
+        positiveTeamCultureScore: Number(initialForm.positiveTeamCultureScore) || 0,
+        effectiveCommunicationScore: Number(initialForm.effectiveCommunicationScore) || 0,
+        consistentAttendanceScore: Number(initialForm.consistentAttendanceScore) || 0,
+        punctualityScore: Number(initialForm.punctualityScore) || 0,
+        followsThroughScore: Number(initialForm.followsThroughScore) || 0,
+        reliableHandlingScore: Number(initialForm.reliableHandlingScore) || 0,
+        ethicalFollowsPoliciesScore: Number(initialForm.ethicalFollowsPoliciesScore) || 0,
+        ethicalProfessionalismScore: Number(initialForm.ethicalProfessionalismScore) || 0,
+        ethicalAccountabilityScore: Number(initialForm.ethicalAccountabilityScore) || 0,
+        ethicalRespectScore: Number(initialForm.ethicalRespectScore) || 0,
+        customerListeningScore: Number(initialForm.customerListeningScore) || 0,
+        customerProblemSolvingScore: Number(initialForm.customerProblemSolvingScore) || 0,
+        customerProductKnowledgeScore: Number(initialForm.customerProductKnowledgeScore) || 0,
+        customerProfessionalAttitudeScore: Number(initialForm.customerProfessionalAttitudeScore) || 0,
+        customerTimelyResolutionScore: Number(initialForm.customerTimelyResolutionScore) || 0,
+
+        // Comments
+        jobKnowledgeComments: initialForm.jobKnowledgeComments || "",
+        promptnessofworkComments: initialForm.promptnessofworkComments || "",
+        qualityofworkComments: initialForm.qualityofworkComments || "",
+        qualityMeetsStandardsComments: initialForm.qualityMeetsStandardsComments || "",
+        qualityTimelinessComments: initialForm.qualityTimelinessComments || "",
+        qualityWorkOutputVolumeComments: initialForm.qualityWorkOutputVolumeComments || "",
+        qualityConsistencyComments: initialForm.qualityConsistencyComments || "",
+        qualityJobTargetsComments: initialForm.qualityJobTargetsComments || "",
+        adaptabilityOpennessComments: initialForm.adaptabilityOpennessComments || "",
+        adaptabilityFlexibilityComments: initialForm.adaptabilityFlexibilityComments || "",
+        adaptabilityResilienceComments: initialForm.adaptabilityResilienceComments || "",
+        activeParticipationExplanation: initialForm.activeParticipationExplanation || "",
+        positiveTeamCultureExplanation: initialForm.positiveTeamCultureExplanation || "",
+        effectiveCommunicationExplanation: initialForm.effectiveCommunicationExplanation || "",
+        consistentAttendanceExplanation: initialForm.consistentAttendanceExplanation || "",
+        punctualityExplanation: initialForm.punctualityExplanation || "",
+        followsThroughExplanation: initialForm.followsThroughExplanation || "",
+        reliableHandlingExplanation: initialForm.reliableHandlingExplanation || "",
+        ethicalFollowsPoliciesExplanation: initialForm.ethicalFollowsPoliciesExplanation || "",
+        ethicalProfessionalismExplanation: initialForm.ethicalProfessionalismExplanation || "",
+        ethicalAccountabilityExplanation: initialForm.ethicalAccountabilityExplanation || "",
+        ethicalRespectExplanation: initialForm.ethicalRespectExplanation || "",
+        customerListeningExplanation: initialForm.customerListeningExplanation || "",
+        customerProblemSolvingExplanation: initialForm.customerProblemSolvingExplanation || "",
+        customerProductKnowledgeExplanation: initialForm.customerProductKnowledgeExplanation || "",
+        customerProfessionalAttitudeExplanation: initialForm.customerProfessionalAttitudeExplanation || "",
+        customerTimelyResolutionExplanation: initialForm.customerTimelyResolutionExplanation || "",
+
+        // Final Results - Ensure numeric values are valid
+        finalScore: Number(totalScore) || 0,
+        finalRating: finalRating || "",
+        finalPercentage: Number(((Number(totalScore) / 5) * 100).toFixed(2)) || 0,
+        areasForImprovement: initialForm.areasForImprovement || "",
+        additionalComments: initialForm.additionalComments || "",
+
+        status: "completed",
+        submittedAt: new Date().toISOString(),
+      };
+
       const response = await fetch("/api/performance-review", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          employeeId: initialForm.employeeId,
-          position: initialForm.position,
-          department: initialForm.department,
-          reviewType: initialForm.reviewType || "",
-          dateHired: initialForm.datehired,
-          immediateSupervisor: initialForm.immediateSupervisorInput,
-          performanceCoverage: initialForm.performanceCoverage,
-
-          // Scores - Ensure all numeric values are valid numbers
-          jobKnowledge: Number(initialForm.jobKnowledge) || 0,
-          qualityOfWork: Number(initialForm.qualityOfWork) || 0,
-          promptnessOfWork: Number(initialForm.promptnessOfWork) || 0,
-          qualityMeetsStandards: Number(initialForm.qualityMeetsStandards) || 0,
-          qualityTimeliness: Number(initialForm.qualityTimeliness) || 0,
-          qualityWorkOutputVolume: Number(initialForm.qualityWorkOutputVolume) || 0,
-          qualityConsistency: Number(initialForm.qualityConsistency) || 0,
-          qualityJobTargets: Number(initialForm.qualityJobTargets) || 0,
-          adaptabilityOpenness: Number(initialForm.adaptabilityOpenness) || 0,
-          adaptabilityFlexibility: Number(initialForm.adaptabilityFlexibility) || 0,
-          adaptabilityResilience: Number(initialForm.adaptabilityResilience) || 0,
-          activeParticipationScore: Number(initialForm.activeParticipationScore) || 0,
-          positiveTeamCultureScore: Number(initialForm.positiveTeamCultureScore) || 0,
-          effectiveCommunicationScore: Number(initialForm.effectiveCommunicationScore) || 0,
-          consistentAttendanceScore: Number(initialForm.consistentAttendanceScore) || 0,
-          punctualityScore: Number(initialForm.punctualityScore) || 0,
-          followsThroughScore: Number(initialForm.followsThroughScore) || 0,
-          reliableHandlingScore: Number(initialForm.reliableHandlingScore) || 0,
-          ethicalFollowsPoliciesScore: Number(initialForm.ethicalFollowsPoliciesScore) || 0,
-          ethicalProfessionalismScore: Number(initialForm.ethicalProfessionalismScore) || 0,
-          ethicalAccountabilityScore: Number(initialForm.ethicalAccountabilityScore) || 0,
-          ethicalRespectScore: Number(initialForm.ethicalRespectScore) || 0,
-          customerListeningScore: Number(initialForm.customerListeningScore) || 0,
-          customerProblemSolvingScore: Number(initialForm.customerProblemSolvingScore) || 0,
-          customerProductKnowledgeScore: Number(initialForm.customerProductKnowledgeScore) || 0,
-          customerProfessionalAttitudeScore: Number(initialForm.customerProfessionalAttitudeScore) || 0,
-          customerTimelyResolutionScore: Number(initialForm.customerTimelyResolutionScore) || 0,
-
-          // Comments
-          jobKnowledgeComments: initialForm.jobKnowledgeComments || "",
-          promptnessofworkComments: initialForm.promptnessofworkComments || "",
-          qualityofworkComments: initialForm.qualityofworkComments || "",
-          qualityMeetsStandardsComments: initialForm.qualityMeetsStandardsComments || "",
-          qualityTimelinessComments: initialForm.qualityTimelinessComments || "",
-          qualityWorkOutputVolumeComments: initialForm.qualityWorkOutputVolumeComments || "",
-          qualityConsistencyComments: initialForm.qualityConsistencyComments || "",
-          qualityJobTargetsComments: initialForm.qualityJobTargetsComments || "",
-          adaptabilityOpennessComments: initialForm.adaptabilityOpennessComments || "",
-          adaptabilityFlexibilityComments: initialForm.adaptabilityFlexibilityComments || "",
-          adaptabilityResilienceComments: initialForm.adaptabilityResilienceComments || "",
-          activeParticipationExplanation: initialForm.activeParticipationExplanation || "",
-          positiveTeamCultureExplanation: initialForm.positiveTeamCultureExplanation || "",
-          effectiveCommunicationExplanation: initialForm.effectiveCommunicationExplanation || "",
-          consistentAttendanceExplanation: initialForm.consistentAttendanceExplanation || "",
-          punctualityExplanation: initialForm.punctualityExplanation || "",
-          followsThroughExplanation: initialForm.followsThroughExplanation || "",
-          reliableHandlingExplanation: initialForm.reliableHandlingExplanation || "",
-          ethicalFollowsPoliciesExplanation: initialForm.ethicalFollowsPoliciesExplanation || "",
-          ethicalProfessionalismExplanation: initialForm.ethicalProfessionalismExplanation || "",
-          ethicalAccountabilityExplanation: initialForm.ethicalAccountabilityExplanation || "",
-          ethicalRespectExplanation: initialForm.ethicalRespectExplanation || "",
-          customerListeningExplanation: initialForm.customerListeningExplanation || "",
-          customerProblemSolvingExplanation: initialForm.customerProblemSolvingExplanation || "",
-          customerProductKnowledgeExplanation: initialForm.customerProductKnowledgeExplanation || "",
-          customerProfessionalAttitudeExplanation: initialForm.customerProfessionalAttitudeExplanation || "",
-          customerTimelyResolutionExplanation: initialForm.customerTimelyResolutionExplanation || "",
-
-          // Final Results - Ensure numeric values are valid
-          finalScore: Number(totalScore) || 0,
-          finalRating: finalRating || "",
-          finalPercentage: Number(((Number(totalScore) / 5) * 100).toFixed(2)) || 0,
-          areasForImprovement: initialForm.areasForImprovement || "",
-          additionalComments: initialForm.additionalComments || "",
-
-          status: "completed",
-          submittedAt: new Date().toISOString(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -1215,7 +1230,7 @@ export default function FinalResults({
                       <>
                         <div className="flex items-start">
                           <span className="text-gray-600 font-medium w-32">Annual Review:</span>
-                          <span className="text-gray-800">{initialForm.reviewPeriod || ""}</span>
+                          <span className="text-gray-800">{getCurrentQuarter()}</span>
                         </div>
                         {initialForm.otherReviewType && (
                           <div className="flex items-start">

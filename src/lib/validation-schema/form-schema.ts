@@ -179,7 +179,6 @@ export interface PerformanceFormValues {
   reviewDate: Date;
   datehired: Date;
   reviewType: "quarterly" | "annual" | "probationary";
-  reviewPeriod: string;
   ForRegular?: "Q1 2023" | "Q2 2023" | "Q3 2023" | "Q4 2023" | "Q1 2024" | "Q2 2024";
   ForProbationary?: "3 months" | "5 months";
   otherReviewType?: string;

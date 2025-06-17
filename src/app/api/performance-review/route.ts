@@ -3,6 +3,7 @@ import path from "path";
 import { z } from "zod";
 import { readJsonFile, writeJsonFile } from "@/lib/utils";
 import { db } from "@/lib/db";
+import usersData from '@/data/users.json';
 
 // Path to JSON data file
 const DATA_FILE_PATH = path.join(process.cwd(), 'src/data/users.json');
@@ -34,6 +35,7 @@ interface Review {
   hrComments?: string;
   areasForImprovement?: string;
   additionalComments?: string;
+  ForRegular?: string;
 }
 
 interface AuthUser {
@@ -57,6 +59,7 @@ const reviewSchema = z.object({
   dateHired: z.string().optional(),
   immediateSupervisor: z.string().optional(),
   performanceCoverage: z.string().optional(),
+  ForRegular: z.enum(["Q1 2023", "Q2 2023", "Q3 2023", "Q4 2023", "Q1 2024", "Q2 2024"]).optional(),
   status: z.string(),
   submittedAt: z.string(),
   // Add other fields as needed
@@ -76,7 +79,23 @@ export async function GET(request: NextRequest) {
       } : undefined
     );
 
-    return NextResponse.json(reviews);
+    // Transform the data to match the dashboard's expected format
+    const transformedReviews = reviews.map(review => {
+      // Find the employee in usersData
+      const employee = usersData.find(emp => emp.employeeId === review.employeeId);
+      
+      return {
+        id: review.id,
+        employeeId: review.employeeId,
+        employeeName: employee ? employee.name : 'Unknown Employee',
+        department: review.department,
+        ForRegular: review.ForRegular || 'Not Set',
+        status: review.status.toLowerCase(),
+        lastModified: review.submittedAt || review.updatedAt || review.createdAt
+      };
+    });
+
+    return NextResponse.json(transformedReviews);
   } catch (error) {
     console.error("Error fetching performance reviews:", error);
     return NextResponse.json(
