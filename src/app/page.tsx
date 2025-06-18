@@ -240,7 +240,7 @@ export default function Home() {
                     </p>
                     <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 w-full text-center">
                       <Link
-                        href="/feedback"
+                        href="/360-feedback"
                         className="text-blue-600 dark:text-blue-400 font-medium text-sm hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                       >
                         Learn more →

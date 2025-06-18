@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { format, parseISO } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -45,5 +46,27 @@ export async function writeJsonFile<T>(filePath: string, data: T): Promise<void>
   } catch (error) {
     console.error('Error writing data:', error);
     throw error;
+  }
+}
+
+export function formatTimestamp(timestamp: string, formatType: 'short' | 'long' | 'full' = 'short'): string {
+  if (!timestamp) return "N/A";
+  
+  try {
+    const date = parseISO(timestamp);
+    
+    switch (formatType) {
+      case 'short':
+        return format(date, "MMM d, yyyy h:mm a");  // Jun 18, 2025 1:05 AM
+      case 'long':
+        return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");  // Wednesday, June 18, 2025 at 1:05 AM
+      case 'full':
+        return format(date, "EEEE, MMMM d, yyyy 'at' h:mm:ss a '(UTC)'");  // Wednesday, June 18, 2025 at 1:05:52 AM (UTC)
+      default:
+        return format(date, "MMM d, yyyy h:mm a");
+    }
+  } catch (error) {
+    console.error("Error formatting timestamp:", error);
+    return "Invalid date";
   }
 }

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { use } from "react";
+import { formatTimestamp } from "@/lib/utils";
 
 interface EvaluationResult {
   employeeId: string;
@@ -457,34 +458,7 @@ ${evaluation.comments}
                     {evaluation.lastModified ? (
                       <div className="flex flex-col">
                         <span>
-                          {new Date(evaluation.lastModified).toLocaleString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                              timeZone: "Asia/Manila",
-                            }
-                          )}{" "}
-                          (Philippine Time)
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {new Date(evaluation.lastModified).toLocaleString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                              timeZone: "UTC",
-                            }
-                          )}{" "}
-                          (UTC)
+                          {formatTimestamp(evaluation.lastModified)}
                         </span>
                       </div>
                     ) : (

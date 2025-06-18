@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { formatTimestamp } from "@/lib/utils";
 
 type ActivityType = "evaluation" | "update" | "completion";
 
@@ -74,26 +75,6 @@ export default function RecentActivityModal({
         return "Update";
       case "completion":
         return "Completion";
-    }
-  };
-
-  const formatTimestamp = (timestamp: string): string => {
-    if (!timestamp) {
-      return "No date available";
-    }
-
-    try {
-      const date = parseISO(timestamp);
-      
-      if (!isValid(date)) {
-        console.warn("Invalid timestamp:", timestamp);
-        return "Invalid date";
-      }
-
-      return format(date, "MMM d, yyyy h:mm a");
-    } catch (error) {
-      console.error("Error formatting timestamp:", error);
-      return "Invalid date";
     }
   };
 
