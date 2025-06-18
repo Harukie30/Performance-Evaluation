@@ -26,6 +26,14 @@ interface RecentActivity {
   description: string;
   timestamp: string;
   employeeName: string;
+  employeeId: string;
+  reviewId?: string;
+  status?: string;
+  department?: string;
+  position?: string;
+  reviewPeriod?: string;
+  score?: number;
+  comments?: string;
 }
 
 interface RecentActivityModalProps {
@@ -177,7 +185,13 @@ export default function RecentActivityModal({
             filteredActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+                onClick={() => {
+                  if (activity.reviewId) {
+                    // Navigate to evaluation details
+                    window.open(`/performance/${activity.reviewId}`, '_blank');
+                  }
+                }}
               >
                 <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
                   {getActivityIcon(activity.type)}
@@ -194,9 +208,31 @@ export default function RecentActivityModal({
                       {formatTimestamp(activity.timestamp)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {activity.employeeName}
-                  </p>
+                  <div className="flex items-center gap-4 mt-2">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Employee:</span> {activity.employeeName}
+                    </p>
+                    {activity.department && activity.department !== "General" && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Dept:</span> {activity.department}
+                      </p>
+                    )}
+                    {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Period:</span> {activity.reviewPeriod}
+                      </p>
+                    )}
+                    {activity.score && activity.score > 0 && (
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Score:</span> {activity.score}
+                      </p>
+                    )}
+                  </div>
+                  {activity.reviewId && (
+                    <p className="text-xs text-blue-500 mt-1">
+                      Click to view evaluation details
+                    </p>
+                  )}
                 </div>
               </div>
             ))

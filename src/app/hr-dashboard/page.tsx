@@ -41,6 +41,7 @@ import {
   Briefcase,
   Target,
   Star,
+  RefreshCw,
 } from "lucide-react";
 import {
   Dialog,
@@ -69,6 +70,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { QuarterlyReviewModal } from "@/components/QuarterlyReviewModal";
 import { employeeAPI, reviewAPI, authAPI } from "@/services/api";
 import RecentActivityModal from "@/components/RecentActivityModal";
+import NotificationBell from "@/components/NotificationBell";
 
 interface Employee {
   id: number;
@@ -121,12 +123,25 @@ interface Activity {
   timestamp: string;
   user: string;
   employeeName: string;
+  employeeId: string;
+  reviewId?: string;
   status?: string;
   department?: string;
   position?: string;
   reviewPeriod?: string;
   score?: number;
   comments?: string;
+}
+
+interface Notification {
+  id: string;
+  type: "evaluation_completed" | "evaluation_started" | "reminder";
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  employeeName?: string;
+  evaluationId?: string;
 }
 
 const QuarterViewModal = ({ employee }: { employee: Employee }) => {
@@ -248,6 +263,7 @@ export default function HRDashboard() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const router = useRouter();
 
   const navItems = [
@@ -295,11 +311,32 @@ export default function HRDashboard() {
   }, [router]);
 
   useEffect(() => {
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          loadEmployees(),
+          loadEvaluations(),
+          loadActivities()
+        ]);
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        toast.error("Failed to load dashboard data");
+      }
+    };
+
     if (user) {
-      loadEmployees();
-      loadEvaluations();
-      loadActivities();
+      loadData();
     }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const interval = setInterval(() => {
+      refreshActivities();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
   }, [user]);
 
   const loadEmployees = async () => {
@@ -336,73 +373,226 @@ export default function HRDashboard() {
 
   const loadActivities = async () => {
     try {
-      // For testing, let's create some sample activities with different timestamps
-      const sampleActivities: Activity[] = [
-        {
-          id: "1",
-          type: "evaluation" as const,
-          description: "Completed quarterly review for John Doe",
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-          user: "HR Manager",
-          employeeName: "John Doe",
-          status: "completed",
-          department: "Engineering",
-          position: "Senior Developer",
-          reviewPeriod: "Q1 2024",
-          score: 85,
-          comments: "Excellent performance in Q1"
-        },
-        {
-          id: "2",
-          type: "update" as const,
-          description: "Updated performance metrics for Jane Smith",
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-          user: "HR Manager",
-          employeeName: "Jane Smith",
-          status: "in_progress",
-          department: "Marketing",
-          position: "Marketing Manager",
-          reviewPeriod: "Q1 2024",
-          score: 92,
-          comments: "Great progress on marketing campaigns"
-        },
-        {
-          id: "3",
-          type: "completion" as const,
-          description: "Finalized annual review for Mike Johnson",
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-          user: "HR Manager",
-          employeeName: "Mike Johnson",
-          status: "completed",
-          department: "Sales",
-          position: "Sales Director",
-          reviewPeriod: "Annual 2023",
-          score: 88,
-          comments: "Outstanding sales performance"
-        }
-      ];
-
-      // Use sample data for now
-      setActivities(sampleActivities);
-
-      // Uncomment this when the API is ready
-      // const response = await reviewAPI.getRecent();
-      // const transformedActivities = response.data.map((activity: any) => ({
-      //   ...activity,
-      //   employeeName: activity.employeeName || activity.user,
-      //   timestamp: activity.timestamp ? new Date(activity.timestamp).toISOString() : new Date().toISOString(),
-      //   status: activity.status || 'completed',
-      //   department: activity.department || 'General',
-      //   position: activity.position || 'Not specified',
-      //   reviewPeriod: activity.reviewPeriod || 'Current Period',
-      //   score: activity.score || 0,
-      //   comments: activity.comments || ''
-      // }));
-      // setActivities(transformedActivities);
+      // Use the real API to fetch recent activities
+      const response = await fetch('/api/recent-activities');
+      if (response.ok) {
+        const activitiesData = await response.json();
+        // Transform the data to match our Activity interface
+        const transformedActivities: Activity[] = activitiesData.map((activity: any) => ({
+          id: activity.id,
+          type: activity.type,
+          description: activity.description,
+          timestamp: activity.timestamp,
+          user: "Evaluator", // Since these come from evaluators
+          employeeName: activity.employeeName,
+          employeeId: activity.employeeId,
+          reviewId: activity.reviewId,
+          status: "completed", // All activities in HR dashboard are completed evaluations
+          department: "General", // Will be populated from evaluation data if needed
+          position: "Not specified",
+          reviewPeriod: "Current Period",
+          score: 0,
+          comments: ""
+        }));
+        setActivities(transformedActivities);
+      } else {
+        console.error("Failed to fetch recent activities");
+        // Fallback to sample data if API fails
+        const sampleActivities: Activity[] = [
+          {
+            id: "1",
+            type: "evaluation" as const,
+            description: "Completed quarterly review for John Doe",
+            timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+            user: "HR Manager",
+            employeeName: "John Doe",
+            employeeId: "EMP001",
+            status: "completed",
+            department: "Engineering",
+            position: "Senior Developer",
+            reviewPeriod: "Q1 2024",
+            score: 85,
+            comments: "Excellent performance in Q1"
+          },
+          {
+            id: "2",
+            type: "update" as const,
+            description: "Updated performance metrics for Jane Smith",
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+            user: "HR Manager",
+            employeeName: "Jane Smith",
+            employeeId: "EMP002",
+            status: "in_progress",
+            department: "Marketing",
+            position: "Marketing Manager",
+            reviewPeriod: "Q1 2024",
+            score: 92,
+            comments: "Great progress on marketing campaigns"
+          },
+          {
+            id: "3",
+            type: "completion" as const,
+            description: "Finalized annual review for Mike Johnson",
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+            user: "HR Manager",
+            employeeName: "Mike Johnson",
+            employeeId: "EMP003",
+            status: "completed",
+            department: "Sales",
+            position: "Sales Director",
+            reviewPeriod: "Annual 2023",
+            score: 88,
+            comments: "Outstanding sales performance"
+          }
+        ];
+        setActivities(sampleActivities);
+      }
     } catch (error) {
       console.error("Failed to load activities:", error);
       toast.error("Failed to load activities");
     }
+  };
+
+  // Function to refresh activities (can be called when new evaluations are completed)
+  const refreshActivities = async () => {
+    try {
+      const previousActivityCount = activities.length;
+      await loadActivities();
+      
+      // Check if there are new activities and create notifications
+      if (activities.length > previousActivityCount) {
+        const newActivities = activities.slice(0, activities.length - previousActivityCount);
+        newActivities.forEach(activity => {
+          if (activity.type === "evaluation" && activity.employeeName) {
+            createNotification("evaluation_completed", activity.employeeName, activity.reviewId);
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Failed to refresh activities:", error);
+    }
+  };
+
+  // Load notifications
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        // Load notifications from localStorage or API
+        const savedNotifications = localStorage.getItem('hr-notifications');
+        if (savedNotifications) {
+          setNotifications(JSON.parse(savedNotifications));
+        } else {
+          // Add some sample notifications for demonstration
+          const sampleNotifications: Notification[] = [
+            {
+              id: "1",
+              type: "evaluation_completed",
+              title: "New Evaluation Received",
+              message: "Performance evaluation for John Doe has been completed and submitted for review.",
+              timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+              read: false,
+              employeeName: "John Doe"
+            },
+            {
+              id: "2",
+              type: "evaluation_completed",
+              title: "New Evaluation Received",
+              message: "Performance evaluation for Jane Smith has been completed and submitted for review.",
+              timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+              read: true,
+              employeeName: "Jane Smith"
+            }
+          ];
+          setNotifications(sampleNotifications);
+        }
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+      }
+    };
+
+    if (user) {
+      loadNotifications();
+    }
+  }, [user]);
+
+  // Save notifications to localStorage
+  useEffect(() => {
+    if (notifications.length > 0) {
+      localStorage.setItem('hr-notifications', JSON.stringify(notifications));
+    }
+  }, [notifications]);
+
+  // Create notification when evaluation is completed
+  const createNotification = (type: Notification["type"], employeeName: string, evaluationId?: string) => {
+    const newNotification: Notification = {
+      id: Date.now().toString(),
+      type,
+      title: type === "evaluation_completed" 
+        ? "New Evaluation Received" 
+        : type === "evaluation_started"
+        ? "Evaluation Started"
+        : "Reminder",
+      message: type === "evaluation_completed"
+        ? `Performance evaluation for ${employeeName} has been completed and submitted for review.`
+        : type === "evaluation_started"
+        ? `Performance evaluation for ${employeeName} has been started.`
+        : `Reminder: Review evaluation for ${employeeName}`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      employeeName,
+      evaluationId
+    };
+
+    setNotifications(prev => [newNotification, ...prev.slice(0, 9)]); // Keep only last 10 notifications
+    toast.success(`New evaluation received for ${employeeName}`);
+  };
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === id 
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, read: true }))
+    );
+  };
+
+  // Test function to simulate a new evaluation being completed
+  const addTestEvaluation = () => {
+    const testEmployees = ["Alice Johnson", "Bob Smith", "Carol Davis", "David Wilson"];
+    const randomEmployee = testEmployees[Math.floor(Math.random() * testEmployees.length)];
+    
+    // Create a test activity
+    const testActivity: Activity = {
+      id: Date.now().toString(),
+      type: "evaluation",
+      description: `Performance review completed for ${randomEmployee}`,
+      timestamp: new Date().toISOString(),
+      user: "Evaluator",
+      employeeName: randomEmployee,
+      employeeId: `EMP${Date.now()}`,
+      reviewId: `REV${Date.now()}`,
+      status: "completed",
+      department: "Engineering",
+      position: "Developer",
+      reviewPeriod: "Q1 2024",
+      score: Math.floor(Math.random() * 20) + 80, // Random score between 80-100
+      comments: "Excellent performance in Q1"
+    };
+
+    // Add to activities
+    setActivities(prev => [testActivity, ...prev]);
+    
+    // Create notification
+    createNotification("evaluation_completed", randomEmployee, testActivity.reviewId);
+    
+    toast.success(`Test evaluation added for ${randomEmployee}`);
   };
 
   const validateForm = () => {
@@ -587,12 +777,19 @@ export default function HRDashboard() {
                 </p>
               </div>
 
-              <Button
-                onClick={() => handleNewEvaluation()}
-                className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
-              >
-                New Evaluation
-              </Button>
+              <div className="flex items-center gap-3 p-2 rounded-md border shadow-sm bg-white dark:bg-gray-900">
+                <NotificationBell
+                  notifications={notifications}
+                  onMarkAsRead={markNotificationAsRead}
+                  onMarkAllAsRead={markAllNotificationsAsRead}
+                />
+                <Button
+                  onClick={() => handleNewEvaluation()}
+                  className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
+                >
+                  New Evaluation
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -670,27 +867,52 @@ export default function HRDashboard() {
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-blue-600" />
                   <h2 className="text-2xl font-semibold">Recent Activity</h2>
+                  <span className="text-sm text-gray-500 ml-2">
+                    ({activities.length} activities)
+                  </span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="bg-blue-500 text-white hover:text-white hover:bg-red-500 group transition-all duration-200"
-                  onClick={() => setIsActivityModalOpen(true)}
-                >
-                  View All
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-green-500 text-white hover:text-white hover:bg-green-600 transition-all duration-200"
+                    onClick={refreshActivities}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                    Refresh
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-orange-500 text-white hover:text-white hover:bg-orange-600 transition-all duration-200"
+                    onClick={addTestEvaluation}
+                  >
+                    Test Evaluation
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-blue-500 text-white hover:text-white hover:bg-red-500 group transition-all duration-200"
+                    onClick={() => setIsActivityModalOpen(true)}
+                  >
+                    View All
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-3">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    No recent activities to display
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg font-medium mb-2">No Recent Activities</p>
+                    <p className="text-sm">Completed evaluations from evaluators will appear here</p>
                   </div>
                 ) : (
                   activities.slice(0, 3).map((activity) => (
                     <div
                       key={activity.id}
-                      className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200"
+                      className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer"
+                      onClick={() => activity.reviewId && handleViewEvaluation(activity.reviewId)}
                     >
                       <div className={`p-2 rounded-full ${
                         activity.type === "evaluation"
@@ -708,20 +930,41 @@ export default function HRDashboard() {
                         )}
                       </div>
                       
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                        <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                          {activity.description}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(activity.timestamp).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                          <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                            {activity.description}
+                          </p>
+                          <p className="text-sm text-gray-500 whitespace-nowrap">
+                            {new Date(activity.timestamp).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4 mt-2">
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Employee:</span> {activity.employeeName}
+                          </p>
+                          {activity.department && activity.department !== "General" && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Dept:</span> {activity.department}
+                            </p>
+                          )}
+                          {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Period:</span> {activity.reviewPeriod}
+                            </p>
+                          )}
+                        </div>
+                        {activity.reviewId && (
+                          <p className="text-xs text-blue-500 mt-1">
+                            Click to view evaluation details
+                          </p>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{activity.employeeName}</p>
                     </div>
                   ))
                 )}
@@ -1294,12 +1537,19 @@ export default function HRDashboard() {
               </p>
             </div>
 
-            <Button
-              onClick={() => handleNewEvaluation()}
-              className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
-            >
-              New Evaluation
-            </Button>
+            <div className="flex items-center gap-3 p-2 rounded-md border shadow-sm bg-white dark:bg-gray-900">
+              <NotificationBell
+                notifications={notifications}
+                onMarkAsRead={markNotificationAsRead}
+                onMarkAllAsRead={markAllNotificationsAsRead}
+              />
+              <Button
+                onClick={() => handleNewEvaluation()}
+                className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
+              >
+                New Evaluation
+              </Button>
+            </div>
           </div>
         </div>
 

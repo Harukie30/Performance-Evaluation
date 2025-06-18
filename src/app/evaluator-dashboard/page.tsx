@@ -45,6 +45,7 @@ import {
   Trophy,
   GraduationCap,
   X,
+  RefreshCw,
 } from "lucide-react";
 import {
   Dialog,
@@ -138,6 +139,14 @@ interface RecentActivity {
   description: string;
   timestamp: string;
   employeeName: string;
+  employeeId: string;
+  reviewId?: string;
+  status?: string;
+  department?: string;
+  position?: string;
+  reviewPeriod?: string;
+  score?: number;
+  comments?: string;
 }
 
 interface EvaluationResult {
@@ -236,7 +245,23 @@ export default function EvaluatorDashboard() {
         const activitiesResponse = await fetch('/api/recent-activities');
         if (activitiesResponse.ok) {
           const activitiesData = await activitiesResponse.json();
-          setRecentActivities(activitiesData);
+          // Transform the data to match our enhanced RecentActivity interface
+          const transformedActivities: RecentActivity[] = activitiesData.map((activity: any) => ({
+            id: activity.id,
+            type: activity.type,
+            description: activity.description,
+            timestamp: activity.timestamp,
+            employeeName: activity.employeeName,
+            employeeId: activity.employeeId,
+            reviewId: activity.reviewId,
+            status: activity.status || "completed",
+            department: activity.department || "General",
+            position: activity.position || "Not specified",
+            reviewPeriod: activity.reviewPeriod || "Current Period",
+            score: activity.score || 0,
+            comments: activity.comments || ""
+          }));
+          setRecentActivities(transformedActivities);
         }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -1410,27 +1435,71 @@ export default function EvaluatorDashboard() {
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-blue-600" />
                   <h2 className="text-2xl font-semibold">Recent Activity</h2>
+                  <span className="text-sm text-gray-500 ml-2">
+                    ({recentActivities.length} activities)
+                  </span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="bg-blue-500 text-white hover:text-white hover:bg-red-500 group transition-all duration-200"
-                  onClick={() => setIsActivityModalOpen(true)}
-                >
-                  View All
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-green-500 text-white hover:text-white hover:bg-green-600 transition-all duration-200"
+                    onClick={() => {
+                      // Refresh recent activities
+                      fetch('/api/recent-activities')
+                        .then(response => response.json())
+                        .then(activitiesData => {
+                          const transformedActivities: RecentActivity[] = activitiesData.map((activity: any) => ({
+                            id: activity.id,
+                            type: activity.type,
+                            description: activity.description,
+                            timestamp: activity.timestamp,
+                            employeeName: activity.employeeName,
+                            employeeId: activity.employeeId,
+                            reviewId: activity.reviewId,
+                            status: activity.status || "completed",
+                            department: activity.department || "General",
+                            position: activity.position || "Not specified",
+                            reviewPeriod: activity.reviewPeriod || "Current Period",
+                            score: activity.score || 0,
+                            comments: activity.comments || ""
+                          }));
+                          setRecentActivities(transformedActivities);
+                          toast.success("Activities refreshed");
+                        })
+                        .catch(error => {
+                          console.error("Failed to refresh activities:", error);
+                          toast.error("Failed to refresh activities");
+                        });
+                    }}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                    Refresh
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-blue-500 text-white hover:text-white hover:bg-red-500 group transition-all duration-200"
+                    onClick={() => setIsActivityModalOpen(true)}
+                  >
+                    View All
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-4">
                 {recentActivities.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    No recent activities to display
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg font-medium mb-2">No Recent Activities</p>
+                    <p className="text-sm">Your evaluation activities will appear here</p>
                   </div>
                 ) : (
                   recentActivities.slice(0, 3).map((activity) => (
                     <div
                       key={activity.id}
-                      className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200"
+                      className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer"
+                      onClick={() => activity.reviewId && handleViewEvaluation(activity.reviewId)}
                     >
                       <div className={`p-2 rounded-full ${
                         activity.type === "evaluation"
@@ -1452,7 +1521,7 @@ export default function EvaluatorDashboard() {
                           <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
                             {activity.description}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 whitespace-nowrap">
                             {new Date(activity.timestamp).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
@@ -1461,7 +1530,26 @@ export default function EvaluatorDashboard() {
                             })}
                           </p>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">{activity.employeeName}</p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Employee:</span> {activity.employeeName}
+                          </p>
+                          {activity.department && activity.department !== "General" && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Dept:</span> {activity.department}
+                            </p>
+                          )}
+                          {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Period:</span> {activity.reviewPeriod}
+                            </p>
+                          )}
+                        </div>
+                        {activity.reviewId && (
+                          <p className="text-xs text-blue-500 mt-1">
+                            Click to view evaluation details
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))
