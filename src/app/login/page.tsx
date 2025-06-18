@@ -50,11 +50,18 @@ export default function LoginPage() {
   });
 
   const handleLogin = async (data: LoginFormValues) => {
-    console.log("Form submitted with data:", data);
-    
+    console.log("=== LOGIN ATTEMPT START ===");
+    console.log("Form submitted with data:", { 
+      email: data.email, 
+      password: data.password ? "[REDACTED]" : "undefined",
+      rememberMe: data.rememberMe 
+    });
+
     if (isLocked) {
       const remainingTime = Math.ceil((lockoutTime! - Date.now()) / 1000);
-      toast.error(`Account is locked. Please try again in ${remainingTime} seconds.`);
+      toast.error(
+        `Account is locked. Please try again in ${remainingTime} seconds.`
+      );
       return;
     }
 
@@ -67,6 +74,8 @@ export default function LoginPage() {
       }
 
       console.log("Attempting login with:", { email: data.email });
+      console.log("About to call authAPI.login...");
+      
       const response = await authAPI.login(data.email, data.password);
       console.log("Raw login response:", response);
 
@@ -87,7 +96,7 @@ export default function LoginPage() {
         id: userData.id,
         email: userData.email,
         role: userData.role,
-        name: userData.name
+        name: userData.name,
       });
 
       // Store remember me preference and user data only if remember me is checked
@@ -105,7 +114,7 @@ export default function LoginPage() {
       }
 
       toast.success("Login successful!");
-      
+
       // Redirect based on user role (case-insensitive comparison)
       const userRole = userData.role.toLowerCase();
       if (userRole === "hr") {
@@ -119,13 +128,19 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } catch (error: any) {
+      console.log("=== LOGIN ERROR CAUGHT ===");
       console.error("Login error details:", {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
-        stack: error.stack
+        stack: error.stack,
+        config: error.config,
+        isAxiosError: error.isAxiosError,
+        code: error.code,
+        name: error.name,
+        toString: error.toString()
       });
-      
+
       setLoginAttempts((prev) => {
         const newAttempts = prev + 1;
         console.log(`Login attempt ${newAttempts} failed`);
@@ -142,10 +157,33 @@ export default function LoginPage() {
         return newAttempts;
       });
 
-      const errorMessage = error.response?.data?.error || error.message || "Invalid credentials";
+      // Extract error message from different possible sources
+      let errorMessage = "Invalid credentials";
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+        if (error.response.data.details) {
+          console.log("Error details:", error.response.data.details);
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.status === 401) {
+        errorMessage = "Invalid email or password";
+      } else if (error.response?.status === 400) {
+        errorMessage = "Please check your input and try again";
+      } else if (error.response?.status >= 500) {
+        errorMessage = "Server error. Please try again later";
+      } else if (error.code === 'NETWORK_ERROR' || error.code === 'ERR_NETWORK') {
+        errorMessage = "Network error. Please check your connection";
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = "Request timeout. Please try again";
+      }
+      
+      console.log("Final error message:", errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
+      console.log("=== LOGIN ATTEMPT END ===");
     }
   };
 
@@ -165,11 +203,10 @@ export default function LoginPage() {
           transition={{ delay: 0.2, duration: 0.3 }}
           className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center items-center text-center lg:text-left bg-gradient-to-br from-blue-500 to-blue-600 text-white"
         >
-          <h1 className="text-4xl font-bold mb-6">
-            Welcome Back!
-          </h1>
+          <h1 className="text-4xl font-bold mb-6">Welcome Back!</h1>
           <p className="text-blue-100 mb-8 max-w-md">
-            Access your performance evaluation dashboard and manage your professional growth.
+            Access your performance evaluation dashboard and manage your
+            professional growth.
           </p>
           <motion.img
             initial={{ scale: 0.8, opacity: 0 }}
@@ -181,8 +218,8 @@ export default function LoginPage() {
           />
           <div className="mt-auto text-sm text-blue-100">
             <p>Don't have an account?</p>
-            <Link 
-              href="/register" 
+            <Link
+              href="/register"
               className="text-white font-semibold hover:underline"
             >
               Create an account
@@ -215,17 +252,10 @@ export default function LoginPage() {
             </motion.div>
 
             <Form {...form}>
-              <form 
-                onSubmit={(e) => {
-                  console.log("Form submit event triggered");
-                  e.preventDefault();
-                  form.handleSubmit(handleLogin)();
-                }} 
+              <div 
                 className="space-y-6"
-                onKeyPress={(e) => {
-                  console.log("Key pressed:", e.key);
+                onKeyDown={(e) => {
                   if (e.key === 'Enter' && !isLoading && !isLocked) {
-                    console.log("Enter key pressed, submitting form");
                     e.preventDefault();
                     form.handleSubmit(handleLogin)();
                   }
@@ -237,7 +267,7 @@ export default function LoginPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Email address</FormLabel>
-                      <FormControl >
+                      <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                           <Input
@@ -319,6 +349,7 @@ export default function LoginPage() {
                   type="submit"
                   className="w-full bg-blue-500 text-white hover:bg-green-500 transition-colors"
                   disabled={isLoading || isLocked}
+                  onClick={form.handleSubmit(handleLogin)}
                 >
                   {isLoading ? (
                     <>
@@ -329,7 +360,7 @@ export default function LoginPage() {
                     "Sign in"
                   )}
                 </Button>
-              </form>
+              </div>
             </Form>
 
             {isLocked && lockoutTime && (
@@ -342,11 +373,17 @@ export default function LoginPage() {
             <div className="mt-6 text-center text-sm text-gray-500">
               <p>
                 By signing in, you agree to our{" "}
-                <Link href="/terms" className="text-blue-600 hover:text-blue-500">
+                <Link
+                  href="/terms"
+                  className="text-blue-600 hover:text-blue-500"
+                >
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
+                <Link
+                  href="/privacy"
+                  className="text-blue-600 hover:text-blue-500"
+                >
                   Privacy Policy
                 </Link>
               </p>

@@ -39,21 +39,34 @@ const USERS = [
 
 export const auth = {
   login: async (email: string, password: string) => {
-    console.log("Auth login attempt:", { email, password });
+    console.log("Auth login attempt:", { email, password: password ? "[REDACTED]" : "undefined" });
     console.log("Available users:", USERS.map(u => ({ email: u.email, role: u.role })));
     
+    // Validate input
+    if (!email || !password) {
+      throw new Error("Email and password are required");
+    }
+
     // Simulate a small delay to feel like a real login
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const user = USERS.find(u => u.email === email && u.password === password);
     console.log("User lookup result:", user ? "found" : "not found");
+    console.log("Looking for:", { email, passwordMatch: user ? "yes" : "no" });
     
     if (!user) {
+      console.log("No user found with provided credentials");
       throw new Error("Invalid email or password");
     }
 
     // Normalize the role to uppercase for consistency
     const normalizedRole = user.role.toUpperCase();
+
+    console.log("User authenticated successfully:", { 
+      id: user.id, 
+      email: user.email, 
+      role: normalizedRole 
+    });
 
     return {
       id: user.id,

@@ -6,13 +6,19 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, password } = body;
     
-    console.log("Login attempt:", { email, password });
+    console.log("Login attempt:", { email, password: password ? "[REDACTED]" : "undefined" });
 
     if (!email || !password) {
       console.log("Missing email or password");
       return new NextResponse(
-        JSON.stringify({ error: "Email and password are required" }),
-        { status: 400 }
+        JSON.stringify({ 
+          error: "Email and password are required",
+          details: { email: !!email, password: !!password }
+        }),
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
@@ -44,11 +50,22 @@ export async function POST(request: Request) {
 
     console.log("Login successful, token set in cookie");
     return response;
-  } catch (error) {
-    console.error("Login error:", error);
+  } catch (error: any) {
+    console.error("Login error:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    
     return new NextResponse(
-      JSON.stringify({ error: "Invalid email or password" }),
-      { status: 401 }
+      JSON.stringify({ 
+        error: "Invalid email or password",
+        details: error.message || "Authentication failed"
+      }),
+      { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 } 

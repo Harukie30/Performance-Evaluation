@@ -22,7 +22,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only redirect on 401 errors if we're not on the login page
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
       // Clear any stored user data
       localStorage.removeItem("userRole");
       localStorage.removeItem("userEmail");
@@ -39,14 +40,26 @@ export const authAPI = {
   login: async (email: string, password: string) => {
     try {
       console.log("Making login API call...");
+      console.log("Request payload:", { email, password: password ? "[REDACTED]" : "undefined" });
+      
       const response = await api.post('/auth/login', { email, password });
-      console.log("Login API response:", response);
+      console.log("Login API response:", {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data,
+        headers: response.headers
+      });
       return response;
     } catch (error: any) {
       console.error("Login API error:", {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        config: error.config,
+        isAxiosError: error.isAxiosError,
+        code: error.code,
+        stack: error.stack
       });
       throw error;
     }
