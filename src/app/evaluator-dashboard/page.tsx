@@ -83,6 +83,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import NotificationBell from "@/components/NotificationBell";
 
 interface User {
   id: string;
@@ -155,6 +156,17 @@ interface EvaluationResult {
   comments: string;
 }
 
+interface Notification {
+  id: string;
+  type: "evaluation_completed" | "evaluation_started" | "reminder";
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  employeeName?: string;
+  evaluationId?: string;
+}
+
 type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
 
 export default function EvaluatorDashboard() {
@@ -176,6 +188,7 @@ export default function EvaluatorDashboard() {
   const [selectedQuarter, setSelectedQuarter] = useState<null | 'Q1' | 'Q2' | 'Q3' | 'Q4'>('Q1');
   const [selectedEvaluation, setSelectedEvaluation] = useState<EvaluationResult | null>(null);
   const [showResultsModal, setShowResultsModal] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const router = useRouter();
 
   const navItems = [
@@ -235,6 +248,113 @@ export default function EvaluatorDashboard() {
       loadData();
     }
   }, [user]);
+
+  // Load notifications
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        // Load notifications from localStorage or API
+        const savedNotifications = localStorage.getItem('evaluator-notifications');
+        if (savedNotifications) {
+          setNotifications(JSON.parse(savedNotifications));
+        } else {
+          // Add some sample notifications for demonstration
+          const sampleNotifications: Notification[] = [
+            {
+              id: "1",
+              type: "evaluation_completed",
+              title: "Evaluation Completed",
+              message: "Performance evaluation for John Doe has been completed successfully.",
+              timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+              read: false,
+              employeeName: "John Doe"
+            },
+            {
+              id: "2",
+              type: "evaluation_started",
+              title: "Evaluation Started",
+              message: "Performance evaluation for Jane Smith has been started.",
+              timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+              read: true,
+              employeeName: "Jane Smith"
+            },
+            {
+              id: "3",
+              type: "reminder",
+              title: "Evaluation Reminder",
+              message: "Reminder: Complete evaluation for David Brown",
+              timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+              read: true,
+              employeeName: "David Brown"
+            }
+          ];
+          setNotifications(sampleNotifications);
+        }
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+      }
+    };
+
+    if (user) {
+      loadNotifications();
+    }
+  }, [user]);
+
+  // Save notifications to localStorage
+  useEffect(() => {
+    if (notifications.length > 0) {
+      localStorage.setItem('evaluator-notifications', JSON.stringify(notifications));
+    }
+  }, [notifications]);
+
+  // Create notification when evaluation is completed
+  const createNotification = (type: Notification["type"], employeeName: string, evaluationId?: string) => {
+    const newNotification: Notification = {
+      id: Date.now().toString(),
+      type,
+      title: type === "evaluation_completed" 
+        ? "Evaluation Completed" 
+        : type === "evaluation_started"
+        ? "Evaluation Started"
+        : "Reminder",
+      message: type === "evaluation_completed"
+        ? `Performance evaluation for ${employeeName} has been completed successfully.`
+        : type === "evaluation_started"
+        ? `Performance evaluation for ${employeeName} has been started.`
+        : `Reminder: Complete evaluation for ${employeeName}`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      employeeName,
+      evaluationId
+    };
+
+    setNotifications(prev => [newNotification, ...prev.slice(0, 9)]); // Keep only last 10 notifications
+  };
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === id 
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, read: true }))
+    );
+  };
+
+  // Test function to add a sample notification
+  const addTestNotification = () => {
+    const testEmployee = employees[Math.floor(Math.random() * employees.length)];
+    if (testEmployee) {
+      createNotification("evaluation_completed", testEmployee.name);
+      toast.success("Test notification added!");
+    }
+  };
 
   const verifyEmployeeData = (employees: Employee[]) => {
     console.group('Employee Data Verification');
@@ -340,6 +460,8 @@ export default function EvaluatorDashboard() {
 
   const handleNewEvaluation = (employee?: Employee) => {
     if (employee) {
+      // Create notification when evaluation is started
+      createNotification("evaluation_started", employee.name);
       router.push(`/performance?employeeId=${encodeURIComponent(employee.employeeId)}&employeeName=${encodeURIComponent(employee.id.toString())}&department=${encodeURIComponent(employee.department.department_name)}&position=${encodeURIComponent(employee.position.title)}`);
     } else {
       router.push('/performance');
@@ -1240,12 +1362,19 @@ export default function EvaluatorDashboard() {
               </p>
             </div>
 
-            <Button
-              onClick={() => handleNewEvaluation()}
-              className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
-            >
-              New Evaluation
-            </Button>
+            <div className="flex items-center gap-3 p-2 rounded-md border shadow-sm bg-white dark:bg-gray-900">
+  <NotificationBell
+    notifications={notifications}
+    onMarkAsRead={markNotificationAsRead}
+    onMarkAllAsRead={markAllNotificationsAsRead}
+  />
+              <Button
+                onClick={() => handleNewEvaluation()}
+                className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
+              >
+                New Evaluation
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -1269,6 +1398,9 @@ export default function EvaluatorDashboard() {
             </Card>
           ))}
         </div>
+
+   
+        
 
         {/* Recent Activity */}
         <div className="space-y-4">
