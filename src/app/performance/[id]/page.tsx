@@ -5,7 +5,16 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Printer, Download, Star, Award, Calendar, User, Building } from "lucide-react";
+import {
+  ArrowLeft,
+  Printer,
+  Download,
+  Star,
+  Award,
+  Calendar,
+  User,
+  Building,
+} from "lucide-react";
 import { toast } from "sonner";
 import { use } from "react";
 
@@ -26,9 +35,14 @@ interface EvaluationResult {
   comments: string;
   keyAchievements?: string[];
   areasForImprovement?: string[];
+  additionalComments?: string;
 }
 
-export default function PerformanceReviewPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PerformanceReviewPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,12 +52,12 @@ export default function PerformanceReviewPage({ params }: { params: Promise<{ id
     const loadEvaluation = async () => {
       try {
         const response = await fetch(`/api/performance-review/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch evaluation');
+        if (!response.ok) throw new Error("Failed to fetch evaluation");
         const data = await response.json();
         setEvaluation(data);
       } catch (error) {
-        console.error('Error loading evaluation:', error);
-        toast.error('Failed to load evaluation details');
+        console.error("Error loading evaluation:", error);
+        toast.error("Failed to load evaluation details");
       } finally {
         setIsLoading(false);
       }
@@ -53,14 +67,16 @@ export default function PerformanceReviewPage({ params }: { params: Promise<{ id
   }, [id]);
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Performance Review - ${evaluation?.employeeName || 'Employee'}</title>
+          <title>Performance Review - ${
+            evaluation?.employeeName || "Employee"
+          }</title>
           <style>
             @media print {
               @page {
@@ -159,54 +175,101 @@ export default function PerformanceReviewPage({ params }: { params: Promise<{ id
           <body>
             <div class="print-header">
               <h1>Performance Review</h1>
-              <p>${evaluation?.employeeName || 'Employee'} - ${evaluation?.department || 'Department'}</p>
+              <p>${evaluation?.employeeName || "Employee"} - ${
+      evaluation?.department || "Department"
+    }</p>
             </div>
 
             <div class="employee-section">
               <div>
                 <h3>Personal Information</h3>
-                <p><strong>Employee ID:</strong> ${evaluation?.employeeId || 'N/A'}</p>
-                <p><strong>Department:</strong> ${evaluation?.department || 'N/A'}</p>
+                <p><strong>Employee ID:</strong> ${
+                  evaluation?.employeeId || "N/A"
+                }</p>
+                <p><strong>Department:</strong> ${
+                  evaluation?.department || "N/A"
+                }</p>
               </div>
               <div>
                 <h3>Review Details</h3>
-                <p><strong>Review Period:</strong> ${evaluation?.ForRegular || 'N/A'}</p>
-                <p><strong>Status:</strong> ${evaluation?.status || 'N/A'}</p>
-                <p><strong>Last Modified:</strong> ${evaluation?.lastModified ? new Date(evaluation.lastModified).toLocaleDateString() : 'N/A'}</p>
+                <p><strong>Review Period:</strong> ${
+                  evaluation?.ForRegular || "N/A"
+                }</p>
+                <p><strong>Status:</strong> ${evaluation?.status || "N/A"}</p>
+                <p><strong>Last Modified:</strong> ${
+                  evaluation?.lastModified
+                    ? new Date(evaluation.lastModified).toLocaleString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                          timeZone: "Asia/Manila",
+                        }
+                      )
+                    : "N/A"
+                }</p>
               </div>
             </div>
 
             <div class="section-title">Overall Rating</div>
             <div class="rating-scale">
-              <p><strong>Overall Score:</strong> ${evaluation?.totalScore.toFixed(2) || 'N/A'}</p>
+              <p><strong>Overall Score:</strong> ${
+                evaluation?.totalScore.toFixed(2) || "N/A"
+              }</p>
               <p><strong>Rating Scale:</strong> 1-5 (1: Needs Improvement, 5: Outstanding)</p>
             </div>
 
             <div class="section-title">Performance Metrics</div>
-            ${evaluation?.scores.map(score => `
+            ${
+              evaluation?.scores
+                .map(
+                  (score) => `
               <div class="performance-category">
-                <h3>${score.category || 'N/A'}</h3>
-                <p><strong>Score:</strong> ${score.score || 'N/A'}</p>
-                <p><strong>Comments:</strong> ${score.comments || 'N/A'}</p>
+                <h3>${score.category || "N/A"}</h3>
+                <p><strong>Score:</strong> ${score.score || "N/A"}</p>
+                <p><strong>Comments:</strong> ${score.comments || "N/A"}</p>
               </div>
-            `).join('') || 'No performance metrics available'}
+            `
+                )
+                .join("") || "No performance metrics available"
+            }
 
             <div class="section-title">Key Achievements</div>
             <ul>
-              ${evaluation?.keyAchievements?.length ? evaluation.keyAchievements.map(achievement => `
-                <li>${achievement || 'N/A'}</li>
-              `).join('') : 'No key achievements recorded'}
+              ${
+                evaluation?.keyAchievements?.length
+                  ? evaluation.keyAchievements
+                      .map(
+                        (achievement) => `
+                <li>${achievement || "N/A"}</li>
+              `
+                      )
+                      .join("")
+                  : "No key achievements recorded"
+              }
             </ul>
 
             <div class="section-title">Areas for Improvement</div>
             <ul>
-              ${evaluation?.areasForImprovement?.length ? evaluation.areasForImprovement.map(area => `
-                <li>${area || 'N/A'}</li>
-              `).join('') : 'No areas for improvement recorded'}
+              ${
+                evaluation?.areasForImprovement?.length
+                  ? evaluation.areasForImprovement
+                      .map(
+                        (area) => `
+                <li>${area || "N/A"}</li>
+              `
+                      )
+                      .join("")
+                  : "No areas for improvement recorded"
+              }
             </ul>
 
             <div class="section-title">Evaluator Comments</div>
-            <p>${evaluation?.comments || 'No evaluator comments available'}</p>
+            <p>${evaluation?.comments || "No evaluator comments available"}</p>
 
             <div class="signature-section">
               <div class="signature-line">
@@ -232,7 +295,7 @@ export default function PerformanceReviewPage({ params }: { params: Promise<{ id
 
   const handleDownload = () => {
     if (!evaluation) return;
-    
+
     const content = `
 Performance Review Summary
 =========================
@@ -247,13 +310,17 @@ Last Modified: ${evaluation.lastModified}
 
 Performance Scores
 -----------------
-${evaluation.scores.map(score => `
+${evaluation.scores
+  .map(
+    (score) => `
 ${score.category}
 Score: ${score.score}/5
 Weight: ${score.weight}%
-Weighted Score: ${(score.score * score.weight / 100).toFixed(2)}
+Weighted Score: ${((score.score * score.weight) / 100).toFixed(2)}
 Comments: ${score.comments}
-`).join('\n')}
+`
+  )
+  .join("\n")}
 
 Total Score: ${evaluation.totalScore.toFixed(2)}
 
@@ -262,9 +329,9 @@ Additional Comments
 ${evaluation.comments}
     `;
 
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], { type: "text/plain" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `performance-review-${evaluation.employeeName}-${evaluation.ForRegular}.txt`;
     document.body.appendChild(a);
@@ -284,7 +351,9 @@ ${evaluation.comments}
   if (!evaluation) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">Evaluation Not Found</h1>
+        <h1 className="text-2xl font-bold text-red-600 mb-4">
+          Evaluation Not Found
+        </h1>
         <Button onClick={() => router.back()}>Go Back</Button>
       </div>
     );
@@ -320,7 +389,6 @@ ${evaluation.comments}
           </Button>
           <div className="flex gap-4">
             <Button
-              
               onClick={handlePrint}
               className="flex items-center gap-2 hover:bg-yellow-400 hover:text-black bg-blue-500 text-white"
             >
@@ -328,7 +396,6 @@ ${evaluation.comments}
               Print
             </Button>
             <Button
-             
               onClick={handleDownload}
               className="flex items-center gap-2 hover:bg-yellow-400 hover:text-black bg-blue-500 text-white"
             >
@@ -340,13 +407,17 @@ ${evaluation.comments}
 
         <Card className="p-8 mb-8 shadow-lg border-0 bg-blue-200">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Performance Review Summary</h1>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Performance Review Summary
+            </h1>
             <div className="flex items-center gap-2">
               <Award className="h-6 w-6 text-blue-500" />
-              <span className="text-lg font-semibold text-gray-600">Official Document</span>
+              <span className="text-lg font-semibold text-gray-600">
+                Official Document
+              </span>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <Card className="p-6 bg-white shadow-sm">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
@@ -356,7 +427,9 @@ ${evaluation.comments}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-600">Name:</span>
-                  <span className="text-gray-800">{evaluation.employeeName}</span>
+                  <span className="text-gray-800">
+                    {evaluation.employeeName}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4 text-gray-400" />
@@ -365,7 +438,9 @@ ${evaluation.comments}
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-400" />
-                  <span className="font-medium text-gray-600">For Regular:</span>
+                  <span className="font-medium text-gray-600">
+                    For Regular:
+                  </span>
                   <span className="text-gray-800">{evaluation.ForRegular}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -375,12 +450,51 @@ ${evaluation.comments}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-600">Last Modified:</span>
-                  <span className="text-gray-800">{evaluation.lastModified}</span>
+                  <span className="font-medium text-gray-600">
+                    Last Modified:
+                  </span>
+                  <span className="text-gray-800">
+                    {evaluation.lastModified ? (
+                      <div className="flex flex-col">
+                        <span>
+                          {new Date(evaluation.lastModified).toLocaleString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                              timeZone: "Asia/Manila",
+                            }
+                          )}{" "}
+                          (Philippine Time)
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {new Date(evaluation.lastModified).toLocaleString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                              timeZone: "UTC",
+                            }
+                          )}{" "}
+                          (UTC)
+                        </span>
+                      </div>
+                    ) : (
+                      "N/A"
+                    )}
+                  </span>
                 </div>
               </div>
             </Card>
-            
+
             <Card className="p-6 bg-white shadow-sm">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-500" />
@@ -389,13 +503,19 @@ ${evaluation.comments}
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-gray-600">Total Score</span>
-                    <span className={`font-bold ${getScoreColor(evaluation.totalScore)}`}>
+                    <span className="font-medium text-gray-600">
+                      Total Score
+                    </span>
+                    <span
+                      className={`font-bold ${getScoreColor(
+                        evaluation.totalScore
+                      )}`}
+                    >
                       {evaluation.totalScore.toFixed(2)}/5.00
                     </span>
                   </div>
-                  <Progress 
-                    value={(evaluation.totalScore / 5) * 100} 
+                  <Progress
+                    value={(evaluation.totalScore / 5) * 100}
                     className={`h-2 ${getProgressColor(evaluation.totalScore)}`}
                   />
                 </div>
@@ -405,28 +525,41 @@ ${evaluation.comments}
 
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-semibold mb-6 text-gray-800">Performance Scores</h2>
+              <h2 className="text-xl font-semibold mb-6 text-gray-800">
+                Performance Scores
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {evaluation.scores.map((score, index) => (
-                  <Card key={index} className="p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <Card
+                    key={index}
+                    className="p-6 bg-white shadow-sm hover:shadow-md transition-shadow"
+                  >
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-medium text-gray-800">{score.category}</h3>
-                      <span className={`font-bold ${getScoreColor(score.score)}`}>
+                      <h3 className="font-medium text-gray-800">
+                        {score.category}
+                      </h3>
+                      <span
+                        className={`font-bold ${getScoreColor(score.score)}`}
+                      >
                         {score.score}/5
                       </span>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600 mb-3">
                       <span>Weight: {score.weight}%</span>
-                      <span>Weighted: {(score.score * score.weight / 100).toFixed(2)}</span>
+                      <span>
+                        Weighted:{" "}
+                        {((score.score * score.weight) / 100).toFixed(2)}
+                      </span>
                     </div>
-                    <Progress 
-                      value={(score.score / 5) * 100} 
+                    <Progress
+                      value={(score.score / 5) * 100}
                       className={`h-2 mb-3 ${getProgressColor(score.score)}`}
                     />
                     {score.comments && (
                       <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                         <p className="text-sm text-gray-600">
-                          <span className="font-medium">Comments:</span> {score.comments}
+                          <span className="font-medium">Comments:</span>{" "}
+                          {score.comments}
                         </p>
                       </div>
                     )}
@@ -436,10 +569,38 @@ ${evaluation.comments}
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Additional Comments</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                Additional Comments
+              </h2>
               <Card className="p-6 bg-white shadow-sm">
                 <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
                   {evaluation.comments}
+                </p>
+              </Card>
+            </div>
+
+            {/* Priority Areas For Improvement */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                Priority Areas For Improvement
+              </h2>
+              <Card className="p-6 bg-white shadow-sm">
+                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {evaluation.areasForImprovement ||
+                    "No priority areas for improvement specified."}
+                </p>
+              </Card>
+            </div>
+
+            {/* Remarks */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                Remarks
+              </h2>
+              <Card className="p-6 bg-white shadow-sm">
+                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {evaluation.additionalComments ||
+                    "No additional remarks provided."}
                 </p>
               </Card>
             </div>
@@ -448,4 +609,4 @@ ${evaluation.comments}
       </div>
     </div>
   );
-} 
+}

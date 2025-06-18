@@ -28,7 +28,7 @@ export default function PerformanceReviewPage() {
     reviewDate: new Date(),
     datehired: new Date(),
     reviewType: "quarterly",
-    
+
     attendance: 0,
     punctuality: 0,
     correctiveActionWarningReprimandsOralOrWritten: 0,
@@ -118,25 +118,25 @@ export default function PerformanceReviewPage() {
     comments: "",
     strengths: "",
     improvements: "",
-    goals: ""
+    goals: "",
   });
   const searchParams = useSearchParams();
-  
+
   // Get employee data from URL parameters
-  const employeeId = searchParams.get('employeeId');
-  const employeeName = searchParams.get('employeeName');
-  const department = searchParams.get('department');
-  const position = searchParams.get('position');
+  const employeeId = searchParams.get("employeeId");
+  const employeeName = searchParams.get("employeeName");
+  const department = searchParams.get("department");
+  const position = searchParams.get("position");
 
   // Pre-fill form data if URL parameters exist
   useEffect(() => {
     if (employeeId && employeeName && department && position) {
-      setFormData(prevData => ({
+      setFormData((prevData) => ({
         ...prevData,
         employeeId: decodeURIComponent(employeeId),
         employeeName: parseInt(decodeURIComponent(employeeName)),
         department: decodeURIComponent(department),
-        position: decodeURIComponent(position)
+        position: decodeURIComponent(position),
       }));
     }
   }, [employeeId, employeeName, department, position]);
@@ -149,81 +149,182 @@ export default function PerformanceReviewPage() {
         // Part I - Job Knowledge & Quality of Work
         jobKnowledge: Number(data.jobKnowledge) || prevData.jobKnowledge,
         qualityOfWork: Number(data.qualityOfWork) || prevData.qualityOfWork,
-        promptnessOfWork: Number(data.promptnessOfWork) || prevData.promptnessOfWork,
-        jobKnowledgeComments: data.jobKnowledgeComments || prevData.jobKnowledgeComments,
-        qualityofworkComments: data.qualityofworkComments || prevData.qualityofworkComments,
-        promptnessofworkComments: data.promptnessofworkComments || prevData.promptnessofworkComments,
+        promptnessOfWork:
+          Number(data.promptnessOfWork) || prevData.promptnessOfWork,
+        jobKnowledgeComments:
+          data.jobKnowledgeComments || prevData.jobKnowledgeComments,
+        qualityofworkComments:
+          data.qualityofworkComments || prevData.qualityofworkComments,
+        promptnessofworkComments:
+          data.promptnessofworkComments || prevData.promptnessofworkComments,
 
         // Part II - Quality of Work
-        qualityMeetsStandards: Number(data.qualityMeetsStandards) || prevData.qualityMeetsStandards,
-        qualityMeetsStandardsComments: data.qualityMeetsStandardsComments || prevData.qualityMeetsStandardsComments,
-        qualityTimeliness: Number(data.qualityTimeliness) || prevData.qualityTimeliness,
-        qualityTimelinessComments: data.qualityTimelinessComments || prevData.qualityTimelinessComments,
-        qualityWorkOutputVolume: Number(data.qualityWorkOutputVolume) || prevData.qualityWorkOutputVolume,
-        qualityWorkOutputVolumeComments: data.qualityWorkOutputVolumeComments || prevData.qualityWorkOutputVolumeComments,
-        qualityConsistency: Number(data.qualityConsistency) || prevData.qualityConsistency,
-        qualityConsistencyComments: data.qualityConsistencyComments || prevData.qualityConsistencyComments,
-        qualityJobTargets: Number(data.qualityJobTargets) || prevData.qualityJobTargets,
-        qualityJobTargetsComments: data.qualityJobTargetsComments || prevData.qualityJobTargetsComments,
+        qualityMeetsStandards:
+          Number(data.qualityMeetsStandards) || prevData.qualityMeetsStandards,
+        qualityMeetsStandardsComments:
+          data.qualityMeetsStandardsComments ||
+          prevData.qualityMeetsStandardsComments,
+        qualityTimeliness:
+          Number(data.qualityTimeliness) || prevData.qualityTimeliness,
+        qualityTimelinessComments:
+          data.qualityTimelinessComments || prevData.qualityTimelinessComments,
+        qualityWorkOutputVolume:
+          Number(data.qualityWorkOutputVolume) ||
+          prevData.qualityWorkOutputVolume,
+        qualityWorkOutputVolumeComments:
+          data.qualityWorkOutputVolumeComments ||
+          prevData.qualityWorkOutputVolumeComments,
+        qualityConsistency:
+          Number(data.qualityConsistency) || prevData.qualityConsistency,
+        qualityConsistencyComments:
+          data.qualityConsistencyComments ||
+          prevData.qualityConsistencyComments,
+        qualityJobTargets:
+          Number(data.qualityJobTargets) || prevData.qualityJobTargets,
+        qualityJobTargetsComments:
+          data.qualityJobTargetsComments || prevData.qualityJobTargetsComments,
 
         // Part III - Adaptability
-        adaptabilityOpenness: Number(data.adaptabilityOpenness) || prevData.adaptabilityOpenness,
-        adaptabilityOpennessComments: data.adaptabilityOpennessComments || prevData.adaptabilityOpennessComments,
-        adaptabilityFlexibility: Number(data.adaptabilityFlexibility) || prevData.adaptabilityFlexibility,
-        adaptabilityFlexibilityComments: data.adaptabilityFlexibilityComments || prevData.adaptabilityFlexibilityComments,
-        adaptabilityResilience: Number(data.adaptabilityResilience) || prevData.adaptabilityResilience,
-        adaptabilityResilienceComments: data.adaptabilityResilienceComments || prevData.adaptabilityResilienceComments,
+        adaptabilityOpenness:
+          Number(data.adaptabilityOpenness) || prevData.adaptabilityOpenness,
+        adaptabilityOpennessComments:
+          data.adaptabilityOpennessComments ||
+          prevData.adaptabilityOpennessComments,
+        adaptabilityFlexibility:
+          Number(data.adaptabilityFlexibility) ||
+          prevData.adaptabilityFlexibility,
+        adaptabilityFlexibilityComments:
+          data.adaptabilityFlexibilityComments ||
+          prevData.adaptabilityFlexibilityComments,
+        adaptabilityResilience:
+          Number(data.adaptabilityResilience) ||
+          prevData.adaptabilityResilience,
+        adaptabilityResilienceComments:
+          data.adaptabilityResilienceComments ||
+          prevData.adaptabilityResilienceComments,
 
         // Part IV - Teamwork
-        activeParticipationScore: Number(data.activeParticipationScore) || prevData.activeParticipationScore,
-        activeParticipationRating: data.activeParticipationRating || prevData.activeParticipationRating,
-        activeParticipationExample: data.activeParticipationExample || prevData.activeParticipationExample,
-        activeParticipationExplanation: data.activeParticipationExplanation || prevData.activeParticipationExplanation,
-        positiveTeamCultureScore: Number(data.positiveTeamCultureScore) || prevData.positiveTeamCultureScore,
-        positiveTeamCultureRating: data.positiveTeamCultureRating || prevData.positiveTeamCultureRating,
-        positiveTeamCultureExample: data.positiveTeamCultureExample || prevData.positiveTeamCultureExample,
-        positiveTeamCultureExplanation: data.positiveTeamCultureExplanation || prevData.positiveTeamCultureExplanation,
-        effectiveCommunicationScore: Number(data.effectiveCommunicationScore) || prevData.effectiveCommunicationScore,
-        effectiveCommunicationRating: data.effectiveCommunicationRating || prevData.effectiveCommunicationRating,
-        effectiveCommunicationExample: data.effectiveCommunicationExample || prevData.effectiveCommunicationExample,
-        effectiveCommunicationExplanation: data.effectiveCommunicationExplanation || prevData.effectiveCommunicationExplanation,
+        activeParticipationScore:
+          Number(data.activeParticipationScore) ||
+          prevData.activeParticipationScore,
+        activeParticipationRating:
+          data.activeParticipationRating || prevData.activeParticipationRating,
+        activeParticipationExample:
+          data.activeParticipationExample ||
+          prevData.activeParticipationExample,
+        activeParticipationExplanation:
+          data.activeParticipationExplanation ||
+          prevData.activeParticipationExplanation,
+        positiveTeamCultureScore:
+          Number(data.positiveTeamCultureScore) ||
+          prevData.positiveTeamCultureScore,
+        positiveTeamCultureRating:
+          data.positiveTeamCultureRating || prevData.positiveTeamCultureRating,
+        positiveTeamCultureExample:
+          data.positiveTeamCultureExample ||
+          prevData.positiveTeamCultureExample,
+        positiveTeamCultureExplanation:
+          data.positiveTeamCultureExplanation ||
+          prevData.positiveTeamCultureExplanation,
+        effectiveCommunicationScore:
+          Number(data.effectiveCommunicationScore) ||
+          prevData.effectiveCommunicationScore,
+        effectiveCommunicationRating:
+          data.effectiveCommunicationRating ||
+          prevData.effectiveCommunicationRating,
+        effectiveCommunicationExample:
+          data.effectiveCommunicationExample ||
+          prevData.effectiveCommunicationExample,
+        effectiveCommunicationExplanation:
+          data.effectiveCommunicationExplanation ||
+          prevData.effectiveCommunicationExplanation,
 
         // Part V - Reliability
-        consistentAttendanceScore: Number(data.consistentAttendanceScore) || prevData.consistentAttendanceScore,
-        consistentAttendanceExplanation: data.consistentAttendanceExplanation || prevData.consistentAttendanceExplanation,
-        punctualityScore: Number(data.punctualityScore) || prevData.punctualityScore,
-        punctualityExplanation: data.punctualityExplanation || prevData.punctualityExplanation,
-        followsThroughScore: Number(data.followsThroughScore) || prevData.followsThroughScore,
-        followsThroughExplanation: data.followsThroughExplanation || prevData.followsThroughExplanation,
-        reliableHandlingScore: Number(data.reliableHandlingScore) || prevData.reliableHandlingScore,
-        reliableHandlingExplanation: data.reliableHandlingExplanation || prevData.reliableHandlingExplanation,
+        consistentAttendanceScore:
+          Number(data.consistentAttendanceScore) ||
+          prevData.consistentAttendanceScore,
+        consistentAttendanceExplanation:
+          data.consistentAttendanceExplanation ||
+          prevData.consistentAttendanceExplanation,
+        punctualityScore:
+          Number(data.punctualityScore) || prevData.punctualityScore,
+        punctualityExplanation:
+          data.punctualityExplanation || prevData.punctualityExplanation,
+        followsThroughScore:
+          Number(data.followsThroughScore) || prevData.followsThroughScore,
+        followsThroughExplanation:
+          data.followsThroughExplanation || prevData.followsThroughExplanation,
+        reliableHandlingScore:
+          Number(data.reliableHandlingScore) || prevData.reliableHandlingScore,
+        reliableHandlingExplanation:
+          data.reliableHandlingExplanation ||
+          prevData.reliableHandlingExplanation,
 
         // Part VI - Ethical & Professional
-        ethicalFollowsPoliciesScore: Number(data.ethicalFollowsPoliciesScore) || prevData.ethicalFollowsPoliciesScore,
-        ethicalFollowsPoliciesExplanation: data.ethicalFollowsPoliciesExplanation || prevData.ethicalFollowsPoliciesExplanation,
-        ethicalProfessionalismScore: Number(data.ethicalProfessionalismScore) || prevData.ethicalProfessionalismScore,
-        ethicalProfessionalismExplanation: data.ethicalProfessionalismExplanation || prevData.ethicalProfessionalismExplanation,
-        ethicalAccountabilityScore: Number(data.ethicalAccountabilityScore) || prevData.ethicalAccountabilityScore,
-        ethicalAccountabilityExplanation: data.ethicalAccountabilityExplanation || prevData.ethicalAccountabilityExplanation,
-        ethicalRespectScore: Number(data.ethicalRespectScore) || prevData.ethicalRespectScore,
-        ethicalRespectExplanation: data.ethicalRespectExplanation || prevData.ethicalRespectExplanation,
+        ethicalFollowsPoliciesScore:
+          Number(data.ethicalFollowsPoliciesScore) ||
+          prevData.ethicalFollowsPoliciesScore,
+        ethicalFollowsPoliciesExplanation:
+          data.ethicalFollowsPoliciesExplanation ||
+          prevData.ethicalFollowsPoliciesExplanation,
+        ethicalProfessionalismScore:
+          Number(data.ethicalProfessionalismScore) ||
+          prevData.ethicalProfessionalismScore,
+        ethicalProfessionalismExplanation:
+          data.ethicalProfessionalismExplanation ||
+          prevData.ethicalProfessionalismExplanation,
+        ethicalAccountabilityScore:
+          Number(data.ethicalAccountabilityScore) ||
+          prevData.ethicalAccountabilityScore,
+        ethicalAccountabilityExplanation:
+          data.ethicalAccountabilityExplanation ||
+          prevData.ethicalAccountabilityExplanation,
+        ethicalRespectScore:
+          Number(data.ethicalRespectScore) || prevData.ethicalRespectScore,
+        ethicalRespectExplanation:
+          data.ethicalRespectExplanation || prevData.ethicalRespectExplanation,
 
         // Part VII - Customer Service
-        customerListeningScore: Number(data.customerListeningScore) || prevData.customerListeningScore,
-        customerListeningExplanation: data.customerListeningExplanation || prevData.customerListeningExplanation,
-        customerProblemSolvingScore: Number(data.customerProblemSolvingScore) || prevData.customerProblemSolvingScore,
-        customerProblemSolvingExplanation: data.customerProblemSolvingExplanation || prevData.customerProblemSolvingExplanation,
-        customerProductKnowledgeScore: Number(data.customerProductKnowledgeScore) || prevData.customerProductKnowledgeScore,
-        customerProductKnowledgeExplanation: data.customerProductKnowledgeExplanation || prevData.customerProductKnowledgeExplanation,
-        customerProfessionalAttitudeScore: Number(data.customerProfessionalAttitudeScore) || prevData.customerProfessionalAttitudeScore,
-        customerProfessionalAttitudeExplanation: data.customerProfessionalAttitudeExplanation || prevData.customerProfessionalAttitudeExplanation,
-        customerTimelyResolutionScore: Number(data.customerTimelyResolutionScore) || prevData.customerTimelyResolutionScore,
-        customerTimelyResolutionExplanation: data.customerTimelyResolutionExplanation || prevData.customerTimelyResolutionExplanation,
+        customerListeningScore:
+          Number(data.customerListeningScore) ||
+          prevData.customerListeningScore,
+        customerListeningExplanation:
+          data.customerListeningExplanation ||
+          prevData.customerListeningExplanation,
+        customerProblemSolvingScore:
+          Number(data.customerProblemSolvingScore) ||
+          prevData.customerProblemSolvingScore,
+        customerProblemSolvingExplanation:
+          data.customerProblemSolvingExplanation ||
+          prevData.customerProblemSolvingExplanation,
+        customerProductKnowledgeScore:
+          Number(data.customerProductKnowledgeScore) ||
+          prevData.customerProductKnowledgeScore,
+        customerProductKnowledgeExplanation:
+          data.customerProductKnowledgeExplanation ||
+          prevData.customerProductKnowledgeExplanation,
+        customerProfessionalAttitudeScore:
+          Number(data.customerProfessionalAttitudeScore) ||
+          prevData.customerProfessionalAttitudeScore,
+        customerProfessionalAttitudeExplanation:
+          data.customerProfessionalAttitudeExplanation ||
+          prevData.customerProfessionalAttitudeExplanation,
+        customerTimelyResolutionScore:
+          Number(data.customerTimelyResolutionScore) ||
+          prevData.customerTimelyResolutionScore,
+        customerTimelyResolutionExplanation:
+          data.customerTimelyResolutionExplanation ||
+          prevData.customerTimelyResolutionExplanation,
 
         // Calculated scores
-        overallTeamworkScore: Number(data.overallTeamworkScore) || prevData.overallTeamworkScore,
-        overallReliabilityScore: Number(data.overallReliabilityScore) || prevData.overallReliabilityScore,
-        overallCustomerServiceScore: Number(data.overallCustomerServiceScore) || prevData.overallCustomerServiceScore,
+        overallTeamworkScore:
+          Number(data.overallTeamworkScore) || prevData.overallTeamworkScore,
+        overallReliabilityScore:
+          Number(data.overallReliabilityScore) ||
+          prevData.overallReliabilityScore,
+        overallCustomerServiceScore:
+          Number(data.overallCustomerServiceScore) ||
+          prevData.overallCustomerServiceScore,
       };
 
       console.log("Merged form data in parent:", mergedData); // Debug log
@@ -301,10 +402,7 @@ export default function PerformanceReviewPage() {
         );
       case 8:
         return (
-          <FinalResult
-            onEdit={(part) => setActivePart(part)}
-            form={formData}
-          />
+          <FinalResult onEdit={(part) => setActivePart(part)} form={formData} />
         );
       default:
         return null;
@@ -339,4 +437,4 @@ export default function PerformanceReviewPage() {
       </div>
     </main>
   );
-} 
+}

@@ -94,7 +94,9 @@ export async function GET(
       lastModified: review.submittedAt || review.updatedAt || review.createdAt,
       scores: scores,
       totalScore: totalScore,
-      comments: review.additionalComments || 'No additional comments provided.'
+      comments: review.additionalComments || 'No additional comments provided.',
+      areasForImprovement: review.areasForImprovement || 'No priority areas for improvement specified.',
+      additionalComments: review.additionalComments || 'No additional remarks provided.'
     };
 
     console.log('Sending response:', response);
