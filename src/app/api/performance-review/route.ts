@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
         lastModified: review.submittedAt || review.updatedAt || review.createdAt
       };
     });
-
+    console.log('Returning review IDs:', transformedReviews.map(r => r.id));
     return NextResponse.json(transformedReviews);
   } catch (error) {
     console.error("Error fetching performance reviews:", error);

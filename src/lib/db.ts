@@ -178,13 +178,10 @@ export const db = {
       try {
         const data = await readDatabase();
         const review = data.performanceReviews.find(r => r.id === id);
-        if (!review) {
-          throw new Error("Review not found");
-        }
         return review;
       } catch (error) {
         console.error("Error finding review by ID:", error);
-        throw error;
+        return undefined;
       }
     },
 

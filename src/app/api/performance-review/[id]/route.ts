@@ -9,6 +9,9 @@ export async function GET(
   try {
     console.log('Fetching review with ID:', params.id);
     const review = await db.performanceReviews.findById(params.id);
+    if (!review) {
+      return NextResponse.json({ error: "Review not found" }, { status: 404 });
+    }
     console.log('Found review:', review);
     
     // Find employee information

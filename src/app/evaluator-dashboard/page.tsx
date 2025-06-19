@@ -684,20 +684,21 @@ export default function EvaluatorDashboard() {
   const quarters: Quarter[] = ["Q1", "Q2", "Q3", "Q4"];
 
   const handleViewResults = async (evaluation: Evaluation) => {
+    if (!evaluation.id) {
+      toast.error("Invalid evaluation ID");
+      return;
+    }
     try {
       console.log('Fetching evaluation details for:', evaluation.id);
       const response = await fetch(`/api/performance-review/${evaluation.id}`);
       console.log('API Response status:', response.status);
-      
       if (!response.ok) {
         const errorData = await response.json();
         console.error('API Error:', errorData);
         throw new Error(errorData.error || 'Failed to fetch evaluation details');
       }
-      
       const data = await response.json();
       console.log('Received evaluation data:', data);
-      
       setSelectedEvaluation(data);
       setShowResultsModal(true);
     } catch (error) {
@@ -1030,14 +1031,14 @@ export default function EvaluatorDashboard() {
                                 <span className="font-semibold text-gray-700">Sales Target Achievement</span>
                                 <span className="font-bold text-blue-600">85%</span>
                               </div>
-                              <Progress value={85} className="h-2.5 bg-gray-100" />
+                              <Progress value={Number(selectedEvaluation?.scores.find(s => s.category === "Sales Target Achievement")?.score) || 0} className="h-2.5 bg-gray-100" />
                             </div>
                             <div>
                               <div className="flex justify-between mb-3">
                                 <span className="font-semibold text-gray-700">Customer Satisfaction</span>
                                 <span className="font-bold text-blue-600">92%</span>
                               </div>
-                              <Progress value={92} className="h-2.5 bg-gray-100" />
+                              <Progress value={Number(selectedEvaluation?.scores.find(s => s.category === "Customer Satisfaction")?.score) || 0} className="h-2.5 bg-gray-100" />
                             </div>
                           </div>
                           <div className="space-y-6">
@@ -1046,14 +1047,14 @@ export default function EvaluatorDashboard() {
                                 <span className="font-semibold text-gray-700">Project Completion</span>
                                 <span className="font-bold text-blue-600">78%</span>
                               </div>
-                              <Progress value={78} className="h-2.5 bg-gray-100" />
+                              <Progress value={Number(selectedEvaluation?.scores.find(s => s.category === "Project Completion")?.score) || 0} className="h-2.5 bg-gray-100" />
                             </div>
                             <div>
                               <div className="flex justify-between mb-3">
                                 <span className="font-semibold text-gray-700">Team Collaboration</span>
                                 <span className="font-bold text-blue-600">90%</span>
                               </div>
-                              <Progress value={90} className="h-2.5 bg-gray-100" />
+                              <Progress value={Number(selectedEvaluation?.scores.find(s => s.category === "Team Collaboration")?.score) || 0} className="h-2.5 bg-gray-100" />
                             </div>
                           </div>
                         </div>
@@ -1546,9 +1547,9 @@ export default function EvaluatorDashboard() {
                           )}
                         </div>
                         {activity.reviewId && (
-                          <p className="text-xs text-blue-500 mt-1">
+                          <span className="text-xs text-blue-500 mt-1">
                             Click to view evaluation details
-                          </p>
+                          </span>
                         )}
                       </div>
                     </div>

@@ -563,38 +563,6 @@ export default function HRDashboard() {
     );
   };
 
-  // Test function to simulate a new evaluation being completed
-  const addTestEvaluation = () => {
-    const testEmployees = ["Alice Johnson", "Bob Smith", "Carol Davis", "David Wilson"];
-    const randomEmployee = testEmployees[Math.floor(Math.random() * testEmployees.length)];
-    
-    // Create a test activity
-    const testActivity: Activity = {
-      id: Date.now().toString(),
-      type: "evaluation",
-      description: `Performance review completed for ${randomEmployee}`,
-      timestamp: new Date().toISOString(),
-      user: "Evaluator",
-      employeeName: randomEmployee,
-      employeeId: `EMP${Date.now()}`,
-      reviewId: `REV${Date.now()}`,
-      status: "completed",
-      department: "Engineering",
-      position: "Developer",
-      reviewPeriod: "Q1 2024",
-      score: Math.floor(Math.random() * 20) + 80, // Random score between 80-100
-      comments: "Excellent performance in Q1"
-    };
-
-    // Add to activities
-    setActivities(prev => [testActivity, ...prev]);
-    
-    // Create notification
-    createNotification("evaluation_completed", randomEmployee, testActivity.reviewId);
-    
-    toast.success(`Test evaluation added for ${randomEmployee}`);
-  };
-
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
@@ -880,14 +848,6 @@ export default function HRDashboard() {
                   >
                     <RefreshCw className="h-4 w-4 mr-1" />
                     Refresh
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-orange-500 text-white hover:text-white hover:bg-orange-600 transition-all duration-200"
-                    onClick={addTestEvaluation}
-                  >
-                    Test Evaluation
                   </Button>
                   <Button
                     variant="ghost"
