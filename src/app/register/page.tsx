@@ -11,57 +11,40 @@ import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    fullName: "",
+  const [form, setForm] = useState({
+    name: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    department: "",
+    role: "employee",
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch("/api/auth/register", {
+      const res = await fetch("/api/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
-
-      if (!response.ok) {
-        throw new Error("Registration failed");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Registration failed");
       }
-
-      toast.success("Registration successful!");
+      toast.success("Registration successful! Please log in.");
       router.push("/login");
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("Registration failed. Please try again.");
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
   };
 
   return (
@@ -140,24 +123,24 @@ export default function RegisterPage() {
             Fill in your details to register.
           </motion.p>
 
-          <form onSubmit={handleRegister} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.3 }}
               className="space-y-2"
             >
-              <Label htmlFor="fullName" className="text-gray-700">
+              <Label htmlFor="name" className="text-gray-700">
                 FULL NAME
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
-                  id="fullName"
-                  name="fullName"
+                  id="name"
+                  name="name"
                   type="text"
                   placeholder="Enter Your Full Name"
-                  value={formData.fullName}
+                  value={form.name}
                   onChange={handleChange}
                   required
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
@@ -181,7 +164,7 @@ export default function RegisterPage() {
                   name="email"
                   type="email"
                   placeholder="Enter Your Email"
-                  value={formData.email}
+                  value={form.email}
                   onChange={handleChange}
                   required
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
@@ -205,9 +188,10 @@ export default function RegisterPage() {
                   name="password"
                   type="password"
                   placeholder="Create Password"
-                  value={formData.password}
+                  value={form.password}
                   onChange={handleChange}
                   required
+                  minLength={8}
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
@@ -219,17 +203,16 @@ export default function RegisterPage() {
               transition={{ delay: 0.9, duration: 0.3 }}
               className="space-y-2"
             >
-              <Label htmlFor="confirmPassword" className="text-gray-700">
-                CONFIRM PASSWORD
+              <Label htmlFor="department" className="text-gray-700">
+                DEPARTMENT
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
+                  id="department"
+                  name="department"
+                  type="text"
+                  placeholder="Enter Your Department"
+                  value={form.department}
                   onChange={handleChange}
                   required
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500"
@@ -241,17 +224,24 @@ export default function RegisterPage() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 1, duration: 0.3 }}
-              className="flex items-center space-x-2"
+              className="space-y-2"
             >
-              <input
-                type="checkbox"
-                id="terms"
-                required
-                className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
-              />
-              <Label htmlFor="terms" className="text-gray-700">
-                I agree to the Terms & Conditions
+              <Label htmlFor="role" className="text-gray-700">
+                ROLE
               </Label>
+              <div className="relative">
+                <select
+                  id="role"
+                  name="role"
+                  value={form.role}
+                  onChange={handleChange}
+                  required
+                  className="pl-3 pr-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500 w-full bg-white"
+                >
+                  <option value="employee">Employee</option>
+                  <option value="evaluator">Evaluator</option>
+                </select>
+              </div>
             </motion.div>
 
             <motion.div

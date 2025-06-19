@@ -10,8 +10,8 @@ const api = axios.create({
 
 // Add request interceptor to include auth token
 api.interceptors.request.use((config) => {
-  // Get token from cookie
-  const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+  // Get token from localStorage
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

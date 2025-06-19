@@ -100,6 +100,8 @@ export default function Home() {
             professional growth.
           </p>
 
+         
+
           {/* Enhanced SMCT Logo Presentation */}
           <div className="mt-16 flex flex-col items-center">
             <div className="text-sm uppercase tracking-wider text-gray-600 dark:text-gray-400 font-medium mb-6">
@@ -125,7 +127,7 @@ export default function Home() {
 
               {/* Accent Elements */}
               <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-blue-500 dark:bg-blue-400"></div>
-              <div className="absolute -bottom-3 -left-3 w-6 h-6 rounded-full bg-amber-400"></div>
+              <div className="absolute -bottom-3 -left-8 w-6 h-6 rounded-full bg-amber-400"></div>
             </motion.div>
 
             {/* Tagline with Animation */}
@@ -181,6 +183,8 @@ export default function Home() {
                   </svg>
                 ),
                 color: "bg-indigo-50 dark:bg-indigo-900/30",
+                link: "/360-feedback",
+                linkText: "Learn more →",
               },
               {
                 title: "Real-time Analytics",
@@ -197,6 +201,8 @@ export default function Home() {
                   </svg>
                 ),
                 color: "bg-sky-50 dark:bg-sky-900/30",
+                link: "/register",
+                linkText: "Try Real-time Analytics →",
               },
               {
                 title: "Secure Storage",
@@ -217,6 +223,8 @@ export default function Home() {
                   </svg>
                 ),
                 color: "bg-emerald-50 dark:bg-emerald-900/30",
+                link: "/security",
+                linkText: "Security Details →",
               },
             ].map((feature, index) => (
               <motion.div
@@ -240,10 +248,10 @@ export default function Home() {
                     </p>
                     <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 w-full text-center">
                       <Link
-                        href="/360-feedback"
+                        href={feature.link}
                         className="text-blue-600 dark:text-blue-400 font-medium text-sm hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                       >
-                        Learn more →
+                        {feature.linkText}
                       </Link>
                     </div>
                   </CardContent>

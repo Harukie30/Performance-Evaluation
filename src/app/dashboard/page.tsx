@@ -105,6 +105,14 @@ interface RecentActivity {
   description: string;
   timestamp: string;
   employeeName: string;
+  employeeId: string;
+  reviewId?: string;
+  status?: string;
+  department?: string;
+  position?: string;
+  reviewPeriod?: string;
+  score?: number;
+  comments?: string;
 }
 
 const QuarterViewModal = ({ employee }: { employee: Employee }) => {
@@ -310,7 +318,12 @@ export default function DashboardPage() {
   const loadRecentActivities = async () => {
     try {
       const response = await reviewAPI.getRecent();
-      setRecentActivities(response.data);
+      setRecentActivities(
+        response.data.map((activity: any) => ({
+          ...activity,
+          employeeId: activity.employeeId || "",
+        }))
+      );
     } catch (error) {
       console.error("Failed to load recent activities:", error);
       toast.error("Failed to load recent activities");

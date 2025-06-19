@@ -252,7 +252,7 @@ export default function HRDashboard() {
     department: "",
     location: "",
     address: "",
-    status: "Active"
+    status: "Active",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isAdding, setIsAdding] = useState(false);
@@ -276,10 +276,10 @@ export default function HRDashboard() {
     const checkAuth = async () => {
       try {
         const response = await authAPI.me();
-        
+
         if (!response || !response.data) {
           console.log("No response data received");
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
@@ -288,14 +288,14 @@ export default function HRDashboard() {
 
         if (!userData.role) {
           console.log("No role found in user data");
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
         const userRole = userData.role.toLowerCase();
-        if (userRole !== 'hr') {
+        if (userRole !== "hr") {
           console.log("Unauthorized role:", userRole);
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
@@ -303,7 +303,7 @@ export default function HRDashboard() {
         setIsLoading(false);
       } catch (error) {
         console.error("Auth check failed:", error);
-        router.push('/login');
+        router.push("/login");
       }
     };
 
@@ -316,7 +316,7 @@ export default function HRDashboard() {
         await Promise.all([
           loadEmployees(),
           loadEvaluations(),
-          loadActivities()
+          loadActivities(),
         ]);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
@@ -374,26 +374,28 @@ export default function HRDashboard() {
   const loadActivities = async () => {
     try {
       // Use the real API to fetch recent activities
-      const response = await fetch('/api/recent-activities');
+      const response = await fetch("/api/recent-activities");
       if (response.ok) {
         const activitiesData = await response.json();
         // Transform the data to match our Activity interface
-        const transformedActivities: Activity[] = activitiesData.map((activity: any) => ({
-          id: activity.id,
-          type: activity.type,
-          description: activity.description,
-          timestamp: activity.timestamp,
-          user: "Evaluator", // Since these come from evaluators
-          employeeName: activity.employeeName,
-          employeeId: activity.employeeId,
-          reviewId: activity.reviewId,
-          status: "completed", // All activities in HR dashboard are completed evaluations
-          department: "General", // Will be populated from evaluation data if needed
-          position: "Not specified",
-          reviewPeriod: "Current Period",
-          score: 0,
-          comments: ""
-        }));
+        const transformedActivities: Activity[] = activitiesData.map(
+          (activity: any) => ({
+            id: activity.id,
+            type: activity.type,
+            description: activity.description,
+            timestamp: activity.timestamp,
+            user: "Evaluator", // Since these come from evaluators
+            employeeName: activity.employeeName,
+            employeeId: activity.employeeId,
+            reviewId: activity.reviewId,
+            status: "completed", // All activities in HR dashboard are completed evaluations
+            department: "General", // Will be populated from evaluation data if needed
+            position: "Not specified",
+            reviewPeriod: "Current Period",
+            score: 0,
+            comments: "",
+          })
+        );
         setActivities(transformedActivities);
       } else {
         console.error("Failed to fetch recent activities");
@@ -412,7 +414,7 @@ export default function HRDashboard() {
             position: "Senior Developer",
             reviewPeriod: "Q1 2024",
             score: 85,
-            comments: "Excellent performance in Q1"
+            comments: "Excellent performance in Q1",
           },
           {
             id: "2",
@@ -427,7 +429,7 @@ export default function HRDashboard() {
             position: "Marketing Manager",
             reviewPeriod: "Q1 2024",
             score: 92,
-            comments: "Great progress on marketing campaigns"
+            comments: "Great progress on marketing campaigns",
           },
           {
             id: "3",
@@ -442,8 +444,8 @@ export default function HRDashboard() {
             position: "Sales Director",
             reviewPeriod: "Annual 2023",
             score: 88,
-            comments: "Outstanding sales performance"
-          }
+            comments: "Outstanding sales performance",
+          },
         ];
         setActivities(sampleActivities);
       }
@@ -458,13 +460,20 @@ export default function HRDashboard() {
     try {
       const previousActivityCount = activities.length;
       await loadActivities();
-      
+
       // Check if there are new activities and create notifications
       if (activities.length > previousActivityCount) {
-        const newActivities = activities.slice(0, activities.length - previousActivityCount);
-        newActivities.forEach(activity => {
+        const newActivities = activities.slice(
+          0,
+          activities.length - previousActivityCount
+        );
+        newActivities.forEach((activity) => {
           if (activity.type === "evaluation" && activity.employeeName) {
-            createNotification("evaluation_completed", activity.employeeName, activity.reviewId);
+            createNotification(
+              "evaluation_completed",
+              activity.employeeName,
+              activity.reviewId
+            );
           }
         });
       }
@@ -478,7 +487,7 @@ export default function HRDashboard() {
     const loadNotifications = async () => {
       try {
         // Load notifications from localStorage or API
-        const savedNotifications = localStorage.getItem('hr-notifications');
+        const savedNotifications = localStorage.getItem("hr-notifications");
         if (savedNotifications) {
           setNotifications(JSON.parse(savedNotifications));
         } else {
@@ -488,25 +497,29 @@ export default function HRDashboard() {
               id: "1",
               type: "evaluation_completed",
               title: "New Evaluation Received",
-              message: "Performance evaluation for John Doe has been completed and submitted for review.",
+              message:
+                "Performance evaluation for John Doe has been completed and submitted for review.",
               timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
               read: false,
-              employeeName: "John Doe"
+              employeeName: "John Doe",
             },
             {
               id: "2",
               type: "evaluation_completed",
               title: "New Evaluation Received",
-              message: "Performance evaluation for Jane Smith has been completed and submitted for review.",
-              timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+              message:
+                "Performance evaluation for Jane Smith has been completed and submitted for review.",
+              timestamp: new Date(
+                Date.now() - 1000 * 60 * 60 * 2
+              ).toISOString(), // 2 hours ago
               read: true,
-              employeeName: "Jane Smith"
-            }
+              employeeName: "Jane Smith",
+            },
           ];
           setNotifications(sampleNotifications);
         }
       } catch (error) {
-        console.error('Error loading notifications:', error);
+        console.error("Error loading notifications:", error);
       }
     };
 
@@ -518,48 +531,52 @@ export default function HRDashboard() {
   // Save notifications to localStorage
   useEffect(() => {
     if (notifications.length > 0) {
-      localStorage.setItem('hr-notifications', JSON.stringify(notifications));
+      localStorage.setItem("hr-notifications", JSON.stringify(notifications));
     }
   }, [notifications]);
 
   // Create notification when evaluation is completed
-  const createNotification = (type: Notification["type"], employeeName: string, evaluationId?: string) => {
+  const createNotification = (
+    type: Notification["type"],
+    employeeName: string,
+    evaluationId?: string
+  ) => {
     const newNotification: Notification = {
       id: Date.now().toString(),
       type,
-      title: type === "evaluation_completed" 
-        ? "New Evaluation Received" 
-        : type === "evaluation_started"
-        ? "Evaluation Started"
-        : "Reminder",
-      message: type === "evaluation_completed"
-        ? `Performance evaluation for ${employeeName} has been completed and submitted for review.`
-        : type === "evaluation_started"
-        ? `Performance evaluation for ${employeeName} has been started.`
-        : `Reminder: Review evaluation for ${employeeName}`,
+      title:
+        type === "evaluation_completed"
+          ? "New Evaluation Received"
+          : type === "evaluation_started"
+          ? "Evaluation Started"
+          : "Reminder",
+      message:
+        type === "evaluation_completed"
+          ? `Performance evaluation for ${employeeName} has been completed and submitted for review.`
+          : type === "evaluation_started"
+          ? `Performance evaluation for ${employeeName} has been started.`
+          : `Reminder: Review evaluation for ${employeeName}`,
       timestamp: new Date().toISOString(),
       read: false,
       employeeName,
-      evaluationId
+      evaluationId,
     };
 
-    setNotifications(prev => [newNotification, ...prev.slice(0, 9)]); // Keep only last 10 notifications
+    setNotifications((prev) => [newNotification, ...prev.slice(0, 9)]); // Keep only last 10 notifications
     toast.success(`New evaluation received for ${employeeName}`);
   };
 
   const markNotificationAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, read: true }
-          : notification
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
       )
     );
   };
 
   const markAllNotificationsAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true }))
     );
   };
 
@@ -615,7 +632,7 @@ export default function HRDashboard() {
           department: "",
           location: "",
           address: "",
-          status: "Active"
+          status: "Active",
         });
         await loadEmployees();
       }
@@ -677,10 +694,13 @@ export default function HRDashboard() {
   };
 
   // Filter employees based on search query
-  const filteredEmployees = employees.filter((employee) =>
-    employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    employee.department.department_name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredEmployees = employees.filter(
+    (employee) =>
+      employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      employee.department.department_name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
   );
 
   // Calculate statistics
@@ -708,13 +728,14 @@ export default function HRDashboard() {
     },
     {
       title: "Completion Rate",
-      value: employees.length > 0
-        ? `${Math.round(
-            (evaluations.filter((e) => e.status === "completed").length /
-              employees.length) *
-              100
-          )}%`
-        : "0%",
+      value:
+        employees.length > 0
+          ? `${Math.round(
+              (evaluations.filter((e) => e.status === "completed").length /
+                employees.length) *
+                100
+            )}%`
+          : "0%",
       icon: <BarChart3 className="h-6 w-6" />,
       color: "bg-purple-100 text-purple-600",
       description: "Percentage of employees with completed evaluations",
@@ -727,9 +748,13 @@ export default function HRDashboard() {
         <div className="space-y-8">
           {/* Welcome Section */}
           <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.01] ease-in-out">
-            <div className="absolute inset-0 opacity-10" style={{
-              backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-            }} />
+            <div
+              className="absolute inset-0 opacity-10"
+              style={{
+                backgroundImage:
+                  'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+              }}
+            />
 
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <img
@@ -739,7 +764,9 @@ export default function HRDashboard() {
               />
 
               <div>
-                <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}</h1>
+                <h1 className="text-3xl font-bold mb-2">
+                  Welcome back, {user?.name}
+                </h1>
                 <p className="text-blue-100 opacity-90">
                   Here's what's happening with your HR dashboard today.
                 </p>
@@ -766,9 +793,15 @@ export default function HRDashboard() {
             <Card className="p-6 hover:shadow-xl transition-all duration-300 border-none bg-white rounded-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-600">Total Employees</p>
-                  <h3 className="text-2xl font-bold mt-1 text-gray-800">{employees.length}</h3>
-                  <p className="text-xs text-gray-500 opacity-90">Total number of employees in the system</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Employees
+                  </p>
+                  <h3 className="text-2xl font-bold mt-1 text-gray-800">
+                    {employees.length}
+                  </h3>
+                  <p className="text-xs text-gray-500 opacity-90">
+                    Total number of employees in the system
+                  </p>
                 </div>
                 <div className="p-3 rounded-full bg-blue-100 text-blue-600 transition-transform duration-300 group-hover:scale-110">
                   <Users className="h-6 w-6" />
@@ -779,11 +812,15 @@ export default function HRDashboard() {
             <Card className="p-6 hover:shadow-xl transition-all duration-300 border-none bg-white rounded-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-600">Active Employees</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Active Employees
+                  </p>
                   <h3 className="text-2xl font-bold mt-1 text-gray-800">
                     {employees.filter((emp) => emp.status === "Active").length}
                   </h3>
-                  <p className="text-xs text-gray-500 opacity-90">Currently active employees</p>
+                  <p className="text-xs text-gray-500 opacity-90">
+                    Currently active employees
+                  </p>
                 </div>
                 <div className="p-3 rounded-full bg-green-100 text-green-600 transition-transform duration-300 group-hover:scale-110">
                   <UserCheck className="h-6 w-6" />
@@ -794,11 +831,15 @@ export default function HRDashboard() {
             <Card className="p-6 hover:shadow-xl transition-all duration-300 border-none bg-white rounded-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-600">Completed Evaluations</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Completed Evaluations
+                  </p>
                   <h3 className="text-2xl font-bold mt-1 text-gray-800">
                     {evaluations.filter((e) => e.status === "completed").length}
                   </h3>
-                  <p className="text-xs text-gray-500 opacity-90">Successfully completed evaluations</p>
+                  <p className="text-xs text-gray-500 opacity-90">
+                    Successfully completed evaluations
+                  </p>
                 </div>
                 <div className="p-3 rounded-full bg-emerald-100 text-emerald-600 transition-transform duration-300 group-hover:scale-110">
                   <CheckCircle2 className="h-6 w-6" />
@@ -809,17 +850,22 @@ export default function HRDashboard() {
             <Card className="p-6 hover:shadow-xl transition-all duration-300 border-none bg-white rounded-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-600">Completion Rate</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Completion Rate
+                  </p>
                   <h3 className="text-2xl font-bold mt-1 text-gray-800">
                     {employees.length > 0
                       ? `${Math.round(
-                          (evaluations.filter((e) => e.status === "completed").length /
+                          (evaluations.filter((e) => e.status === "completed")
+                            .length /
                             employees.length) *
                             100
                         )}%`
                       : "0%"}
                   </h3>
-                  <p className="text-xs text-gray-500 opacity-90">Percentage of employees with completed evaluations</p>
+                  <p className="text-xs text-gray-500 opacity-90">
+                    Percentage of employees with completed evaluations
+                  </p>
                 </div>
                 <div className="p-3 rounded-full bg-purple-100 text-purple-600 transition-transform duration-300 group-hover:scale-110">
                   <BarChart3 className="h-6 w-6" />
@@ -864,23 +910,32 @@ export default function HRDashboard() {
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg font-medium mb-2">No Recent Activities</p>
-                    <p className="text-sm">Completed evaluations from evaluators will appear here</p>
+                    <p className="text-lg font-medium mb-2">
+                      No Recent Activities
+                    </p>
+                    <p className="text-sm">
+                      Completed evaluations from evaluators will appear here
+                    </p>
                   </div>
                 ) : (
                   activities.slice(0, 3).map((activity) => (
                     <div
                       key={activity.id}
                       className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer"
-                      onClick={() => activity.reviewId && handleViewEvaluation(activity.reviewId)}
+                      onClick={() =>
+                        activity.reviewId &&
+                        handleViewEvaluation(activity.reviewId)
+                      }
                     >
-                      <div className={`p-2 rounded-full ${
-                        activity.type === "evaluation"
-                          ? "bg-blue-100 text-blue-600"
-                          : activity.type === "update"
-                          ? "bg-yellow-100 text-yellow-600"
-                          : "bg-green-100 text-green-600"
-                      }`}>
+                      <div
+                        className={`p-2 rounded-full ${
+                          activity.type === "evaluation"
+                            ? "bg-blue-100 text-blue-600"
+                            : activity.type === "update"
+                            ? "bg-yellow-100 text-yellow-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
+                      >
                         {activity.type === "evaluation" ? (
                           <FileText className="h-4 w-4" />
                         ) : activity.type === "update" ? (
@@ -889,35 +944,43 @@ export default function HRDashboard() {
                           <CheckCircle2 className="h-4 w-4" />
                         )}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                           <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
                             {activity.description}
                           </p>
                           <p className="text-sm text-gray-500 whitespace-nowrap">
-                            {new Date(activity.timestamp).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(activity.timestamp).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
                           </p>
                         </div>
                         <div className="flex items-center gap-4 mt-2">
                           <p className="text-sm text-gray-600">
-                            <span className="font-medium">Employee:</span> {activity.employeeName}
+                            <span className="font-medium">Employee:</span>{" "}
+                            {activity.employeeName}
                           </p>
-                          {activity.department && activity.department !== "General" && (
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Dept:</span> {activity.department}
-                            </p>
-                          )}
-                          {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Period:</span> {activity.reviewPeriod}
-                            </p>
-                          )}
+                          {activity.department &&
+                            activity.department !== "General" && (
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Dept:</span>{" "}
+                                {activity.department}
+                              </p>
+                            )}
+                          {activity.reviewPeriod &&
+                            activity.reviewPeriod !== "Current Period" && (
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Period:</span>{" "}
+                                {activity.reviewPeriod}
+                              </p>
+                            )}
                         </div>
                         {activity.reviewId && (
                           <p className="text-xs text-blue-500 mt-1">
@@ -954,20 +1017,28 @@ export default function HRDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-6">
                 <div>
-                  <Label htmlFor="yourName" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="yourName"
+                    className="text-gray-700 font-medium"
+                  >
                     Your Name
                   </Label>
                   <Input
                     id="yourName"
                     type="text"
                     value={user?.name || ""}
-                    onChange={(e) => setUser(user ? { ...user, name: e.target.value } : null)}
+                    onChange={(e) =>
+                      setUser(user ? { ...user, name: e.target.value } : null)
+                    }
                     className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="password" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="password"
+                    className="text-gray-700 font-medium"
+                  >
                     Password
                   </Label>
                   <div className="flex items-center space-x-2">
@@ -988,7 +1059,10 @@ export default function HRDashboard() {
                 </div>
 
                 <div>
-                  <Label htmlFor="emailAddress" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="emailAddress"
+                    className="text-gray-700 font-medium"
+                  >
                     Email Address
                   </Label>
                   <div className="flex items-center space-x-2">
@@ -996,7 +1070,11 @@ export default function HRDashboard() {
                       id="emailAddress"
                       type="email"
                       value={user?.username || ""}
-                      onChange={(e) => setUser(user ? { ...user, username: e.target.value } : null)}
+                      onChange={(e) =>
+                        setUser(
+                          user ? { ...user, username: e.target.value } : null
+                        )
+                      }
                       className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <Button
@@ -1052,7 +1130,9 @@ export default function HRDashboard() {
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  <span className="ml-2 text-gray-600">Loading evaluations...</span>
+                  <span className="ml-2 text-gray-600">
+                    Loading evaluations...
+                  </span>
                 </div>
               ) : evaluations.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
@@ -1209,7 +1289,9 @@ export default function HRDashboard() {
                     className={formErrors.location ? "border-red-500" : ""}
                   />
                   {formErrors.location && (
-                    <p className="text-sm text-red-500">{formErrors.location}</p>
+                    <p className="text-sm text-red-500">
+                      {formErrors.location}
+                    </p>
                   )}
                 </div>
 
@@ -1306,7 +1388,9 @@ export default function HRDashboard() {
           <TabsContent value="active" key="active">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-0">
               <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-blue-600">Active Employees</h2>
+                <h2 className="text-3xl font-bold text-blue-600">
+                  Active Employees
+                </h2>
                 <Users className="h-15 w-15 text-blue-600" />
               </div>
               <Table>
@@ -1330,14 +1414,18 @@ export default function HRDashboard() {
                       return (
                         employee.name.toLowerCase().includes(searchTerm) ||
                         employee.email.toLowerCase().includes(searchTerm) ||
-                        employee.department.department_name.toLowerCase().includes(searchTerm)
+                        employee.department.department_name
+                          .toLowerCase()
+                          .includes(searchTerm)
                       );
                     })
                     .map((employee) => (
                       <TableRow key={employee.id}>
                         <TableCell>{employee.employeeId}</TableCell>
                         <TableCell>{employee.name}</TableCell>
-                        <TableCell>{employee.department.department_name}</TableCell>
+                        <TableCell>
+                          {employee.department.department_name}
+                        </TableCell>
                         <TableCell>{employee.position.title}</TableCell>
                         <TableCell>{employee.email}</TableCell>
                         <TableCell>{employee.location}</TableCell>
@@ -1365,7 +1453,10 @@ export default function HRDashboard() {
                                   <Button
                                     variant="ghost"
                                     className="text-red-600 hover:text-white hover:bg-red-500"
-                                    disabled={isDeleting === employee.employeeId || isLoading}
+                                    disabled={
+                                      isDeleting === employee.employeeId ||
+                                      isLoading
+                                    }
                                   >
                                     {isDeleting === employee.employeeId ? (
                                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -1386,10 +1477,14 @@ export default function HRDashboard() {
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
                                     <AlertDialogAction
                                       onClick={() =>
-                                        handleDeleteEmployee(employee.employeeId)
+                                        handleDeleteEmployee(
+                                          employee.employeeId
+                                        )
                                       }
                                       className="bg-red-500 text-white hover:bg-red-700"
                                     >
@@ -1411,7 +1506,9 @@ export default function HRDashboard() {
           <TabsContent value="completed" key="completed">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-0">
               <div className="p-6 border-p bg-emerald-200 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-emerald-700">Completed Evaluations</h2>
+                <h2 className="text-3xl font-bold text-emerald-700">
+                  Completed Evaluations
+                </h2>
                 <CheckCircle2 className="h-15 w-15 text-emerald-600" />
               </div>
               <Table>
@@ -1433,7 +1530,9 @@ export default function HRDashboard() {
                     .filter((evaluation) => {
                       const searchTerm = searchQuery.toLowerCase();
                       return (
-                        evaluation.employeeName.toLowerCase().includes(searchTerm) ||
+                        evaluation.employeeName
+                          .toLowerCase()
+                          .includes(searchTerm) ||
                         evaluation.department.toLowerCase().includes(searchTerm)
                       );
                     })
@@ -1445,7 +1544,9 @@ export default function HRDashboard() {
                         <TableCell>{evaluation.reviewPeriod}</TableCell>
                         <TableCell>
                           {/* Find employee email from employees array */}
-                          {employees.find(emp => emp.employeeId === evaluation.employeeId)?.email || "N/A"}
+                          {employees.find(
+                            (emp) => emp.employeeId === evaluation.employeeId
+                          )?.email || "N/A"}
                         </TableCell>
                         <TableCell>
                           <span className="px-2 py-1 rounded-full text-xs bg-emerald-100 text-emerald-800">
@@ -1457,7 +1558,9 @@ export default function HRDashboard() {
                           <div className="flex items-center gap-2">
                             <Button
                               size="sm"
-                              onClick={() => router.push(`/performance/${evaluation.id}`)}
+                              onClick={() =>
+                                router.push(`/performance/${evaluation.id}`)
+                              }
                               className="flex items-center gap-2 bg-emerald-500 text-white hover:text-black hover:bg-yellow-400"
                             >
                               <Eye className="h-4 w-4" />
@@ -1479,9 +1582,13 @@ export default function HRDashboard() {
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.01] ease-in-out">
-          <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          }} />
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage:
+                'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+            }}
+          />
 
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <img
@@ -1491,7 +1598,9 @@ export default function HRDashboard() {
             />
 
             <div>
-              <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}</h1>
+              <h1 className="text-3xl font-bold mb-2">
+                Welcome back, {user?.name}
+              </h1>
               <p className="text-blue-100 opacity-90">
                 Here's what's happening with your HR dashboard today.
               </p>
@@ -1598,7 +1707,10 @@ export default function HRDashboard() {
                               <Button
                                 variant="ghost"
                                 className="text-red-600 hover:text-white hover:bg-red-500"
-                                disabled={isDeleting === employee.employeeId || isLoading}
+                                disabled={
+                                  isDeleting === employee.employeeId ||
+                                  isLoading
+                                }
                               >
                                 {isDeleting === employee.employeeId ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -1671,9 +1783,13 @@ export default function HRDashboard() {
         </button>
 
         {/* Sidebar Container */}
-        <div className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}>
+        <div
+          className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
+            isSidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }`}
+        >
           <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
             {/* Logo */}
             <div className="mb-6 lg:mb-8 flex justify-center bg-gradient-blue-500">
@@ -1740,20 +1856,22 @@ export default function HRDashboard() {
                   {user?.department || "Human Resources"}
                 </p>
               </div>
+              <div className="p-3 lg:p-4 border-t border-gray-100">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-center lg:justify-start text-red-600 hover:text-white hover:bg-red-500 group transition-all duration-200"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="ml-0 lg:ml-2 hidden lg:inline-block">
+                    Logout
+                  </span>
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="p-3 lg:p-4 border-t border-gray-100">
-            <Button
-              variant="ghost"
-              className="w-full justify-center lg:justify-start text-red-600 hover:text-white hover:bg-red-500 group transition-all duration-200"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-              <span className="ml-0 lg:ml-2 hidden lg:inline-block">Logout</span>
-            </Button>
-          </div>
         </div>
       </div>
 

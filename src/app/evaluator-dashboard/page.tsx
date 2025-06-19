@@ -74,7 +74,7 @@ import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/LoadingScreen";
 import { reviewAPI, authAPI, employeeAPI } from "@/services/api";
-import usersData from '@/data/users.json';
+import usersData from "@/data/users.json";
 import {
   Select,
   SelectContent,
@@ -101,7 +101,13 @@ interface Evaluation {
   employeeId: string;
   employeeName: string;
   department: string;
-  ForRegular?: "Q1 2023" | "Q2 2023" | "Q3 2023" | "Q4 2023" | "Q1 2024" | "Q2 2024";
+  ForRegular?:
+    | "Q1 2023"
+    | "Q2 2023"
+    | "Q3 2023"
+    | "Q4 2023"
+    | "Q1 2024"
+    | "Q2 2024";
   status: "draft" | "submitted" | "completed";
   lastModified: string;
 }
@@ -186,16 +192,26 @@ export default function EvaluatorDashboard() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [openQuarterModal, setOpenQuarterModal] = useState<null | { employeeId: string; quarter: 'Q1' | 'Q2' | 'Q3' | 'Q4' }>(null);
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>(
+    []
+  );
+  const [openQuarterModal, setOpenQuarterModal] = useState<null | {
+    employeeId: string;
+    quarter: "Q1" | "Q2" | "Q3" | "Q4";
+  }>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<keyof Employee>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null
+  );
   const [isQuarterModalOpen, setIsQuarterModalOpen] = useState(false);
-  const [selectedQuarter, setSelectedQuarter] = useState<null | 'Q1' | 'Q2' | 'Q3' | 'Q4'>('Q1');
-  const [selectedEvaluation, setSelectedEvaluation] = useState<EvaluationResult | null>(null);
+  const [selectedQuarter, setSelectedQuarter] = useState<
+    null | "Q1" | "Q2" | "Q3" | "Q4"
+  >("Q1");
+  const [selectedEvaluation, setSelectedEvaluation] =
+    useState<EvaluationResult | null>(null);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const router = useRouter();
@@ -212,10 +228,10 @@ export default function EvaluatorDashboard() {
       try {
         const response = await authAPI.me();
         const userData = response.data;
-        
-        if (!userData || userData.role.toLowerCase() !== 'evaluator') {
+
+        if (!userData || userData.role.toLowerCase() !== "evaluator") {
           console.log("Unauthorized access, redirecting to login");
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
@@ -223,7 +239,7 @@ export default function EvaluatorDashboard() {
         setIsLoading(false);
       } catch (error) {
         console.error("Auth check failed:", error);
-        router.push('/login');
+        router.push("/login");
       }
     };
 
@@ -235,37 +251,39 @@ export default function EvaluatorDashboard() {
     const loadData = async () => {
       try {
         // Load evaluations
-        const evaluationsResponse = await fetch('/api/performance-review');
+        const evaluationsResponse = await fetch("/api/performance-review");
         if (evaluationsResponse.ok) {
           const evaluationsData = await evaluationsResponse.json();
           setEvaluations(evaluationsData);
         }
 
         // Load recent activities
-        const activitiesResponse = await fetch('/api/recent-activities');
+        const activitiesResponse = await fetch("/api/recent-activities");
         if (activitiesResponse.ok) {
           const activitiesData = await activitiesResponse.json();
           // Transform the data to match our enhanced RecentActivity interface
-          const transformedActivities: RecentActivity[] = activitiesData.map((activity: any) => ({
-            id: activity.id,
-            type: activity.type,
-            description: activity.description,
-            timestamp: activity.timestamp,
-            employeeName: activity.employeeName,
-            employeeId: activity.employeeId,
-            reviewId: activity.reviewId,
-            status: activity.status || "completed",
-            department: activity.department || "General",
-            position: activity.position || "Not specified",
-            reviewPeriod: activity.reviewPeriod || "Current Period",
-            score: activity.score || 0,
-            comments: activity.comments || ""
-          }));
+          const transformedActivities: RecentActivity[] = activitiesData.map(
+            (activity: any) => ({
+              id: activity.id,
+              type: activity.type,
+              description: activity.description,
+              timestamp: activity.timestamp,
+              employeeName: activity.employeeName,
+              employeeId: activity.employeeId,
+              reviewId: activity.reviewId,
+              status: activity.status || "completed",
+              department: activity.department || "General",
+              position: activity.position || "Not specified",
+              reviewPeriod: activity.reviewPeriod || "Current Period",
+              score: activity.score || 0,
+              comments: activity.comments || "",
+            })
+          );
           setRecentActivities(transformedActivities);
         }
       } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        toast.error('Failed to load dashboard data');
+        console.error("Error loading dashboard data:", error);
+        toast.error("Failed to load dashboard data");
       }
     };
 
@@ -279,7 +297,9 @@ export default function EvaluatorDashboard() {
     const loadNotifications = async () => {
       try {
         // Load notifications from localStorage or API
-        const savedNotifications = localStorage.getItem('evaluator-notifications');
+        const savedNotifications = localStorage.getItem(
+          "evaluator-notifications"
+        );
         if (savedNotifications) {
           setNotifications(JSON.parse(savedNotifications));
         } else {
@@ -289,34 +309,40 @@ export default function EvaluatorDashboard() {
               id: "1",
               type: "evaluation_completed",
               title: "Evaluation Completed",
-              message: "Performance evaluation for John Doe has been completed successfully.",
+              message:
+                "Performance evaluation for John Doe has been completed successfully.",
               timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
               read: false,
-              employeeName: "John Doe"
+              employeeName: "John Doe",
             },
             {
               id: "2",
               type: "evaluation_started",
               title: "Evaluation Started",
-              message: "Performance evaluation for Jane Smith has been started.",
-              timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+              message:
+                "Performance evaluation for Jane Smith has been started.",
+              timestamp: new Date(
+                Date.now() - 1000 * 60 * 60 * 2
+              ).toISOString(), // 2 hours ago
               read: true,
-              employeeName: "Jane Smith"
+              employeeName: "Jane Smith",
             },
             {
               id: "3",
               type: "reminder",
               title: "Evaluation Reminder",
               message: "Reminder: Complete evaluation for David Brown",
-              timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+              timestamp: new Date(
+                Date.now() - 1000 * 60 * 60 * 24
+              ).toISOString(), // 1 day ago
               read: true,
-              employeeName: "David Brown"
-            }
+              employeeName: "David Brown",
+            },
           ];
           setNotifications(sampleNotifications);
         }
       } catch (error) {
-        console.error('Error loading notifications:', error);
+        console.error("Error loading notifications:", error);
       }
     };
 
@@ -328,53 +354,61 @@ export default function EvaluatorDashboard() {
   // Save notifications to localStorage
   useEffect(() => {
     if (notifications.length > 0) {
-      localStorage.setItem('evaluator-notifications', JSON.stringify(notifications));
+      localStorage.setItem(
+        "evaluator-notifications",
+        JSON.stringify(notifications)
+      );
     }
   }, [notifications]);
 
   // Create notification when evaluation is completed
-  const createNotification = (type: Notification["type"], employeeName: string, evaluationId?: string) => {
+  const createNotification = (
+    type: Notification["type"],
+    employeeName: string,
+    evaluationId?: string
+  ) => {
     const newNotification: Notification = {
       id: Date.now().toString(),
       type,
-      title: type === "evaluation_completed" 
-        ? "Evaluation Completed" 
-        : type === "evaluation_started"
-        ? "Evaluation Started"
-        : "Reminder",
-      message: type === "evaluation_completed"
-        ? `Performance evaluation for ${employeeName} has been completed successfully.`
-        : type === "evaluation_started"
-        ? `Performance evaluation for ${employeeName} has been started.`
-        : `Reminder: Complete evaluation for ${employeeName}`,
+      title:
+        type === "evaluation_completed"
+          ? "Evaluation Completed"
+          : type === "evaluation_started"
+          ? "Evaluation Started"
+          : "Reminder",
+      message:
+        type === "evaluation_completed"
+          ? `Performance evaluation for ${employeeName} has been completed successfully.`
+          : type === "evaluation_started"
+          ? `Performance evaluation for ${employeeName} has been started.`
+          : `Reminder: Complete evaluation for ${employeeName}`,
       timestamp: new Date().toISOString(),
       read: false,
       employeeName,
-      evaluationId
+      evaluationId,
     };
 
-    setNotifications(prev => [newNotification, ...prev.slice(0, 9)]); // Keep only last 10 notifications
+    setNotifications((prev) => [newNotification, ...prev.slice(0, 9)]); // Keep only last 10 notifications
   };
 
   const markNotificationAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, read: true }
-          : notification
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
       )
     );
   };
 
   const markAllNotificationsAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true }))
     );
   };
 
   // Test function to add a sample notification
   const addTestNotification = () => {
-    const testEmployee = employees[Math.floor(Math.random() * employees.length)];
+    const testEmployee =
+      employees[Math.floor(Math.random() * employees.length)];
     if (testEmployee) {
       createNotification("evaluation_completed", testEmployee.name);
       toast.success("Test notification added!");
@@ -382,64 +416,73 @@ export default function EvaluatorDashboard() {
   };
 
   const verifyEmployeeData = (employees: Employee[]) => {
-    console.group('Employee Data Verification');
-    console.log('Total employees:', employees.length);
-    
+    console.group("Employee Data Verification");
+    console.log("Total employees:", employees.length);
+
     // Check for required fields
-    const validEmployees = employees.every(emp => {
-      const isValid = emp.employeeId && emp.name && emp.email && emp.department?.department_name && emp.position?.title;
+    const validEmployees = employees.every((emp) => {
+      const isValid =
+        emp.employeeId &&
+        emp.name &&
+        emp.email &&
+        emp.department?.department_name &&
+        emp.position?.title;
       if (!isValid) {
-        console.warn('Invalid employee data:', emp);
+        console.warn("Invalid employee data:", emp);
       }
       return isValid;
     });
-    
+
     // Count by department
     const departmentCount = employees.reduce((acc, emp) => {
       const dept = emp.department.department_name;
       acc[dept] = (acc[dept] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    
-    console.log('Department distribution:', departmentCount);
-    console.log('All employees valid:', validEmployees);
+
+    console.log("Department distribution:", departmentCount);
+    console.log("All employees valid:", validEmployees);
     console.groupEnd();
-    
+
     return validEmployees;
   };
 
   const loadEmployees = async () => {
     try {
-      console.group('Loading Employees');
-      console.log('Starting employee data load...');
-      
+      console.group("Loading Employees");
+      console.log("Starting employee data load...");
+
       // Use the imported users data instead of API call
       const employees = usersData as Employee[];
-      console.log('Raw employee data loaded:', employees);
-      
+      console.log("Raw employee data loaded:", employees);
+
       if (!employees || employees.length === 0) {
-        console.warn('No employees found in the data');
-        toast.warning('No employees found');
+        console.warn("No employees found in the data");
+        toast.warning("No employees found");
         return;
       }
 
       // Verify the data structure
       const isValid = verifyEmployeeData(employees);
       if (!isValid) {
-        console.error('Employee data validation failed');
-        toast.error('Employee data validation failed');
+        console.error("Employee data validation failed");
+        toast.error("Employee data validation failed");
         return;
       }
 
       // Filter active employees
-      const activeEmployees = employees.filter(emp => emp.status === "Active");
-      console.log('Active employees:', activeEmployees.length);
-      
+      const activeEmployees = employees.filter(
+        (emp) => emp.status === "Active"
+      );
+      console.log("Active employees:", activeEmployees.length);
+
       setEmployees(employees);
-      console.log('Successfully set employees in state');
-      
+      console.log("Successfully set employees in state");
+
       // Show success message with details
-      toast.success(`Loaded ${employees.length} employees (${activeEmployees.length} active)`);
+      toast.success(
+        `Loaded ${employees.length} employees (${activeEmployees.length} active)`
+      );
       console.groupEnd();
     } catch (error) {
       console.error("Failed to load employees:", error);
@@ -451,9 +494,9 @@ export default function EvaluatorDashboard() {
   // Add useEffect to verify data loading
   useEffect(() => {
     if (user) {
-      console.group('Initial Data Load');
-      console.log('User authenticated:', user);
-      console.log('Starting data load...');
+      console.group("Initial Data Load");
+      console.log("User authenticated:", user);
+      console.log("Starting data load...");
       loadEmployees();
       console.groupEnd();
     }
@@ -487,9 +530,17 @@ export default function EvaluatorDashboard() {
     if (employee) {
       // Create notification when evaluation is started
       createNotification("evaluation_started", employee.name);
-      router.push(`/performance?employeeId=${encodeURIComponent(employee.employeeId)}&employeeName=${encodeURIComponent(employee.id.toString())}&department=${encodeURIComponent(employee.department.department_name)}&position=${encodeURIComponent(employee.position.title)}`);
+      router.push(
+        `/performance?employeeId=${encodeURIComponent(
+          employee.employeeId
+        )}&employeeName=${encodeURIComponent(
+          employee.id.toString()
+        )}&department=${encodeURIComponent(
+          employee.department.department_name
+        )}&position=${encodeURIComponent(employee.position.title)}`
+      );
     } else {
-      router.push('/performance');
+      router.push("/performance");
     }
   };
 
@@ -525,16 +576,23 @@ export default function EvaluatorDashboard() {
     },
     {
       title: "Pending",
-      value: employees.length - evaluations.filter((e) => e.status === "completed").length,
+      value:
+        employees.length -
+        evaluations.filter((e) => e.status === "completed").length,
       icon: <Clock className="h-6 w-6" />,
       color: "bg-yellow-100 text-yellow-600",
       description: "Employees awaiting evaluation",
     },
     {
       title: "Completion Rate",
-      value: employees.length > 0 
-        ? `${((evaluations.filter((e) => e.status === "completed").length / employees.length) * 100).toFixed(1)}%` 
-        : "0",
+      value:
+        employees.length > 0
+          ? `${(
+              (evaluations.filter((e) => e.status === "completed").length /
+                employees.length) *
+              100
+            ).toFixed(1)}%`
+          : "0",
       icon: <BarChart3 className="h-6 w-6" />,
       color: "bg-purple-100 text-purple-600",
       description: "Overall completion percentage",
@@ -546,17 +604,22 @@ export default function EvaluatorDashboard() {
   };
 
   // Get unique departments for filter
-  const departments = Array.from(new Set(employees.map(emp => emp.department.department_name)));
+  const departments = Array.from(
+    new Set(employees.map((emp) => emp.department.department_name))
+  );
 
   // Filter and sort employees
   const filteredAndSortedEmployees = employees
-    .filter(employee => {
-      const matchesSearch = 
+    .filter((employee) => {
+      const matchesSearch =
         employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        employee.position.title.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesDepartment = selectedDepartment === "all" || 
+        employee.position.title
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+
+      const matchesDepartment =
+        selectedDepartment === "all" ||
         employee.department.department_name === selectedDepartment;
 
       return matchesSearch && matchesDepartment;
@@ -564,9 +627,9 @@ export default function EvaluatorDashboard() {
     .sort((a, b) => {
       const aValue = a[sortField];
       const bValue = b[sortField];
-      
+
       if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortDirection === "asc" 
+        return sortDirection === "asc"
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
@@ -588,7 +651,7 @@ export default function EvaluatorDashboard() {
   };
 
   const handlePrintReview = () => {
-    const printContent = document.createElement('div');
+    const printContent = document.createElement("div");
     printContent.innerHTML = `
       <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
         <h1 style="text-align: center; color: #1e40af; margin-bottom: 30px;">Performance Review - ${selectedQuarter}</h1>
@@ -597,7 +660,9 @@ export default function EvaluatorDashboard() {
           <h2 style="color: #1e40af; margin-bottom: 15px;">Employee Information</h2>
           <p><strong>Name:</strong> ${selectedEmployee?.name}</p>
           <p><strong>Position:</strong> ${selectedEmployee?.position.title}</p>
-          <p><strong>Department:</strong> ${selectedEmployee?.department.department_name}</p>
+          <p><strong>Department:</strong> ${
+            selectedEmployee?.department.department_name
+          }</p>
         </div>
 
         <div style="margin-bottom: 30px;">
@@ -653,7 +718,7 @@ export default function EvaluatorDashboard() {
       </div>
     `;
 
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
         <html>
@@ -673,7 +738,7 @@ export default function EvaluatorDashboard() {
       `);
       printWindow.document.close();
       printWindow.focus();
-      
+
       setTimeout(() => {
         printWindow.print();
         printWindow.close();
@@ -689,25 +754,33 @@ export default function EvaluatorDashboard() {
       return;
     }
     try {
-      console.log('Fetching evaluation details for:', evaluation.id);
+      console.log("Fetching evaluation details for:", evaluation.id);
       const response = await fetch(`/api/performance-review/${evaluation.id}`);
-      console.log('API Response status:', response.status);
+      console.log("API Response status:", response.status);
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('API Error:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch evaluation details');
+        console.error("API Error:", errorData);
+        throw new Error(
+          errorData.error || "Failed to fetch evaluation details"
+        );
       }
       const data = await response.json();
-      console.log('Received evaluation data:', data);
+      console.log("Received evaluation data:", data);
       setSelectedEvaluation(data);
       setShowResultsModal(true);
     } catch (error) {
-      console.error('Error fetching evaluation details:', error);
+      console.error("Error fetching evaluation details:", error);
       toast.error("Failed to load evaluation details");
     }
   };
 
-  const ResultsModal = ({ evaluation, onClose }: { evaluation: EvaluationResult | null, onClose: () => void }) => {
+  const ResultsModal = ({
+    evaluation,
+    onClose,
+  }: {
+    evaluation: EvaluationResult | null;
+    onClose: () => void;
+  }) => {
     if (!evaluation) return null;
 
     return (
@@ -718,7 +791,7 @@ export default function EvaluatorDashboard() {
               Evaluation Results
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-6">
             {/* Employee Information */}
             <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
@@ -742,7 +815,9 @@ export default function EvaluatorDashboard() {
 
             {/* Scores Table */}
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-gray-800">Performance Scores</h3>
+              <h3 className="text-xl font-semibold text-gray-800">
+                Performance Scores
+              </h3>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -758,7 +833,9 @@ export default function EvaluatorDashboard() {
                       <TableCell>{score.category}</TableCell>
                       <TableCell>{score.score}</TableCell>
                       <TableCell>{score.weight}%</TableCell>
-                      <TableCell>{(score.score * score.weight / 100).toFixed(2)}</TableCell>
+                      <TableCell>
+                        {((score.score * score.weight) / 100).toFixed(2)}
+                      </TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="font-bold">
@@ -801,7 +878,10 @@ export default function EvaluatorDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-6">
                 <div>
-                  <Label htmlFor="yourName" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="yourName"
+                    className="text-gray-700 font-medium"
+                  >
                     Your Name
                   </Label>
                   <Input
@@ -814,7 +894,10 @@ export default function EvaluatorDashboard() {
                 </div>
 
                 <div>
-                  <Label htmlFor="password" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="password"
+                    className="text-gray-700 font-medium"
+                  >
                     Password
                   </Label>
                   <div className="flex items-center space-x-2">
@@ -835,7 +918,10 @@ export default function EvaluatorDashboard() {
                 </div>
 
                 <div>
-                  <Label htmlFor="emailAddress" className="text-gray-700 font-medium">
+                  <Label
+                    htmlFor="emailAddress"
+                    className="text-gray-700 font-medium"
+                  >
                     Email Address
                   </Label>
                   <div className="flex items-center space-x-2">
@@ -843,7 +929,9 @@ export default function EvaluatorDashboard() {
                       id="emailAddress"
                       type="email"
                       value={user.username}
-                      onChange={(e) => setUser({ ...user, username: e.target.value })}
+                      onChange={(e) =>
+                        setUser({ ...user, username: e.target.value })
+                      }
                       className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <Button
@@ -897,7 +985,9 @@ export default function EvaluatorDashboard() {
           <TabsContent value="active" key="active">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-0">
               <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-blue-600">Active Employees</h2>
+                <h2 className="text-3xl font-bold text-blue-600">
+                  Active Employees
+                </h2>
                 <Users className="h-15 w-15 text-blue-600" />
               </div>
               <Table>
@@ -920,7 +1010,9 @@ export default function EvaluatorDashboard() {
                       <TableRow key={employee.id}>
                         <TableCell>{employee.employeeId}</TableCell>
                         <TableCell>{employee.name}</TableCell>
-                        <TableCell>{employee.department.department_name}</TableCell>
+                        <TableCell>
+                          {employee.department.department_name}
+                        </TableCell>
                         <TableCell>{employee.position.title}</TableCell>
                         <TableCell>{employee.email}</TableCell>
                         <TableCell>{employee.location}</TableCell>
@@ -943,18 +1035,29 @@ export default function EvaluatorDashboard() {
             </Card>
 
             {/* Quarters Modal */}
-            <Dialog open={isQuarterModalOpen} onOpenChange={setIsQuarterModalOpen}>
+            <Dialog
+              open={isQuarterModalOpen}
+              onOpenChange={setIsQuarterModalOpen}
+            >
               <DialogContent className="w-full max-w-4xl max-h-[97vh] overflow-y-auto bg-gradient-to-b from-white to-gray-50">
                 <DialogHeader className="space-y-4 pb-6 border-b border-gray-100">
                   <DialogTitle className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
                     Performance Review Summary
                   </DialogTitle>
                   <div className="flex justify-between items-center">
-                    <Button variant="ghost" onClick={() => setIsQuarterModalOpen(false)} className="hover:bg-gray-100">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setIsQuarterModalOpen(false)}
+                      className="hover:bg-gray-100"
+                    >
                       <X className="h-4 w-4 mr-2" />
                       Close
                     </Button>
-                    <Button variant="ghost" onClick={handlePrintReview} className="hover:bg-gray-100">
+                    <Button
+                      variant="ghost"
+                      onClick={handlePrintReview}
+                      className="hover:bg-gray-100"
+                    >
                       <Printer className="h-4 w-4 mr-2" />
                       Print
                     </Button>
@@ -967,10 +1070,12 @@ export default function EvaluatorDashboard() {
                     {quarters.map((quarter) => (
                       <Button
                         key={quarter}
-                        variant={selectedQuarter === quarter ? "default" : "outline"}
+                        variant={
+                          selectedQuarter === quarter ? "default" : "outline"
+                        }
                         className={`w-24 h-12 text-lg font-semibold transition-all duration-200 ${
-                          selectedQuarter === quarter 
-                            ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg hover:shadow-xl" 
+                          selectedQuarter === quarter
+                            ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg hover:shadow-xl"
                             : "hover:bg-gray-50"
                         }`}
                         onClick={() => setSelectedQuarter(quarter)}
@@ -987,29 +1092,41 @@ export default function EvaluatorDashboard() {
                       <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <div className="flex items-center gap-6">
                           <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-                            <AvatarImage src={`https://avatar.vercel.sh/${selectedEmployee?.name}`} />
+                            <AvatarImage
+                              src={`https://avatar.vercel.sh/${selectedEmployee?.name}`}
+                            />
                             <AvatarFallback className="text-2xl font-semibold bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800">
                               {selectedEmployee?.name.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <h3 className="text-2xl font-bold text-gray-900">{selectedEmployee?.name}</h3>
-                            <p className="text-lg text-blue-600 font-medium">{selectedEmployee?.position.title}</p>
-                            <p className="text-gray-600">{selectedEmployee?.department.department_name}</p>
+                            <h3 className="text-2xl font-bold text-gray-900">
+                              {selectedEmployee?.name}
+                            </h3>
+                            <p className="text-lg text-blue-600 font-medium">
+                              {selectedEmployee?.position.title}
+                            </p>
+                            <p className="text-gray-600">
+                              {selectedEmployee?.department.department_name}
+                            </p>
                           </div>
                         </div>
                       </div>
 
                       {/* Overall Rating */}
                       <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">Overall Rating</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-6">
+                          Overall Rating
+                        </h3>
                         <div className="flex items-center gap-6">
                           <div className="flex items-center">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star
                                 key={star}
                                 className={`h-8 w-8 ${
-                                  star <= 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-200"
+                                  star <= 4
+                                    ? "text-yellow-400 fill-yellow-400"
+                                    : "text-gray-200"
                                 }`}
                               />
                             ))}
@@ -1018,43 +1135,102 @@ export default function EvaluatorDashboard() {
                             4.5 / 5.0
                           </div>
                         </div>
-                        <p className="text-gray-600 mt-4 text-lg">Performance exceeds expectations in most areas</p>
+                        <p className="text-gray-600 mt-4 text-lg">
+                          Performance exceeds expectations in most areas
+                        </p>
                       </div>
 
                       {/* Performance Metrics */}
                       <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">Performance Metrics</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-6">
+                          Performance Metrics
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="space-y-6">
                             <div>
                               <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-gray-700">Sales Target Achievement</span>
-                                <span className="font-bold text-blue-600">85%</span>
+                                <span className="font-semibold text-gray-700">
+                                  Sales Target Achievement
+                                </span>
+                                <span className="font-bold text-blue-600">
+                                  85%
+                                </span>
                               </div>
-                              <Progress value={Number(selectedEvaluation?.scores.find(s => s.category === "Sales Target Achievement")?.score) || 0} className="h-2.5 bg-gray-100" />
+                              <Progress
+                                value={
+                                  Number(
+                                    selectedEvaluation?.scores.find(
+                                      (s) =>
+                                        s.category ===
+                                        "Sales Target Achievement"
+                                    )?.score
+                                  ) || 0
+                                }
+                                className="h-2.5 bg-gray-100"
+                              />
                             </div>
                             <div>
                               <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-gray-700">Customer Satisfaction</span>
-                                <span className="font-bold text-blue-600">92%</span>
+                                <span className="font-semibold text-gray-700">
+                                  Customer Satisfaction
+                                </span>
+                                <span className="font-bold text-blue-600">
+                                  92%
+                                </span>
                               </div>
-                              <Progress value={Number(selectedEvaluation?.scores.find(s => s.category === "Customer Satisfaction")?.score) || 0} className="h-2.5 bg-gray-100" />
+                              <Progress
+                                value={
+                                  Number(
+                                    selectedEvaluation?.scores.find(
+                                      (s) =>
+                                        s.category === "Customer Satisfaction"
+                                    )?.score
+                                  ) || 0
+                                }
+                                className="h-2.5 bg-gray-100"
+                              />
                             </div>
                           </div>
                           <div className="space-y-6">
                             <div>
                               <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-gray-700">Project Completion</span>
-                                <span className="font-bold text-blue-600">78%</span>
+                                <span className="font-semibold text-gray-700">
+                                  Project Completion
+                                </span>
+                                <span className="font-bold text-blue-600">
+                                  78%
+                                </span>
                               </div>
-                              <Progress value={Number(selectedEvaluation?.scores.find(s => s.category === "Project Completion")?.score) || 0} className="h-2.5 bg-gray-100" />
+                              <Progress
+                                value={
+                                  Number(
+                                    selectedEvaluation?.scores.find(
+                                      (s) => s.category === "Project Completion"
+                                    )?.score
+                                  ) || 0
+                                }
+                                className="h-2.5 bg-gray-100"
+                              />
                             </div>
                             <div>
                               <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-gray-700">Team Collaboration</span>
-                                <span className="font-bold text-blue-600">90%</span>
+                                <span className="font-semibold text-gray-700">
+                                  Team Collaboration
+                                </span>
+                                <span className="font-bold text-blue-600">
+                                  90%
+                                </span>
                               </div>
-                              <Progress value={Number(selectedEvaluation?.scores.find(s => s.category === "Team Collaboration")?.score) || 0} className="h-2.5 bg-gray-100" />
+                              <Progress
+                                value={
+                                  Number(
+                                    selectedEvaluation?.scores.find(
+                                      (s) => s.category === "Team Collaboration"
+                                    )?.score
+                                  ) || 0
+                                }
+                                className="h-2.5 bg-gray-100"
+                              />
                             </div>
                           </div>
                         </div>
@@ -1062,15 +1238,21 @@ export default function EvaluatorDashboard() {
 
                       {/* Key Achievements */}
                       <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">Key Achievements</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-6">
+                          Key Achievements
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
                             <div className="p-2 bg-green-100 rounded-lg">
                               <CheckCircle2 className="h-6 w-6 text-green-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">Sales Target Exceeded</p>
-                              <p className="text-gray-600 mt-1">Exceeded quarterly sales target by 15%</p>
+                              <p className="font-semibold text-gray-900">
+                                Sales Target Exceeded
+                              </p>
+                              <p className="text-gray-600 mt-1">
+                                Exceeded quarterly sales target by 15%
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
@@ -1078,8 +1260,13 @@ export default function EvaluatorDashboard() {
                               <CheckCircle2 className="h-6 w-6 text-green-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">Customer Service Protocol</p>
-                              <p className="text-gray-600 mt-1">Successfully implemented new customer service protocol</p>
+                              <p className="font-semibold text-gray-900">
+                                Customer Service Protocol
+                              </p>
+                              <p className="text-gray-600 mt-1">
+                                Successfully implemented new customer service
+                                protocol
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
@@ -1087,8 +1274,13 @@ export default function EvaluatorDashboard() {
                               <CheckCircle2 className="h-6 w-6 text-green-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">Team Training</p>
-                              <p className="text-gray-600 mt-1">Led team training session on new software implementation</p>
+                              <p className="font-semibold text-gray-900">
+                                Team Training
+                              </p>
+                              <p className="text-gray-600 mt-1">
+                                Led team training session on new software
+                                implementation
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
@@ -1096,8 +1288,13 @@ export default function EvaluatorDashboard() {
                               <CheckCircle2 className="h-6 w-6 text-green-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">Process Improvement</p>
-                              <p className="text-gray-600 mt-1">Streamlined workflow resulting in 20% efficiency increase</p>
+                              <p className="font-semibold text-gray-900">
+                                Process Improvement
+                              </p>
+                              <p className="text-gray-600 mt-1">
+                                Streamlined workflow resulting in 20% efficiency
+                                increase
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -1105,15 +1302,21 @@ export default function EvaluatorDashboard() {
 
                       {/* Next Quarter Goals */}
                       <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">Next Quarter Goals</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-6">
+                          Next Quarter Goals
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
                             <div className="p-2 bg-blue-100 rounded-lg">
                               <Target className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">Customer Retention</p>
-                              <p className="text-gray-600 mt-1">Target: 95% retention rate</p>
+                              <p className="font-semibold text-gray-900">
+                                Customer Retention
+                              </p>
+                              <p className="text-gray-600 mt-1">
+                                Target: 95% retention rate
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
@@ -1121,8 +1324,12 @@ export default function EvaluatorDashboard() {
                               <Target className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">Sales Strategy</p>
-                              <p className="text-gray-600 mt-1">Implement new digital sales strategy</p>
+                              <p className="font-semibold text-gray-900">
+                                Sales Strategy
+                              </p>
+                              <p className="text-gray-600 mt-1">
+                                Implement new digital sales strategy
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
@@ -1130,8 +1337,12 @@ export default function EvaluatorDashboard() {
                               <Target className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">Training Program</p>
-                              <p className="text-gray-600 mt-1">Complete leadership development course</p>
+                              <p className="font-semibold text-gray-900">
+                                Training Program
+                              </p>
+                              <p className="text-gray-600 mt-1">
+                                Complete leadership development course
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
@@ -1139,8 +1350,12 @@ export default function EvaluatorDashboard() {
                               <Target className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">Process Optimization</p>
-                              <p className="text-gray-600 mt-1">Implement new workflow automation tools</p>
+                              <p className="font-semibold text-gray-900">
+                                Process Optimization
+                              </p>
+                              <p className="text-gray-600 mt-1">
+                                Implement new workflow automation tools
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -1148,20 +1363,30 @@ export default function EvaluatorDashboard() {
 
                       {/* Evaluator Comments */}
                       <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">Evaluator Comments</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-6">
+                          Evaluator Comments
+                        </h3>
                         <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100">
                           <p className="text-gray-700 text-lg leading-relaxed">
-                            "Demonstrated exceptional performance in achieving sales targets while maintaining high customer satisfaction. 
-                            The implementation of new protocols has significantly improved team efficiency. 
-                            Looking forward to continued growth in the next quarter."
+                            "Demonstrated exceptional performance in achieving
+                            sales targets while maintaining high customer
+                            satisfaction. The implementation of new protocols
+                            has significantly improved team efficiency. Looking
+                            forward to continued growth in the next quarter."
                           </p>
                           <div className="mt-4 flex items-center gap-3">
                             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                              <span className="text-blue-600 font-semibold">JS</span>
+                              <span className="text-blue-600 font-semibold">
+                                JS
+                              </span>
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">John Smith</p>
-                              <p className="text-gray-600">Department Manager</p>
+                              <p className="font-semibold text-gray-900">
+                                John Smith
+                              </p>
+                              <p className="text-gray-600">
+                                Department Manager
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -1200,7 +1425,9 @@ export default function EvaluatorDashboard() {
           <TabsContent value="total" key="total">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-blue-600">Total Employees</h2>
+                <h2 className="text-3xl font-bold text-blue-600">
+                  Total Employees
+                </h2>
                 <Users className="h-15 w-15 text-blue-600" />
               </div>
 
@@ -1242,7 +1469,7 @@ export default function EvaluatorDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead 
+                    <TableHead
                       className="cursor-pointer"
                       onClick={() => handleSort("name")}
                     >
@@ -1251,7 +1478,7 @@ export default function EvaluatorDashboard() {
                         <ArrowUpDown className="h-4 w-4" />
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="cursor-pointer"
                       onClick={() => handleSort("department")}
                     >
@@ -1260,7 +1487,7 @@ export default function EvaluatorDashboard() {
                         <ArrowUpDown className="h-4 w-4" />
                       </div>
                     </TableHead>
-                    <TableHead 
+                    <TableHead
                       className="cursor-pointer"
                       onClick={() => handleSort("position")}
                     >
@@ -1279,22 +1506,28 @@ export default function EvaluatorDashboard() {
                     .filter((employee: Employee) => {
                       // Only show employees who haven't been evaluated yet
                       const hasEvaluation = evaluations.some(
-                        (evaluation) => evaluation.employeeId === employee.employeeId && evaluation.status === "completed"
+                        (evaluation) =>
+                          evaluation.employeeId === employee.employeeId &&
+                          evaluation.status === "completed"
                       );
                       return !hasEvaluation;
                     })
                     .map((employee) => (
                       <TableRow key={employee.id}>
                         <TableCell>{employee.name}</TableCell>
-                        <TableCell>{employee.department.department_name}</TableCell>
+                        <TableCell>
+                          {employee.department.department_name}
+                        </TableCell>
                         <TableCell>{employee.position.title}</TableCell>
                         <TableCell>{employee.email}</TableCell>
                         <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            employee.status === "Active"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${
+                              employee.status === "Active"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
                             {employee.status}
                           </span>
                         </TableCell>
@@ -1319,7 +1552,9 @@ export default function EvaluatorDashboard() {
           <TabsContent value="completed" key="completed">
             <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
               <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-green-700">Completed Evaluations</h2>
+                <h2 className="text-3xl font-bold text-green-700">
+                  Completed Evaluations
+                </h2>
                 <CheckCircle2 className="h-15 w-15 text-green-600" />
               </div>
               <Table>
@@ -1346,9 +1581,10 @@ export default function EvaluatorDashboard() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button
-                              
                               size="sm"
-                              onClick={() => router.push(`/performance/${evaluation.id}`)}
+                              onClick={() =>
+                                router.push(`/performance/${evaluation.id}`)
+                              }
                               className="flex items-center gap-2 bg-blue-500 text-white hover:text-black hover:bg-yellow-400"
                             >
                               <Eye className="h-4 w-4" />
@@ -1370,9 +1606,13 @@ export default function EvaluatorDashboard() {
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.01] ease-in-out">
-          <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          }} />
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage:
+                'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+            }}
+          />
 
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <img
@@ -1382,18 +1622,20 @@ export default function EvaluatorDashboard() {
             />
 
             <div>
-              <h1 className="text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
+              <h1 className="text-3xl font-bold mb-2">
+                Welcome back, {user.name}
+              </h1>
               <p className="text-blue-100 opacity-90">
                 Here's what's happening with your evaluations today.
               </p>
             </div>
 
             <div className="flex items-center gap-3 p-2 rounded-md border shadow-sm bg-white dark:bg-gray-900">
-  <NotificationBell
-    notifications={notifications}
-    onMarkAsRead={markNotificationAsRead}
-    onMarkAllAsRead={markAllNotificationsAsRead}
-  />
+              <NotificationBell
+                notifications={notifications}
+                onMarkAsRead={markNotificationAsRead}
+                onMarkAllAsRead={markAllNotificationsAsRead}
+              />
               <Button
                 onClick={() => handleNewEvaluation()}
                 className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
@@ -1413,20 +1655,25 @@ export default function EvaluatorDashboard() {
             >
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <h3 className="text-2xl font-bold mt-1 text-gray-800">{stat.value}</h3>
-                  <p className="text-xs text-gray-500 opacity-90">{stat.description}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </p>
+                  <h3 className="text-2xl font-bold mt-1 text-gray-800">
+                    {stat.value}
+                  </h3>
+                  <p className="text-xs text-gray-500 opacity-90">
+                    {stat.description}
+                  </p>
                 </div>
-                <div className={`p-3 rounded-full ${stat.color} transition-transform duration-300 group-hover:scale-110`}>
+                <div
+                  className={`p-3 rounded-full ${stat.color} transition-transform duration-300 group-hover:scale-110`}
+                >
                   {stat.icon}
                 </div>
               </div>
             </Card>
           ))}
         </div>
-
-   
-        
 
         {/* Recent Activity */}
         <div className="space-y-4">
@@ -1447,28 +1694,30 @@ export default function EvaluatorDashboard() {
                     className="bg-green-500 text-white hover:text-white hover:bg-green-600 transition-all duration-200"
                     onClick={() => {
                       // Refresh recent activities
-                      fetch('/api/recent-activities')
-                        .then(response => response.json())
-                        .then(activitiesData => {
-                          const transformedActivities: RecentActivity[] = activitiesData.map((activity: any) => ({
-                            id: activity.id,
-                            type: activity.type,
-                            description: activity.description,
-                            timestamp: activity.timestamp,
-                            employeeName: activity.employeeName,
-                            employeeId: activity.employeeId,
-                            reviewId: activity.reviewId,
-                            status: activity.status || "completed",
-                            department: activity.department || "General",
-                            position: activity.position || "Not specified",
-                            reviewPeriod: activity.reviewPeriod || "Current Period",
-                            score: activity.score || 0,
-                            comments: activity.comments || ""
-                          }));
+                      fetch("/api/recent-activities")
+                        .then((response) => response.json())
+                        .then((activitiesData) => {
+                          const transformedActivities: RecentActivity[] =
+                            activitiesData.map((activity: any) => ({
+                              id: activity.id,
+                              type: activity.type,
+                              description: activity.description,
+                              timestamp: activity.timestamp,
+                              employeeName: activity.employeeName,
+                              employeeId: activity.employeeId,
+                              reviewId: activity.reviewId,
+                              status: activity.status || "completed",
+                              department: activity.department || "General",
+                              position: activity.position || "Not specified",
+                              reviewPeriod:
+                                activity.reviewPeriod || "Current Period",
+                              score: activity.score || 0,
+                              comments: activity.comments || "",
+                            }));
                           setRecentActivities(transformedActivities);
                           toast.success("Activities refreshed");
                         })
-                        .catch(error => {
+                        .catch((error) => {
                           console.error("Failed to refresh activities:", error);
                           toast.error("Failed to refresh activities");
                         });
@@ -1492,23 +1741,32 @@ export default function EvaluatorDashboard() {
                 {recentActivities.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg font-medium mb-2">No Recent Activities</p>
-                    <p className="text-sm">Your evaluation activities will appear here</p>
+                    <p className="text-lg font-medium mb-2">
+                      No Recent Activities
+                    </p>
+                    <p className="text-sm">
+                      Your evaluation activities will appear here
+                    </p>
                   </div>
                 ) : (
                   recentActivities.slice(0, 3).map((activity) => (
                     <div
                       key={activity.id}
                       className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer"
-                      onClick={() => activity.reviewId && handleViewEvaluation(activity.reviewId)}
+                      onClick={() =>
+                        activity.reviewId &&
+                        handleViewEvaluation(activity.reviewId)
+                      }
                     >
-                      <div className={`p-2 rounded-full ${
-                        activity.type === "evaluation"
-                          ? "bg-blue-100 text-blue-600"
-                          : activity.type === "update"
-                          ? "bg-yellow-100 text-yellow-600"
-                          : "bg-green-100 text-green-600"
-                      }`}>
+                      <div
+                        className={`p-2 rounded-full ${
+                          activity.type === "evaluation"
+                            ? "bg-blue-100 text-blue-600"
+                            : activity.type === "update"
+                            ? "bg-yellow-100 text-yellow-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
+                      >
                         {activity.type === "evaluation" ? (
                           <FileText className="h-4 w-4" />
                         ) : activity.type === "update" ? (
@@ -1523,28 +1781,36 @@ export default function EvaluatorDashboard() {
                             {activity.description}
                           </p>
                           <p className="text-sm text-gray-500 whitespace-nowrap">
-                            {new Date(activity.timestamp).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(activity.timestamp).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
                           </p>
                         </div>
                         <div className="flex items-center gap-4 mt-2">
                           <p className="text-sm text-gray-600">
-                            <span className="font-medium">Employee:</span> {activity.employeeName}
+                            <span className="font-medium">Employee:</span>{" "}
+                            {activity.employeeName}
                           </p>
-                          {activity.department && activity.department !== "General" && (
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Dept:</span> {activity.department}
-                            </p>
-                          )}
-                          {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Period:</span> {activity.reviewPeriod}
-                            </p>
-                          )}
+                          {activity.department &&
+                            activity.department !== "General" && (
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Dept:</span>{" "}
+                                {activity.department}
+                              </p>
+                            )}
+                          {activity.reviewPeriod &&
+                            activity.reviewPeriod !== "Current Period" && (
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Period:</span>{" "}
+                                {activity.reviewPeriod}
+                              </p>
+                            )}
                         </div>
                         {activity.reviewId && (
                           <span className="text-xs text-blue-500 mt-1">
@@ -1568,12 +1834,12 @@ export default function EvaluatorDashboard() {
         />
 
         {/* Results Modal */}
-        <ResultsModal 
-          evaluation={selectedEvaluation} 
+        <ResultsModal
+          evaluation={selectedEvaluation}
           onClose={() => {
             setShowResultsModal(false);
             setSelectedEvaluation(null);
-          }} 
+          }}
         />
       </div>
     );
@@ -1600,9 +1866,13 @@ export default function EvaluatorDashboard() {
         </button>
 
         {/* Sidebar Container */}
-        <div className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}>
+        <div
+          className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
+            isSidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }`}
+        >
           <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
             {/* Logo */}
             <div className="mb-6 lg:mb-8 flex justify-center bg-gradient-blue-500">
@@ -1669,20 +1939,23 @@ export default function EvaluatorDashboard() {
                   {user.department || "Human Resources"}
                 </p>
               </div>
+              <div className="p-3 lg:p-4 border-t border-gray-100">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-center lg:justify-start text-red-600 hover:text-white hover:bg-red-500 group transition-all duration-200"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="ml-0 lg:ml-2 hidden lg:inline-block">
+                    Logout
+                  </span>
+                </Button>
+              </div>
+              
             </div>
           </div>
 
           {/* Footer */}
-          <div className="p-3 lg:p-4 border-t border-gray-100">
-            <Button
-              variant="ghost"
-              className="w-full justify-center lg:justify-start text-red-600 hover:text-white hover:bg-red-500 group transition-all duration-200"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-              <span className="ml-0 lg:ml-2 hidden lg:inline-block">Logout</span>
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -1692,4 +1965,4 @@ export default function EvaluatorDashboard() {
       </div>
     </div>
   );
-} 
+}

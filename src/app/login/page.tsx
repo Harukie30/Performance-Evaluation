@@ -123,6 +123,9 @@ export default function LoginPage() {
       } else if (userRole === "evaluator") {
         console.log("User is Evaluator, redirecting to evaluator dashboard");
         router.push("/evaluator-dashboard");
+      } else if (userRole === "employee") {
+        console.log("User is Employee, redirecting to employee dashboard");
+        router.push("/employee-dashboard");
       } else {
         console.log("User is regular user, redirecting to dashboard");
         router.push("/dashboard");
