@@ -1,15 +1,21 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { ShieldCheck, LockKeyhole, KeyRound, Server, Fingerprint, FileLock2, BadgeCheck } from "lucide-react";
 
 export default function SecurityPage() {
   const [activeFeature, setActiveFeature] = useState("encryption");
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   const securityFeatures = [
     {
+      
       id: "encryption",
       title: "Advanced Encryption",
       description: "All data is protected using AES-256 encryption both in transit and at rest, meeting financial industry security standards.",
@@ -54,7 +60,7 @@ export default function SecurityPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 font-sans">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {[...Array(12)].map((_, i) => (
+        {isClient && [...Array(12)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full opacity-5 dark:opacity-[0.03]"
@@ -91,7 +97,7 @@ export default function SecurityPage() {
           >
             <motion.div
               initial={{ scale: 0 }}
-              animate={{ scale: 1, rotate: [0, 15, -10, 5, 0] }}
+              animate={{ scale: 1, rotate: 360 }}
               transition={{ duration: 0.8, type: "spring" }}
               className="mb-8 flex justify-center"
             >

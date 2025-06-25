@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { formatTimestamp } from "@/lib/utils";
+import Link from "next/link";
 
 type ActivityType = "evaluation" | "update" | "completion";
 
@@ -183,58 +184,67 @@ export default function RecentActivityModal({
             </div>
           ) : (
             filteredActivities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
-                onClick={() => {
-                  if (activity.reviewId) {
-                    // Navigate to evaluation details
-                    window.open(`/performance/${activity.reviewId}`, '_blank');
-                  }
-                }}
-              >
-                <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
-                  {getActivityIcon(activity.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <p className="font-medium">{activity.description}</p>
-                      <span className="px-2 py-1 text-xs rounded-full bg-gray-200 text-gray-700">
-                        {getActivityTypeLabel(activity.type)}
-                      </span>
+              activity.reviewId ? (
+                <Link
+                  href={`/performance/${activity.reviewId}`}
+                  key={activity.id}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+                >
+                  <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>{getActivityIcon(activity.type)}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium">{activity.description}</p>
+                        <span className="px-2 py-1 text-xs rounded-full bg-gray-200 text-gray-700">{getActivityTypeLabel(activity.type)}</span>
+                      </div>
+                      <span className="text-sm text-gray-500 whitespace-nowrap ml-4">{formatTimestamp(activity.timestamp)}</span>
                     </div>
-                    <span className="text-sm text-gray-500 whitespace-nowrap ml-4">
-                      {formatTimestamp(activity.timestamp)}
-                    </span>
+                    <div className="flex items-center gap-4 mt-2">
+                      <p className="text-sm text-gray-600"><span className="font-medium">Employee:</span> {activity.employeeName}</p>
+                      {activity.department && activity.department !== "General" && (
+                        <p className="text-sm text-gray-600"><span className="font-medium">Dept:</span> {activity.department}</p>
+                      )}
+                      {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
+                        <p className="text-sm text-gray-600"><span className="font-medium">Period:</span> {activity.reviewPeriod}</p>
+                      )}
+                      {activity.score && activity.score > 0 && (
+                        <p className="text-sm text-gray-600"><span className="font-medium">Score:</span> {activity.score}</p>
+                      )}
+                    </div>
+                    <p className="text-xs text-blue-500 mt-1">Click to view evaluation details</p>
                   </div>
-                  <div className="flex items-center gap-4 mt-2">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Employee:</span> {activity.employeeName}
-                    </p>
-                    {activity.department && activity.department !== "General" && (
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">Dept:</span> {activity.department}
-                      </p>
-                    )}
-                    {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">Period:</span> {activity.reviewPeriod}
-                      </p>
-                    )}
-                    {activity.score && activity.score > 0 && (
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">Score:</span> {activity.score}
-                      </p>
-                    )}
+                </Link>
+              ) : (
+                <div
+                  key={activity.id}
+                  className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>{getActivityIcon(activity.type)}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium">{activity.description}</p>
+                        <span className="px-2 py-1 text-xs rounded-full bg-gray-200 text-gray-700">{getActivityTypeLabel(activity.type)}</span>
+                      </div>
+                      <span className="text-sm text-gray-500 whitespace-nowrap ml-4">{formatTimestamp(activity.timestamp)}</span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-2">
+                      <p className="text-sm text-gray-600"><span className="font-medium">Employee:</span> {activity.employeeName}</p>
+                      {activity.department && activity.department !== "General" && (
+                        <p className="text-sm text-gray-600"><span className="font-medium">Dept:</span> {activity.department}</p>
+                      )}
+                      {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
+                        <p className="text-sm text-gray-600"><span className="font-medium">Period:</span> {activity.reviewPeriod}</p>
+                      )}
+                      {activity.score && activity.score > 0 && (
+                        <p className="text-sm text-gray-600"><span className="font-medium">Score:</span> {activity.score}</p>
+                      )}
+                    </div>
                   </div>
-                  {activity.reviewId && (
-                    <p className="text-xs text-blue-500 mt-1">
-                      Click to view evaluation details
-                    </p>
-                  )}
                 </div>
-              </div>
+              )
             ))
           )}
         </div>

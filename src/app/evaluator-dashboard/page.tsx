@@ -21,29 +21,15 @@ import {
   Clock,
   LogOut,
   User,
-  Settings,
   FileText,
   XIcon,
   MenuIcon,
-  UserPlus,
-  UserMinus,
-  Plus,
   Eye,
-  Loader2,
   Search,
   ArrowUpDown,
   Printer,
-  Calendar,
-  Download,
-  Share2,
   Star,
   Target,
-  TrendingUp,
-  AlertCircle,
-  Briefcase,
-  Code,
-  Trophy,
-  GraduationCap,
   X,
   RefreshCw,
 } from "lucide-react";
@@ -55,22 +41,10 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { QuarterlyReviewModal } from "@/components/QuarterlyReviewModal";
+
 import RecentActivityModal from "@/components/RecentActivityModal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/LoadingScreen";
 import { reviewAPI, authAPI, employeeAPI } from "@/services/api";
@@ -83,8 +57,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import NotificationBell from "@/components/NotificationBell";
+import { reviewService } from "@/services/reviewService";
 
 interface User {
   id: string;
@@ -184,6 +158,14 @@ interface Notification {
 
 type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
 
+// Utility for consistent date/time formatting
+function formatTimestamp(ts?: string) {
+  if (!ts) return '';
+  const date = new Date(ts);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 export default function EvaluatorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -215,6 +197,14 @@ export default function EvaluatorDashboard() {
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const router = useRouter();
+
+  const handleCompleteReview = (reviewId: string) => {
+    // For demonstration, we'll use a fixed score.
+    // In a real app, you might have a modal to input this.
+    const score = 85;
+    reviewService.completeReview(reviewId, score);
+    toast.success("Review completed and sent to HR!");
+  };
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
@@ -1020,7 +1010,7 @@ export default function EvaluatorDashboard() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button
-                              className="bg-blue-500 text-white hover:bg-yellow-500 hover:text-black"
+                              className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
                               size="sm"
                               onClick={() => handleViewQuarters(employee)}
                             >
@@ -1577,20 +1567,21 @@ export default function EvaluatorDashboard() {
                         <TableCell>{evaluation.department}</TableCell>
                         <TableCell>{evaluation.ForRegular}</TableCell>
                         <TableCell>{evaluation.status}</TableCell>
-                        <TableCell>{evaluation.lastModified}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                router.push(`/performance/${evaluation.id}`)
-                              }
-                              className="flex items-center gap-2 bg-blue-500 text-white hover:text-black hover:bg-yellow-400"
-                            >
-                              <Eye className="h-4 w-4" />
-                              Review Summary
-                            </Button>
-                          </div>
+                        <TableCell>{formatTimestamp(evaluation.lastModified)}</TableCell>
+                        <TableCell className="text-right space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => handleViewEvaluation(evaluation.id)}>
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleCompleteReview(evaluation.id)}
+                            disabled={evaluation.status === 'completed'}
+                          >
+                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                            Complete
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1749,10 +1740,10 @@ export default function EvaluatorDashboard() {
                     </p>
                   </div>
                 ) : (
-                  recentActivities.slice(0, 3).map((activity) => (
+                  recentActivities.slice(0, 3).map((activity, idx) => (
                     <div
                       key={activity.id}
-                      className="group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer"
+                      className={`group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer ${idx === 0 ? 'bg-blue-100 border-blue-400' : ''}`}
                       onClick={() =>
                         activity.reviewId &&
                         handleViewEvaluation(activity.reviewId)
@@ -1776,47 +1767,22 @@ export default function EvaluatorDashboard() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                          <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {activity.description}
-                          </p>
-                          <p className="text-sm text-gray-500 whitespace-nowrap">
-                            {new Date(activity.timestamp).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
-                          </p>
-                        </div>
                         <div className="flex items-center gap-4 mt-2">
                           <p className="text-sm text-gray-600">
-                            <span className="font-medium">Employee:</span>{" "}
-                            {activity.employeeName}
+                            <span className="font-medium">Employee:</span> {activity.employeeName}
                           </p>
-                          {activity.department &&
-                            activity.department !== "General" && (
-                              <p className="text-sm text-gray-600">
-                                <span className="font-medium">Dept:</span>{" "}
-                                {activity.department}
-                              </p>
-                            )}
-                          {activity.reviewPeriod &&
-                            activity.reviewPeriod !== "Current Period" && (
-                              <p className="text-sm text-gray-600">
-                                <span className="font-medium">Period:</span>{" "}
-                                {activity.reviewPeriod}
-                              </p>
-                            )}
+                          {activity.department && activity.department !== "General" && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Dept:</span> {activity.department}
+                            </p>
+                          )}
+                          {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Period:</span> {activity.reviewPeriod}
+                            </p>
+                          )}
                         </div>
-                        {activity.reviewId && (
-                          <span className="text-xs text-blue-500 mt-1">
-                            Click to view evaluation details
-                          </span>
-                        )}
+                        <span className="text-xs text-gray-500 mt-1 block">{formatTimestamp(activity.timestamp)}</span>
                       </div>
                     </div>
                   ))

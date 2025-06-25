@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import { reviewService } from "@/services/reviewService";
 
 interface Employee {
   id: number;
@@ -1128,6 +1129,16 @@ export default function FinalResults({
 
       const result = await response.json();
       console.log("Review submitted successfully:", result);
+
+      // Update the reviewService for real-time HR dashboard update
+      if (result.id && employeeName?.name && initialForm.employeeId) {
+        reviewService.addNewReview({
+          id: result.id,
+          employeeName: employeeName.name,
+          employeeId: initialForm.employeeId,
+          score: Number(totalScore)
+        });
+      }
 
       // Create a recent activity
       const activityResponse = await fetch("/api/recent-activities", {
