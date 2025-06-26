@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs';
+import { reviewAPI } from './api';
 
 export interface Review {
   id: string;
@@ -14,25 +14,85 @@ export interface Activity {
   type: 'evaluation_completed' | 'evaluation_started';
   text: string;
   timestamp: string;
+  reviewId?: string;
 }
 
-const initialReviews: Review[] = [
-  // Start with some pending reviews for demonstration
-  { id: '1', employeeName: 'John Doe', employeeId: '001', status: 'Pending', date: '2024-07-28', score: 0 },
-  { id: '2', employeeName: 'Jane Smith', employeeId: '002', status: 'Pending', date: '2024-07-29', score: 0 },
-];
-
-const initialActivities: Activity[] = [];
-
-// Use RxJS BehaviorSubject to create observable data stores
-// This allows components to subscribe and automatically receive updates when data changes
-const reviews$ = new BehaviorSubject<Review[]>(initialReviews);
-const activities$ = new BehaviorSubject<Activity[]>(initialActivities);
+export interface Notification {
+  id: string;
+  type: "evaluation_completed" | "evaluation_started" | "reminder";
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  employeeName?: string;
+  evaluationId?: string;
+}
 
 export const reviewService = {
-  // --- Observables for Subscribing ---
-  reviews$: reviews$.asObservable(),
-  activities$: activities$.asObservable(),
+  // --- Data Fetching Methods ---
+  
+  /**
+   * Get all reviews from the API
+   */
+  getReviews: async (): Promise<Review[]> => {
+    try {
+      const response = await reviewAPI.getAll();
+      return response.data.map((review: any) => ({
+        id: review.id,
+        employeeName: review.employeeName || 'Unknown Employee',
+        employeeId: review.employeeId,
+        status: review.status === 'completed' ? 'Completed' : 'Pending',
+        date: review.submittedAt || review.createdAt,
+        score: review.finalScore || 0,
+      }));
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Get recent activities from the API
+   */
+  getActivities: async (): Promise<Activity[]> => {
+    try {
+      const response = await fetch('/api/recent-activities');
+      if (!response.ok) {
+        throw new Error('Failed to fetch activities');
+      }
+      const activities = await response.json();
+      return activities.map((activity: any) => ({
+        id: activity.id,
+        type: activity.type === 'evaluation' ? 'evaluation_completed' : 'evaluation_started',
+        text: activity.description,
+        timestamp: activity.timestamp,
+        reviewId: activity.reviewId,
+      }));
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Get notifications based on activities
+   */
+  getNotifications: async (): Promise<Notification[]> => {
+    try {
+      const activities = await reviewService.getActivities();
+      return activities.map((activity) => ({
+        id: activity.id,
+        type: activity.type,
+        title: "Evaluation Completed",
+        message: activity.text,
+        timestamp: activity.timestamp,
+        read: false,
+      }));
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return [];
+    }
+  },
 
   // --- Actions to Modify Data ---
   
@@ -41,62 +101,110 @@ export const reviewService = {
    * Also creates a "completed evaluation" activity log.
    * This would be called by the Evaluator dashboard.
    */
-  completeReview: (reviewId: string, score: number) => {
-    const currentReviews = reviews$.getValue();
-    const reviewIndex = currentReviews.findIndex((r: Review) => r.id === reviewId);
+  completeReview: async (reviewId: string, score: number): Promise<void> => {
+    try {
+      // Update the review status
+      await reviewAPI.update(reviewId, { 
+        status: 'completed', 
+        finalScore: score,
+        completedAt: new Date().toISOString()
+      });
 
-    if (reviewIndex === -1) {
-      console.error(`Review with id ${reviewId} not found.`);
-      return;
+      // Create a new activity
+      await fetch('/api/recent-activities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'evaluation',
+          description: `Evaluation completed with a score of ${score}.`,
+          timestamp: new Date().toISOString(),
+          reviewId: reviewId
+        }),
+      });
+
+      console.log(`Review ${reviewId} completed successfully`);
+    } catch (error) {
+      console.error(`Error completing review ${reviewId}:`, error);
+      throw error;
     }
-
-    // Update the review
-    const updatedReviews = [...currentReviews];
-    const completedReview = { ...updatedReviews[reviewIndex], status: 'Completed' as const, score };
-    updatedReviews[reviewIndex] = completedReview;
-    
-    // Create a new activity
-    const newActivity: Activity = {
-      id: `act-${Date.now()}`,
-      type: 'evaluation_completed',
-      text: `Evaluation for ${completedReview.employeeName} was completed with a score of ${score}.`,
-      timestamp: new Date().toISOString(),
-    };
-    
-    const currentActivities = activities$.getValue();
-
-    // Push new data to the observables, which will notify all subscribers
-    reviews$.next(updatedReviews);
-    activities$.next([newActivity, ...currentActivities]);
   },
 
   /**
    * Adds a new completed review to the list.
    * This is for when a review is created and submitted from scratch.
    */
-  addNewReview: (reviewData: { id: string, employeeName: string, employeeId: string, score: number }) => {
-    const newReview: Review = {
-      ...reviewData,
-      status: 'Completed' as const,
-      date: new Date().toISOString(),
-    };
+  addNewReview: async (reviewData: { 
+    id: string, 
+    employeeName: string, 
+    employeeId: string, 
+    score: number 
+  }): Promise<void> => {
+    try {
+      // Create a new activity for the new review
+      await fetch('/api/recent-activities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'evaluation',
+          description: `A new evaluation for ${reviewData.employeeName} was submitted with a score of ${reviewData.score}.`,
+          timestamp: new Date().toISOString(),
+          employeeName: reviewData.employeeName,
+          employeeId: reviewData.employeeId,
+          reviewId: reviewData.id
+        }),
+      });
 
-    const newActivity: Activity = {
-      id: `act-${Date.now()}`,
-      type: 'evaluation_completed',
-      text: `A new evaluation for ${newReview.employeeName} was submitted with a score of ${newReview.score}.`,
-      timestamp: new Date().toISOString(),
-    };
+      console.log(`New review ${reviewData.id} added successfully`);
+    } catch (error) {
+      console.error(`Error adding new review ${reviewData.id}:`, error);
+      throw error;
+    }
+  },
 
-    reviews$.next([newReview, ...reviews$.getValue()]);
-    activities$.next([newActivity, ...activities$.getValue()]);
+  /**
+   * Mark a notification as read
+   */
+  markNotificationAsRead: async (notificationId: string): Promise<void> => {
+    try {
+      // In a real implementation, you might have an API endpoint for this
+      // For now, we'll just log it
+      console.log(`Notification ${notificationId} marked as read`);
+    } catch (error) {
+      console.error(`Error marking notification ${notificationId} as read:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Mark all notifications as read
+   */
+  markAllNotificationsAsRead: async (): Promise<void> => {
+    try {
+      // In a real implementation, you might have an API endpoint for this
+      // For now, we'll just log it
+      console.log('All notifications marked as read');
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      throw error;
+    }
   },
 
   /**
    * A function to get the current state of all data, useful for initial loads.
    */
-  getData: () => ({
-    reviews: reviews$.getValue(),
-    activities: activities$.getValue(),
-  }),
+  getData: async () => {
+    const [reviews, activities] = await Promise.all([
+      reviewService.getReviews(),
+      reviewService.getActivities()
+    ]);
+    
+    return {
+      reviews,
+      activities,
+    };
+  },
 }; 

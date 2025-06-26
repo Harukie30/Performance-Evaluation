@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { reviewService } from "@/services/reviewService";
+import { eventService, EVENTS } from "@/services/eventService";
 
 interface Employee {
   id: number;
@@ -1132,7 +1133,7 @@ export default function FinalResults({
 
       // Update the reviewService for real-time HR dashboard update
       if (result.id && employeeName?.name && initialForm.employeeId) {
-        reviewService.addNewReview({
+        await reviewService.addNewReview({
           id: result.id,
           employeeName: employeeName.name,
           employeeId: initialForm.employeeId,
@@ -1163,6 +1164,11 @@ export default function FinalResults({
       } else {
         console.log("Recent activity created successfully");
       }
+
+      // Emit events to trigger real-time updates in HR dashboard
+      eventService.emit(EVENTS.REVIEW_SUBMITTED);
+      eventService.emit(EVENTS.ACTIVITY_CREATED);
+      eventService.emit(EVENTS.DATA_UPDATED);
 
       toast.success("Performance review completed successfully!");
       setShowConfirmDialog(false);

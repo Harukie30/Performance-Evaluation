@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import users from "@/data/users.json";
 
 interface DashboardStats {
   totalReviews: number;
@@ -55,7 +54,6 @@ export function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [summary, setSummary] = useState<any>(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -97,11 +95,6 @@ export function Dashboard() {
         }));
 
       setRecentActivities(activities);
-
-      // Find the most recent completed review for summary
-      const completed = reviews.filter((r: Review) => r.status === "Completed" || r.status === "completed");
-      const mostRecent = completed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-      setSummary(mostRecent || null);
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
       setError("Failed to load dashboard data. Please try again.");
@@ -180,43 +173,6 @@ export function Dashboard() {
           )}
         </Button>
       </div>
-
-      {/* Performance Summary Card */}
-      <Card className="shadow-lg border-blue-200">
-        <CardHeader className="bg-blue-50 border-b border-blue-100">
-          <CardTitle className="text-2xl font-bold text-blue-700">Performance Summary</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
-              <div className="text-lg font-semibold text-gray-700 mb-2">Final Score</div>
-              <div className="text-3xl font-bold text-blue-600">{summary?.finalScore?.toFixed(2) ?? '--'}</div>
-            </div>
-            <div>
-              <div className="text-lg font-semibold text-gray-700 mb-2">Final Rating</div>
-              <div className="text-2xl font-bold text-green-600">{summary?.finalRating ?? '--'}</div>
-            </div>
-            <div>
-              <div className="text-lg font-semibold text-gray-700 mb-2">Final Percentage</div>
-              <div className="text-2xl font-bold text-purple-600">{summary?.finalPercentage ? `${summary.finalPercentage}%` : '--'}</div>
-            </div>
-          </div>
-          <div className="mt-6 grid md:grid-cols-2 gap-6">
-            <div>
-              <div className="font-semibold text-gray-700 mb-1">Priority Areas for Improvement</div>
-              <div className="min-h-[60px] bg-yellow-50 border border-yellow-200 rounded p-3 text-gray-800">
-                {summary?.areasForImprovement || 'No priority areas for improvement specified.'}
-              </div>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-700 mb-1">Remarks</div>
-              <div className="min-h-[60px] bg-gray-50 border border-gray-200 rounded p-3 text-gray-800">
-                {summary?.additionalComments || 'No additional remarks provided.'}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
@@ -313,45 +269,6 @@ export function Dashboard() {
                   View Completed Reviews
                 </Link>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Employee List Section */}
-      <div className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Employees</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user: any) => (
-                    <tr key={user.id}>
-                      <td className="px-4 py-2 whitespace-nowrap">{user.name}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{user.email}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{user.department?.department_name}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{user.position?.title}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{user.status}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        <Button size="sm" variant="outline">Transfer</Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </CardContent>
         </Card>

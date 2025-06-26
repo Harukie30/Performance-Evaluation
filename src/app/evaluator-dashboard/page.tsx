@@ -32,6 +32,7 @@ import {
   Target,
   X,
   RefreshCw,
+  ChevronDown,
 } from "lucide-react";
 import {
   Dialog,
@@ -41,6 +42,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import RecentActivityModal from "@/components/RecentActivityModal";
 import { Label } from "@/components/ui/label";
@@ -59,6 +61,14 @@ import {
 import { Progress } from "@/components/ui/progress";
 import NotificationBell from "@/components/NotificationBell";
 import { reviewService } from "@/services/reviewService";
+
+const navItems = [
+  { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+  { id: "employees", label: "Employees", icon: Users },
+  { id: "evaluate", label: "Evaluate", icon: CheckCircle2 },
+  { id: "evaluations", label: "Evaluations", icon: FileText },
+  { id: "profile", label: "Profile", icon: User },
+];
 
 interface User {
   id: string;
@@ -166,6 +176,26 @@ function formatTimestamp(ts?: string) {
   return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+// Helper function to get relative time (same as HR dashboard)
+const getTimeAgo = (timestamp: string): string => {
+  const now = new Date();
+  const activityTime = new Date(timestamp);
+  const diffInSeconds = Math.floor((now.getTime() - activityTime.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'Just now';
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  }
+};
+
 export default function EvaluatorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -198,20 +228,45 @@ export default function EvaluatorDashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const router = useRouter();
 
-  const handleCompleteReview = (reviewId: string) => {
-    // For demonstration, we'll use a fixed score.
-    // In a real app, you might have a modal to input this.
-    const score = 85;
-    reviewService.completeReview(reviewId, score);
-    toast.success("Review completed and sent to HR!");
-  };
+  // Move loadData to top-level scope
+  const loadData = async () => {
+    try {
+      // Load evaluations
+      const evaluationsResponse = await fetch("/api/performance-review");
+      if (evaluationsResponse.ok) {
+        const evaluationsData = await evaluationsResponse.json();
+        setEvaluations(evaluationsData);
+      }
 
-  const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-    { id: "evaluations", label: "My Evaluations", icon: FileText },
-    { id: "employees", label: "Employees", icon: Users },
-    { id: "profile", label: "Profile", icon: User },
-  ];
+      // Load recent activities
+      const activitiesResponse = await fetch("/api/recent-activities");
+      if (activitiesResponse.ok) {
+        const activitiesData = await activitiesResponse.json();
+        // Transform the data to match our enhanced RecentActivity interface
+        const transformedActivities: RecentActivity[] = activitiesData.map(
+          (activity: any) => ({
+            id: activity.id,
+            type: activity.type,
+            description: activity.description,
+            timestamp: activity.timestamp,
+            employeeName: activity.employeeName,
+            employeeId: activity.employeeId,
+            reviewId: activity.reviewId,
+            status: activity.status || "completed",
+            department: activity.department || "General",
+            position: activity.position || "Not specified",
+            reviewPeriod: activity.reviewPeriod || "Current Period",
+            score: activity.score || 0,
+            comments: activity.comments || "",
+          })
+        );
+        setRecentActivities(transformedActivities);
+      }
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+      toast.error("Failed to load dashboard data");
+    }
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -238,45 +293,6 @@ export default function EvaluatorDashboard() {
 
   // Load evaluations and recent activities
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Load evaluations
-        const evaluationsResponse = await fetch("/api/performance-review");
-        if (evaluationsResponse.ok) {
-          const evaluationsData = await evaluationsResponse.json();
-          setEvaluations(evaluationsData);
-        }
-
-        // Load recent activities
-        const activitiesResponse = await fetch("/api/recent-activities");
-        if (activitiesResponse.ok) {
-          const activitiesData = await activitiesResponse.json();
-          // Transform the data to match our enhanced RecentActivity interface
-          const transformedActivities: RecentActivity[] = activitiesData.map(
-            (activity: any) => ({
-              id: activity.id,
-              type: activity.type,
-              description: activity.description,
-              timestamp: activity.timestamp,
-              employeeName: activity.employeeName,
-              employeeId: activity.employeeId,
-              reviewId: activity.reviewId,
-              status: activity.status || "completed",
-              department: activity.department || "General",
-              position: activity.position || "Not specified",
-              reviewPeriod: activity.reviewPeriod || "Current Period",
-              score: activity.score || 0,
-              comments: activity.comments || "",
-            })
-          );
-          setRecentActivities(transformedActivities);
-        }
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-        toast.error("Failed to load dashboard data");
-      }
-    };
-
     if (user) {
       loadData();
     }
@@ -692,9 +708,11 @@ export default function EvaluatorDashboard() {
         <div style="margin-bottom: 30px;">
           <h2 style="color: #1e40af; margin-bottom: 15px;">Evaluator Comments</h2>
           <p style="font-style: italic; padding: 15px; background-color: #f9fafb; border-radius: 8px;">
-            "Demonstrated exceptional performance in achieving sales targets while maintaining high customer satisfaction. 
-            The implementation of new protocols has significantly improved team efficiency. 
-            Looking forward to continued growth in the next quarter."
+            "Demonstrated exceptional performance in achieving
+            sales targets while maintaining high customer
+            satisfaction. The implementation of new protocols
+            has significantly improved team efficiency. Looking
+            forward to continued growth in the next quarter."
           </p>
           <p style="text-align: right; margin-top: 10px;">
             <strong>John Smith</strong><br>
@@ -775,7 +793,7 @@ export default function EvaluatorDashboard() {
 
     return (
       <Dialog open={showResultsModal} onOpenChange={setShowResultsModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] border-0 overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-blue-600">
               Evaluation Results
@@ -846,7 +864,7 @@ export default function EvaluatorDashboard() {
           </div>
 
           <DialogFooter>
-            <Button onClick={onClose}>Close</Button>
+            <Button onClick={onClose} className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -856,941 +874,464 @@ export default function EvaluatorDashboard() {
   const renderContent = () => {
     if (!user) return null;
 
-    if (activeTab === "profile") {
+    if (activeTab === "dashboard") {
       return (
-        <div className="max-w-4xl mx-auto py-8">
-          <Card className="p-8 bg-white shadow-xl rounded-lg border-none">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Account Settings
-            </h1>
-            <p className="text-gray-500 mb-8">Edit your name, avatar etc.</p>
+        <>
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+            <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-blue-200 transition-shadow">
+              <Users className="h-10 w-10 text-blue-500 mb-3" />
+              <div className="text-3xl font-extrabold text-blue-700 mb-1">{employees.length}</div>
+              <div className="text-gray-600 font-semibold">Total Employees</div>
+            </Card>
+            <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-green-200 transition-shadow">
+              <FileText className="h-10 w-10 text-green-500 mb-3" />
+              <div className="text-3xl font-extrabold text-green-700 mb-1">{evaluations.filter(e => e.status === 'completed').length}</div>
+              <div className="text-gray-600 font-semibold">Completed Evaluations</div>
+            </Card>
+            <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-yellow-200 transition-shadow">
+              <Clock className="h-10 w-10 text-yellow-500 mb-3" />
+              <div className="text-3xl font-extrabold text-yellow-700 mb-1">{evaluations.filter(e => e.status === 'draft').length}</div>
+              <div className="text-gray-600 font-semibold">Draft Evaluations</div>
+            </Card>
+            <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-purple-200 transition-shadow">
+              <CheckCircle2 className="h-10 w-10 text-purple-500 mb-3" />
+              <div className="text-3xl font-extrabold text-purple-700 mb-1">{evaluations.filter(e => e.status === 'submitted').length}</div>
+              <div className="text-gray-600 font-semibold">Submitted Evaluations</div>
+            </Card>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-2 space-y-6">
-                <div>
-                  <Label
-                    htmlFor="yourName"
-                    className="text-gray-700 font-medium"
-                  >
-                    Your Name
-                  </Label>
-                  <Input
-                    id="yourName"
-                    type="text"
-                    value={user.name}
-                    onChange={(e) => setUser({ ...user, name: e.target.value })}
-                    className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <Label
-                    htmlFor="password"
-                    className="text-gray-700 font-medium"
-                  >
-                    Password
-                  </Label>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      id="password"
-                      type="password"
-                      value="********"
-                      disabled
-                      className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <Button
-                      variant="link"
-                      className="text-blue-500 hover:underline p-0 h-auto"
-                    >
-                      Change
-                    </Button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label
-                    htmlFor="emailAddress"
-                    className="text-gray-700 font-medium"
-                  >
-                    Email Address
-                  </Label>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      id="emailAddress"
-                      type="email"
-                      value={user.username}
-                      onChange={(e) =>
-                        setUser({ ...user, username: e.target.value })
-                      }
-                      className="mt-2 p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <Button
-                      variant="link"
-                      className="text-blue-500 hover:underline p-0 h-auto"
-                    >
-                      Change
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="md:col-span-1 flex flex-col items-center justify-start pt-14">
-                <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-                  <User className="h-16 w-16 text-gray-400" />
-                </div>
-                <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200">
-                  Upload a picture
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-10 pt-6 border-t border-gray-200 flex justify-end space-x-4">
-              <Button
-                onClick={() => handleProfileUpdate(user)}
-                className="px-13 py-2 bg-blue-600 text-white hover:bg-yellow-400 hover:text-black transition-colors duration-200"
+          {/* Recent Activity */}
+          <Card className="mb-10 p-8 rounded-2xl shadow-xl border-0 bg-white">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-blue-700">Recent Activity</h2>
+              <Button 
+                onClick={() => loadData()}
+                disabled={isLoading}
+                className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-4 py-2 rounded-lg"
               >
-                Save
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                {isLoading ? 'Refreshing...' : 'Refresh'}
               </Button>
             </div>
+            
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mr-3" />
+                <span className="text-gray-600">Loading recent activities...</span>
+              </div>
+            ) : recentActivities.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivities.slice(0, 5).map((activity, index) => (
+                  <div key={activity.id} className="group relative">
+                    {/* Activity Card */}
+                    <div className="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-100 hover:border-blue-200">
+                      {/* Icon and Status */}
+                      <div className="flex-shrink-0">
+                        <div className="relative">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                            <FileText className="h-6 w-6 text-white" />
+                          </div>
+                          {/* Status indicator */}
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        {/* Main Activity Text */}
+                        <div className="mb-2">
+                          <p className="text-lg font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">
+                            {activity.description}
+                          </p>
+                        </div>
+
+                        {/* Activity Details */}
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                          {/* Timestamp */}
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4 text-gray-400" />
+                            <span className="font-medium">
+                              {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+
+                          {/* Activity Type Badge */}
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                              {activity.type === 'evaluation' ? 'Evaluation' : activity.type === 'update' ? 'Update' : 'Completion'}
+                            </span>
+                          </div>
+
+                          {/* Time Ago */}
+                          <div className="text-gray-500">
+                            {getTimeAgo(activity.timestamp)}
+                          </div>
+                        </div>
+
+                        {/* Additional Info */}
+                        <div className="mt-3 pt-3 border-t border-blue-100">
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {activity.employeeName}
+                            </span>
+                            <span>•</span>
+                            <span>Evaluator Dashboard</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          onClick={() => activity.reviewId && handleViewEvaluation(activity.reviewId)}
+                        >
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Connection Line (except for last item) */}
+                    {index < recentActivities.length - 1 && index < 4 && (
+                      <div className="absolute left-6 top-16 w-0.5 h-4 bg-gradient-to-b from-blue-300 to-transparent"></div>
+                    )}
+                  </div>
+                ))}
+
+                {/* View All Button */}
+                {recentActivities.length > 5 && (
+                  <div className="text-center pt-4">
+                    <Button 
+                      variant="outline"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                      onClick={() => setIsActivityModalOpen(true)}
+                    >
+                      View All {recentActivities.length} Activities
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                  <FileText className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">No Recent Activities</h3>
+                <p className="text-gray-500 max-w-md mx-auto">
+                  When you complete performance evaluations, they will appear here as recent activities for your evaluator dashboard.
+                </p>
+              </div>
+            )}
+
+            {/* Activity Summary */}
+            {recentActivities.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      {recentActivities.filter(a => a.type === 'completion').length} Completed
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      {recentActivities.filter(a => a.type === 'evaluation').length} In Progress
+                    </span>
+                  </div>
+                  <span>Last updated: {new Date().toLocaleTimeString()}</span>
+                </div>
+              </div>
+            )}
           </Card>
-        </div>
+        </>
+      );
+    }
+
+    if (activeTab === "profile") {
+      return (
+        <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white max-w-xl mx-auto">
+          <div className="flex flex-col items-center gap-6">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center text-4xl font-bold text-blue-700 shadow">
+              {user.name.charAt(0)}
+            </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">{user.name}</h2>
+              <p className="text-gray-600 mb-1">{user.username}</p>
+              <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">Role: {user.role}</span>
+            </div>
+            <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-6 py-2 rounded-lg mt-4" onClick={() => setActiveTab("profile")}>Edit Profile</Button>
+          </div>
+        </Card>
       );
     }
 
     if (activeTab === "employees") {
       return (
-        <Tabs defaultValue="active" className="space-y-4">
-          <div>
-            <h2 className="font-bold text-3xl">Employees</h2>
+        <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-blue-700">Employees</h2>
+            <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-6 py-2 rounded-lg">
+              View All
+            </Button>
           </div>
-          <TabsList className="bg-gray-200 p-1 rounded-lg">
-            <TabsTrigger
-              value="active"
-              className="flex-1 py-2 px-4 rounded-md text-gray-700 data-[state=active]:bg-yellow-300 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
-            >
-              Active Employees
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-blue-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee ID</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Name</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Department</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Position</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Email</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Location</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {employees
+                  .filter((employee) => employee.status === "Active")
+                  .map((employee) => (
+                    <tr key={employee.id}>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.employeeId}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{employee.name}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.department.department_name}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.position.title}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.email}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.location}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {employee.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                        <Button
+                          className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
+                          size="sm"
+                          onClick={() => handleViewQuarters(employee)}
+                        >
+                          View Quarters
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      );
+    }
 
-          <TabsContent value="active" key="active">
-            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-0">
-              <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-blue-600">
-                  Active Employees
-                </h2>
-                <Users className="h-15 w-15 text-blue-600" />
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Position</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Join Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employees
-                    .filter((employee) => employee.status === "Active")
-                    .map((employee) => (
-                      <TableRow key={employee.id}>
-                        <TableCell>{employee.employeeId}</TableCell>
-                        <TableCell>{employee.name}</TableCell>
-                        <TableCell>
-                          {employee.department.department_name}
-                        </TableCell>
-                        <TableCell>{employee.position.title}</TableCell>
-                        <TableCell>{employee.email}</TableCell>
-                        <TableCell>{employee.location}</TableCell>
-                        <TableCell>{employee.datehired.date}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
-                              size="sm"
-                              onClick={() => handleViewQuarters(employee)}
-                            >
-                              View Quarters
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </Card>
-
-            {/* Quarters Modal */}
-            <Dialog
-              open={isQuarterModalOpen}
-              onOpenChange={setIsQuarterModalOpen}
-            >
-              <DialogContent className="w-full max-w-4xl max-h-[97vh] overflow-y-auto bg-gradient-to-b from-white to-gray-50">
-                <DialogHeader className="space-y-4 pb-6 border-b border-gray-100">
-                  <DialogTitle className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                    Performance Review Summary
-                  </DialogTitle>
-                  <div className="flex justify-between items-center">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setIsQuarterModalOpen(false)}
-                      className="hover:bg-gray-100"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Close
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={handlePrintReview}
-                      className="hover:bg-gray-100"
-                    >
-                      <Printer className="h-4 w-4 mr-2" />
-                      Print
-                    </Button>
-                  </div>
-                </DialogHeader>
-
-                <div className="space-y-8 py-6">
-                  {/* Quarter Selection */}
-                  <div className="flex gap-3 justify-center">
-                    {quarters.map((quarter) => (
-                      <Button
-                        key={quarter}
-                        variant={
-                          selectedQuarter === quarter ? "default" : "outline"
-                        }
-                        className={`w-24 h-12 text-lg font-semibold transition-all duration-200 ${
-                          selectedQuarter === quarter
-                            ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg hover:shadow-xl"
-                            : "hover:bg-gray-50"
-                        }`}
-                        onClick={() => setSelectedQuarter(quarter)}
-                      >
-                        {quarter}
-                      </Button>
-                    ))}
-                  </div>
-
-                  {/* Quarter Content */}
-                  {selectedQuarter && (
-                    <div className="space-y-8">
-                      {/* Employee Info */}
-                      <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <div className="flex items-center gap-6">
-                          <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-                            <AvatarImage
-                              src={`https://avatar.vercel.sh/${selectedEmployee?.name}`}
-                            />
-                            <AvatarFallback className="text-2xl font-semibold bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800">
-                              {selectedEmployee?.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="text-2xl font-bold text-gray-900">
-                              {selectedEmployee?.name}
-                            </h3>
-                            <p className="text-lg text-blue-600 font-medium">
-                              {selectedEmployee?.position.title}
-                            </p>
-                            <p className="text-gray-600">
-                              {selectedEmployee?.department.department_name}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Overall Rating */}
-                      <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">
-                          Overall Rating
-                        </h3>
-                        <div className="flex items-center gap-6">
-                          <div className="flex items-center">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`h-8 w-8 ${
-                                  star <= 4
-                                    ? "text-yellow-400 fill-yellow-400"
-                                    : "text-gray-200"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                            4.5 / 5.0
-                          </div>
-                        </div>
-                        <p className="text-gray-600 mt-4 text-lg">
-                          Performance exceeds expectations in most areas
-                        </p>
-                      </div>
-
-                      {/* Performance Metrics */}
-                      <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">
-                          Performance Metrics
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                          <div className="space-y-6">
-                            <div>
-                              <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-gray-700">
-                                  Sales Target Achievement
-                                </span>
-                                <span className="font-bold text-blue-600">
-                                  85%
-                                </span>
-                              </div>
-                              <Progress
-                                value={
-                                  Number(
-                                    selectedEvaluation?.scores.find(
-                                      (s) =>
-                                        s.category ===
-                                        "Sales Target Achievement"
-                                    )?.score
-                                  ) || 0
-                                }
-                                className="h-2.5 bg-gray-100"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-gray-700">
-                                  Customer Satisfaction
-                                </span>
-                                <span className="font-bold text-blue-600">
-                                  92%
-                                </span>
-                              </div>
-                              <Progress
-                                value={
-                                  Number(
-                                    selectedEvaluation?.scores.find(
-                                      (s) =>
-                                        s.category === "Customer Satisfaction"
-                                    )?.score
-                                  ) || 0
-                                }
-                                className="h-2.5 bg-gray-100"
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-6">
-                            <div>
-                              <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-gray-700">
-                                  Project Completion
-                                </span>
-                                <span className="font-bold text-blue-600">
-                                  78%
-                                </span>
-                              </div>
-                              <Progress
-                                value={
-                                  Number(
-                                    selectedEvaluation?.scores.find(
-                                      (s) => s.category === "Project Completion"
-                                    )?.score
-                                  ) || 0
-                                }
-                                className="h-2.5 bg-gray-100"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between mb-3">
-                                <span className="font-semibold text-gray-700">
-                                  Team Collaboration
-                                </span>
-                                <span className="font-bold text-blue-600">
-                                  90%
-                                </span>
-                              </div>
-                              <Progress
-                                value={
-                                  Number(
-                                    selectedEvaluation?.scores.find(
-                                      (s) => s.category === "Team Collaboration"
-                                    )?.score
-                                  ) || 0
-                                }
-                                className="h-2.5 bg-gray-100"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Key Achievements */}
-                      <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">
-                          Key Achievements
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                              <CheckCircle2 className="h-6 w-6 text-green-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                Sales Target Exceeded
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                Exceeded quarterly sales target by 15%
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                              <CheckCircle2 className="h-6 w-6 text-green-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                Customer Service Protocol
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                Successfully implemented new customer service
-                                protocol
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                              <CheckCircle2 className="h-6 w-6 text-green-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                Team Training
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                Led team training session on new software
-                                implementation
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                              <CheckCircle2 className="h-6 w-6 text-green-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                Process Improvement
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                Streamlined workflow resulting in 20% efficiency
-                                increase
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Next Quarter Goals */}
-                      <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">
-                          Next Quarter Goals
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <Target className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                Customer Retention
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                Target: 95% retention rate
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <Target className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                Sales Strategy
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                Implement new digital sales strategy
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <Target className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                Training Program
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                Complete leadership development course
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <Target className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                Process Optimization
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                Implement new workflow automation tools
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Evaluator Comments */}
-                      <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">
-                          Evaluator Comments
-                        </h3>
-                        <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100">
-                          <p className="text-gray-700 text-lg leading-relaxed">
-                            "Demonstrated exceptional performance in achieving
-                            sales targets while maintaining high customer
-                            satisfaction. The implementation of new protocols
-                            has significantly improved team efficiency. Looking
-                            forward to continued growth in the next quarter."
-                          </p>
-                          <div className="mt-4 flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                              <span className="text-blue-600 font-semibold">
-                                JS
-                              </span>
-                            </div>
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                John Smith
-                              </p>
-                              <p className="text-gray-600">
-                                Department Manager
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-          </TabsContent>
-        </Tabs>
+    if (activeTab === "evaluate") {
+      return (
+        <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
+          <h3 className="text-xl font-bold text-blue-700 mb-4">Employees to Evaluate</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-blue-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee ID</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Name</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Department</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Position</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Email</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Phone</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {employees
+                  .filter(emp => emp.status === "Active" && !evaluations.some(ev => ev.employeeId === emp.employeeId && ev.status === "completed"))
+                  .map(emp => (
+                    <tr key={emp.employeeId}>
+                      <td className="px-4 py-2">{emp.employeeId}</td>
+                      <td className="px-4 py-2">{emp.name}</td>
+                      <td className="px-4 py-2">{emp.department.department_name}</td>
+                      <td className="px-4 py-2">{emp.position.title}</td>
+                      <td className="px-4 py-2">{emp.email}</td>
+                      <td className="px-4 py-2">{emp.phone}</td>
+                      <td className="px-4 py-2">
+                        <Button
+                          className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black"
+                          size="sm"
+                          onClick={() => handleNewEvaluation(emp)}
+                        >
+                          Evaluate
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       );
     }
 
     if (activeTab === "evaluations") {
       return (
-        <Tabs defaultValue="total" className="space-y-4">
-          <div>
-            <h2 className="font-bold text-3xl">Employee Evaluations</h2>
+        <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-blue-700">Evaluations</h2>
+            <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-6 py-2 rounded-lg">
+              New Evaluation
+            </Button>
           </div>
-          <TabsList className="space-x-4 bg-gray-200 p-1 rounded-lg">
-            <TabsTrigger
-              value="total"
-              className="flex-1 py-2 px-4 rounded-md text-gray-700 data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
-            >
-              Total Employees
-            </TabsTrigger>
-            <TabsTrigger
-              value="completed"
-              className="flex-1 py-2 px-4 rounded-md text-gray-700 data-[state=active]:bg-yellow-400 data-[state=active]:text-black hover:bg-blue-400 hover:text-white transition-colors duration-200"
-            >
-              Completed Evaluations
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="total" key="total">
-            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-              <div className="p-6 border-p bg-yellow-200 border-blue-500 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-blue-600">
-                  Total Employees
-                </h2>
-                <Users className="h-15 w-15 text-blue-600" />
-              </div>
-
-              {/* Search and Filter Section */}
-              <div className="p-4 border-b border-gray-200">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                      <Input
-                        placeholder="Search employees..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="w-full md:w-48">
-                    <Select
-                      value={selectedDepartment}
-                      onValueChange={setSelectedDepartment}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Filter by department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Departments</SelectItem>
-                        {departments.map((dept) => (
-                          <SelectItem key={dept} value={dept}>
-                            {dept}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead
-                      className="cursor-pointer"
-                      onClick={() => handleSort("name")}
-                    >
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-blue-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee ID</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee Name</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Department</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Period</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Last Modified</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {evaluations.map((evaluation) => (
+                  <tr key={evaluation.id}>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{evaluation.employeeId}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{evaluation.employeeName}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{evaluation.department}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{evaluation.ForRegular || 'N/A'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        evaluation.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                        evaluation.status === 'submitted' ? 'bg-blue-100 text-blue-800' : 
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {evaluation.status.charAt(0).toUpperCase() + evaluation.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{formatTimestamp(evaluation.lastModified)}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
                       <div className="flex items-center gap-2">
-                        Employee Name
-                        <ArrowUpDown className="h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer"
-                      onClick={() => handleSort("department")}
-                    >
-                      <div className="flex items-center gap-2">
-                        Department
-                        <ArrowUpDown className="h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer"
-                      onClick={() => handleSort("position")}
-                    >
-                      <div className="flex items-center gap-2">
-                        Position
-                        <ArrowUpDown className="h-4 w-4" />
-                      </div>
-                    </TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAndSortedEmployees
-                    .filter((employee: Employee) => {
-                      // Only show employees who haven't been evaluated yet
-                      const hasEvaluation = evaluations.some(
-                        (evaluation) =>
-                          evaluation.employeeId === employee.employeeId &&
-                          evaluation.status === "completed"
-                      );
-                      return !hasEvaluation;
-                    })
-                    .map((employee) => (
-                      <TableRow key={employee.id}>
-                        <TableCell>{employee.name}</TableCell>
-                        <TableCell>
-                          {employee.department.department_name}
-                        </TableCell>
-                        <TableCell>{employee.position.title}</TableCell>
-                        <TableCell>{employee.email}</TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              employee.status === "Active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {employee.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
-                              size="sm"
-                              onClick={() => handleNewEvaluation(employee)}
-                            >
-                              Evaluate
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="completed" key="completed">
-            <Card className="bg-white shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-none">
-              <div className="p-6 border-p bg-yellow-200 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-green-700">
-                  Completed Evaluations
-                </h2>
-                <CheckCircle2 className="h-15 w-15 text-green-600" />
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee Name</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>For Regular</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Modified</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {evaluations
-                    .filter((evaluation) => evaluation.status === "completed")
-                    .map((evaluation) => (
-                      <TableRow key={evaluation.id}>
-                        <TableCell>{evaluation.employeeName}</TableCell>
-                        <TableCell>{evaluation.department}</TableCell>
-                        <TableCell>{evaluation.ForRegular}</TableCell>
-                        <TableCell>{evaluation.status}</TableCell>
-                        <TableCell>{formatTimestamp(evaluation.lastModified)}</TableCell>
-                        <TableCell className="text-right space-x-2">
-                          <Button variant="outline" size="sm" onClick={() => handleViewEvaluation(evaluation.id)}>
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
+                        <Button
+                          className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
+                          size="sm"
+                          onClick={() => handleViewEvaluation(evaluation.id)}
+                        >
+                          View
+                        </Button>
+                        {evaluation.status === 'completed' && (
                           <Button
-                            variant="secondary"
+                            className="bg-green-500 text-white hover:bg-green-600"
                             size="sm"
-                            onClick={() => handleCompleteReview(evaluation.id)}
-                            disabled={evaluation.status === 'completed'}
+                            onClick={() => handleViewResults(evaluation)}
                           >
-                            <CheckCircle2 className="h-4 w-4 mr-1" />
-                            Complete
+                            Results
                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       );
     }
 
-    return (
-      <div className="space-y-8">
-        {/* Welcome Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.01] ease-in-out">
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage:
-                'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4H10v4H6v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0 18v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm48 0v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2v-4h4v-2h-4zm0-18v-4H70v4H66v2h4v4h2V8h4V6h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4zm-24 0v-4h-2v4h-4v2h4v4h2V6h4V4h-4z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-            }}
-          />
+    return null;
+  };
 
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <img
-              src="/images/dataa.png"
-              alt="SMCT Logo"
-              className="h-15 lg:h-15 w-auto transition-opacity duration-300"
-            />
+  if (!user || isLoading) {
+    return <LoadingScreen />;
+  }
 
-            <div>
-              <h1 className="text-3xl font-bold mb-2">
-                Welcome back, {user.name}
-              </h1>
-              <p className="text-blue-100 opacity-90">
-                Here's what's happening with your evaluations today.
-              </p>
+  return (
+    <div className="flex min-h-screen bg-blue-200">
+      {/* Sidebar */}
+      <aside className="w-20 lg:w-64 bg-white shadow-lg rounded-2xl flex flex-col py-6 px-2 lg:px-6">
+        <div className="mb-8 flex justify-center">
+          <img src="/images/smct.png" alt="SMCT Logo" className="h-12 w-auto" />
+        </div>
+        <nav className="space-y-1">
+          {navItems.map((item) => (
+            <Button
+              key={item.id}
+              variant={activeTab === item.id ? "secondary" : "ghost"}
+              className={`w-full justify-center lg:justify-start group transition-all duration-200 py-3 lg:py-2 ${activeTab === item.id ? "bg-blue-50 text-blue-600 hover:bg-blue-100" : "hover:bg-gray-50"}`}
+              onClick={() => handleTabChange(item.id)}
+            >
+              <item.icon className={`h-5 w-5 flex-shrink-0 ${activeTab === item.id ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"}`} />
+              <span className="ml-0 lg:ml-2 hidden lg:inline-block">{item.label}</span>
+            </Button>
+          ))}
+        </nav>
+        {/* Sidebar Separator */}
+        <div className="my-6 border-t border-gray-200" />
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-6 lg:p-12">
+        {/* Welcome Banner */}
+        <div className="mb-8">
+          <div className="rounded-2xl bg-blue-600 shadow-lg p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex-1">
+              <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow">Welcome to the Evaluator Dashboard</h1>
+              <p className="text-lg text-blue-100 font-medium">Conduct performance evaluations, track employee progress, and manage review processes.</p>
             </div>
-
-            <div className="flex items-center gap-3 p-2 rounded-md border shadow-sm bg-white dark:bg-gray-900">
+            <div className="flex items-center gap-4">
               <NotificationBell
                 notifications={notifications}
                 onMarkAsRead={markNotificationAsRead}
                 onMarkAllAsRead={markAllNotificationsAsRead}
               />
               <Button
-                onClick={() => handleNewEvaluation()}
-                className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-200 shadow-md hover:shadow-lg"
+                className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-50 transition-all"
+                onClick={() => router.push('/performance')}
               >
                 New Evaluation
               </Button>
             </div>
+            {/* Profile User Card */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer rounded-xl p-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center text-xl font-bold text-blue-700 shadow">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div className="text-white">
+                    <div className="font-semibold text-base leading-tight">{user.name}</div>
+                    <div className="text-sm opacity-90">{user.role}</div>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-white opacity-70" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-white border-0">
+                <DropdownMenuItem onClick={() => handleTabChange("profile")} className="cursor-pointer hover:bg-blue-200">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleLogout}
+                  className="cursor-pointer text-red-600 focus:text-red-600"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <Card
-              key={index}
-              className="p-6 hover:shadow-xl transition-all duration-300 border-none bg-white rounded-xl transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-600">
-                    {stat.title}
-                  </p>
-                  <h3 className="text-2xl font-bold mt-1 text-gray-800">
-                    {stat.value}
-                  </h3>
-                  <p className="text-xs text-gray-500 opacity-90">
-                    {stat.description}
-                  </p>
-                </div>
-                <div
-                  className={`p-3 rounded-full ${stat.color} transition-transform duration-300 group-hover:scale-110`}
-                >
-                  {stat.icon}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* Recent Activity */}
-        <div className="space-y-4">
-          <Card className="overflow-hidden bg-white border-0 shadow-xl rounded-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-2xl font-semibold">Recent Activity</h2>
-                  <span className="text-sm text-gray-500 ml-2">
-                    ({recentActivities.length} activities)
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-green-500 text-white hover:text-white hover:bg-green-600 transition-all duration-200"
-                    onClick={() => {
-                      // Refresh recent activities
-                      fetch("/api/recent-activities")
-                        .then((response) => response.json())
-                        .then((activitiesData) => {
-                          const transformedActivities: RecentActivity[] =
-                            activitiesData.map((activity: any) => ({
-                              id: activity.id,
-                              type: activity.type,
-                              description: activity.description,
-                              timestamp: activity.timestamp,
-                              employeeName: activity.employeeName,
-                              employeeId: activity.employeeId,
-                              reviewId: activity.reviewId,
-                              status: activity.status || "completed",
-                              department: activity.department || "General",
-                              position: activity.position || "Not specified",
-                              reviewPeriod:
-                                activity.reviewPeriod || "Current Period",
-                              score: activity.score || 0,
-                              comments: activity.comments || "",
-                            }));
-                          setRecentActivities(transformedActivities);
-                          toast.success("Activities refreshed");
-                        })
-                        .catch((error) => {
-                          console.error("Failed to refresh activities:", error);
-                          toast.error("Failed to refresh activities");
-                        });
-                    }}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-1" />
-                    Refresh
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-blue-500 text-white hover:text-white hover:bg-red-500 group transition-all duration-200"
-                    onClick={() => setIsActivityModalOpen(true)}
-                  >
-                    View All
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {recentActivities.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg font-medium mb-2">
-                      No Recent Activities
-                    </p>
-                    <p className="text-sm">
-                      Your evaluation activities will appear here
-                    </p>
-                  </div>
-                ) : (
-                  recentActivities.slice(0, 3).map((activity, idx) => (
-                    <div
-                      key={activity.id}
-                      className={`group flex items-start gap-4 p-4 rounded-lg border border-gray-300 hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer ${idx === 0 ? 'bg-blue-100 border-blue-400' : ''}`}
-                      onClick={() =>
-                        activity.reviewId &&
-                        handleViewEvaluation(activity.reviewId)
-                      }
-                    >
-                      <div
-                        className={`p-2 rounded-full ${
-                          activity.type === "evaluation"
-                            ? "bg-blue-100 text-blue-600"
-                            : activity.type === "update"
-                            ? "bg-yellow-100 text-yellow-600"
-                            : "bg-green-100 text-green-600"
-                        }`}
-                      >
-                        {activity.type === "evaluation" ? (
-                          <FileText className="h-4 w-4" />
-                        ) : activity.type === "update" ? (
-                          <Clock className="h-4 w-4" />
-                        ) : (
-                          <CheckCircle2 className="h-4 w-4" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-4 mt-2">
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Employee:</span> {activity.employeeName}
-                          </p>
-                          {activity.department && activity.department !== "General" && (
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Dept:</span> {activity.department}
-                            </p>
-                          )}
-                          {activity.reviewPeriod && activity.reviewPeriod !== "Current Period" && (
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Period:</span> {activity.reviewPeriod}
-                            </p>
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500 mt-1 block">{formatTimestamp(activity.timestamp)}</span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </Card>
-        </div>
+        {/* Tab Content */}
+        {renderContent()}
 
         {/* Recent Activity Modal */}
         <RecentActivityModal
@@ -1807,128 +1348,110 @@ export default function EvaluatorDashboard() {
             setSelectedEvaluation(null);
           }}
         />
-      </div>
-    );
-  };
 
-  if (!user || isLoading) {
-    return <LoadingScreen />;
-  }
-
-  return (
-    <div className="flex h-screen bg-blue-200">
-      {/* Sidebar */}
-      <div className="fixed md:relative w-full md:w-20 lg:w-64 h-full transition-all duration-300 z-30">
-        {/* Mobile Toggle Button */}
-        <button
-          className="md:hidden absolute top-4 right-4 p-2 z-40 text-gray-700 hover:bg-yellow-400 rounded-full"
-          onClick={toggleSidebar}
+        {/* Quarters Modal */}
+        <Dialog
+          open={isQuarterModalOpen}
+          onOpenChange={setIsQuarterModalOpen}
         >
-          {isSidebarOpen ? (
-            <XIcon className="w-5 h-5" />
-          ) : (
-            <MenuIcon className="w-5 h-5" />
-          )}
-        </button>
-
-        {/* Sidebar Container */}
-        <div
-          className={`bg-white shadow-lg rounded-2xl flex flex-col h-full transition-all duration-300 transform ${
-            isSidebarOpen
-              ? "translate-x-0"
-              : "-translate-x-full md:translate-x-0"
-          }`}
-        >
-          <div className="p-4 lg:p-6 flex-1 overflow-y-auto">
-            {/* Logo */}
-            <div className="mb-6 lg:mb-8 flex justify-center bg-gradient-blue-500">
-              <img
-                src="/images/smct.png"
-                alt="SMCT Logo"
-                className="h-15 lg:h-17 w-auto transition-opacity duration-300"
-              />
-            </div>
-
-            {/* Navigation */}
-            <nav className="space-y-1 bg-blue-200 rounded-2xl">
-              {navItems.map((item) => (
-                <Button
-                  key={item.id}
-                  variant={activeTab === item.id ? "secondary" : "ghost"}
-                  className={`w-full justify-center lg:justify-start group transition-all duration-200 ${
-                    activeTab === item.id
-                      ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
-                      : "hover:bg-gray-50"
-                  } py-3 lg:py-2`}
-                  onClick={() => handleTabChange(item.id)}
-                >
-                  <item.icon
-                    className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
-                      activeTab === item.id
-                        ? "text-blue-600"
-                        : "text-gray-500 group-hover:text-blue-600"
-                    }`}
-                  />
-                  <span className="ml-0 lg:ml-2 hidden lg:inline-block transition-all duration-200">
-                    {item.label}
-                  </span>
-                </Button>
-              ))}
-            </nav>
-          </div>
-
-          {/* User Profile */}
-          <div className="flex flex-col items-center lg:flex-row lg:items-start gap-4 mb-8 p-4 rounded-xl bg-white border border-gray-400 shadow-sm hover:shadow-md transition-shadow">
-            <div className="relative">
-              <Avatar className="h-14 w-14 flex-shrink-0">
-                <AvatarImage
-                  src={`https://avatar.vercel.sh/${user.username}`}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-600 font-medium">
-                  {user.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 border-2 border-white"></div>
-            </div>
-
-            <div className="text-center lg:text-left flex-1 min-w-0">
-              <h2 className="font-bold text-gray-900 text-lg md:text-xl truncate">
-                {user.name}
-              </h2>
-              <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:gap-2 justify-center lg:justify-start">
-                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full">
-                  {user.role}
-                </span>
-                <div className="hidden sm:block w-1 h-1 bg-gray-300 rounded-full"></div>
-                <p className="text-sm text-gray-500 mt-1 sm:mt-0 truncate">
-                  {user.department || "Human Resources"}
-                </p>
-              </div>
-              <div className="p-3 lg:p-4 border-t border-gray-100">
+          <DialogContent className="w-full max-w-4xl max-h-[97vh] overflow-y-auto bg-gradient-to-b from-white to-gray-50">
+            <DialogHeader className="space-y-4 pb-6 border-b border-gray-100">
+              <DialogTitle className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                Performance Review Summary
+              </DialogTitle>
+              <div className="flex justify-between items-center">
                 <Button
                   variant="ghost"
-                  className="w-full justify-center lg:justify-start text-red-600 hover:text-white hover:bg-red-500 group transition-all duration-200"
-                  onClick={handleLogout}
+                  onClick={() => setIsQuarterModalOpen(false)}
+                  className="hover:bg-gray-100"
                 >
-                  <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="ml-0 lg:ml-2 hidden lg:inline-block">
-                    Logout
-                  </span>
+                  <X className="h-4 w-4 mr-2" />
+                  Close
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handlePrintReview}
+                  className="hover:bg-gray-100"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print
                 </Button>
               </div>
-              
+            </DialogHeader>
+
+            <div className="space-y-8 py-6">
+              {/* Quarter Selection */}
+              <div className="flex gap-3 justify-center">
+                {quarters.map((quarter) => (
+                  <Button
+                    key={quarter}
+                    variant={
+                      selectedQuarter === quarter ? "default" : "outline"
+                    }
+                    className={`w-24 h-12 text-lg font-semibold transition-all duration-200 ${
+                      selectedQuarter === quarter
+                        ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg hover:shadow-xl"
+                        : "hover:bg-gray-50"
+                    }`}
+                    onClick={() => setSelectedQuarter(quarter)}
+                  >
+                    {quarter}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Quarter Content */}
+              {selectedQuarter && (
+                <div className="space-y-8">
+                  {/* Employee Info */}
+                  <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-center gap-6">
+                      <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+                        <AvatarImage
+                          src={`https://avatar.vercel.sh/${selectedEmployee?.name}`}
+                        />
+                        <AvatarFallback className="text-2xl font-semibold bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800">
+                          {selectedEmployee?.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900">
+                          {selectedEmployee?.name}
+                        </h3>
+                        <p className="text-gray-600 mt-1">
+                          {selectedEmployee?.position.title} • {selectedEmployee?.department.department_name}
+                        </p>
+                        <p className="text-gray-500 text-sm mt-1">
+                          Employee ID: {selectedEmployee?.employeeId}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Evaluation Status */}
+                  <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Evaluation Status</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">Q1</div>
+                        <div className="text-sm text-gray-600">Completed</div>
+                      </div>
+                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                        <div className="text-2xl font-bold text-yellow-600">Q2</div>
+                        <div className="text-sm text-gray-600">In Progress</div>
+                      </div>
+                      <div className="text-center p-4 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-400">Q3</div>
+                        <div className="text-sm text-gray-500">Pending</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Footer */}
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-blue-200">
-        <div className="p-8">{renderContent()}</div>
-      </div>
+          </DialogContent>
+        </Dialog>
+      </main>
     </div>
   );
 }

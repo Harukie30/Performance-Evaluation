@@ -1,14 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Users, BarChart3, FileText, User, CheckCircle2, Clock } from "lucide-react";
+import { Users, BarChart3, FileText, User, CheckCircle2, Clock, ChevronDown, LogOut, Settings, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import usersData from "@/data/users.json";
 import { reviewService, Review, Activity } from "@/services/reviewService";
+import { useReviewData } from "@/hooks/useReviewData";
+import { eventService, EVENTS } from "@/services/eventService";
 import NotificationBell from "@/components/NotificationBell";
+import { toast } from "sonner";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
@@ -35,9 +39,7 @@ export default function HRDashboard() {
   const [form, setForm] = useState(profile);
   const [users, setUsers] = useState(usersData);
   const [addOpen, setAddOpen] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [localNotifications, setLocalNotifications] = useState<Notification[]>([]);
   const [newEmployee, setNewEmployee] = useState({
     employeeId: "",
     name: "",
@@ -51,33 +53,61 @@ export default function HRDashboard() {
   });
   const router = useRouter();
 
+  // Helper function to get relative time
+  const getTimeAgo = (timestamp: string): string => {
+    const now = new Date();
+    const activityTime = new Date(timestamp);
+    const diffInSeconds = Math.floor((now.getTime() - activityTime.getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
+  };
+
+  // Use the new hook for data fetching (no polling)
+  const { reviews, activities, notifications, loading, error, refreshData } = useReviewData({
+    autoRefresh: false, // No automatic polling
+    initialLoad: true
+  });
+
+  // Sync local notifications with hook notifications
   useEffect(() => {
-    // Subscribe to reviews and activities from the service
-    const reviewSubscription = reviewService.reviews$.subscribe(setReviews);
-    const activitySubscription = reviewService.activities$.subscribe(setActivities);
+    setLocalNotifications(notifications);
+  }, [notifications]);
 
-    // When activities update, create notifications from them
-    const notificationSubscription = reviewService.activities$.subscribe(
-      (newActivities) => {
-        const newNotifications = newActivities.map((activity) => ({
-          id: activity.id,
-          type: activity.type,
-          title: "Evaluation Completed",
-          message: activity.text,
-          timestamp: activity.timestamp,
-          read: false,
-        }));
-        setNotifications(newNotifications);
-      }
-    );
+  // Listen for real-time updates when reviews are submitted
+  useEffect(() => {
+    const unsubscribeReviewSubmitted = eventService.subscribe(EVENTS.REVIEW_SUBMITTED, () => {
+      console.log('Review submitted event received, refreshing data...');
+      refreshData();
+    });
 
-    // Clean up subscriptions on component unmount
+    const unsubscribeActivityCreated = eventService.subscribe(EVENTS.ACTIVITY_CREATED, () => {
+      console.log('Activity created event received, refreshing data...');
+      refreshData();
+    });
+
+    const unsubscribeDataUpdated = eventService.subscribe(EVENTS.DATA_UPDATED, () => {
+      console.log('Data updated event received, refreshing data...');
+      refreshData();
+    });
+
+    // Cleanup event listeners on component unmount
     return () => {
-      reviewSubscription.unsubscribe();
-      activitySubscription.unsubscribe();
-      notificationSubscription.unsubscribe();
+      unsubscribeReviewSubmitted();
+      unsubscribeActivityCreated();
+      unsubscribeDataUpdated();
     };
-  }, []);
+  }, [refreshData]);
 
   const handleEditOpen = () => {
     setForm(profile);
@@ -111,14 +141,60 @@ export default function HRDashboard() {
     });
   };
 
-  const markNotificationAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const markNotificationAsRead = async (id: string) => {
+    try {
+      console.log('Marking notification as read:', id);
+      console.log('Current notifications:', localNotifications);
+      
+      // Update local notification state immediately for better UX
+      setLocalNotifications(prev => {
+        const updated = prev.map(notification => 
+          notification.id === id 
+            ? { ...notification, read: true }
+            : notification
+        );
+        console.log('Updated notifications:', updated);
+        return updated;
+      });
+      
+      // Also call the service method for backend sync (if needed)
+      await reviewService.markNotificationAsRead(id);
+      toast.success('Notification marked as read');
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      // Revert the local state change if the service call fails
+      await refreshData();
+    }
   };
 
-  const markAllNotificationsAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const markAllNotificationsAsRead = async () => {
+    try {
+      console.log('Marking all notifications as read');
+      console.log('Current notifications:', localNotifications);
+      
+      // Update local notification state immediately for better UX
+      setLocalNotifications(prev => {
+        const updated = prev.map(notification => ({ ...notification, read: true }));
+        console.log('Updated notifications:', updated);
+        return updated;
+      });
+      
+      // Also call the service method for backend sync (if needed)
+      await reviewService.markAllNotificationsAsRead();
+      toast.success('All notifications marked as read');
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      // Revert the local state change if the service call fails
+      await refreshData();
+    }
+  };
+
+  const handleViewEvaluation = (reviewId: string) => {
+    if (!reviewId) {
+      toast.error("Invalid review ID");
+      return;
+    }
+    router.push(`/performance/${reviewId}`);
   };
 
   return (
@@ -141,46 +217,22 @@ export default function HRDashboard() {
             </Button>
           ))}
         </nav>
-        {/* Spacer to push profile to mid-bottom */}
-        <div className="flex-1" />
-        {/* Profile summary in sidebar */}
-        <div
-          className="flex flex-col items-center gap-2 mb-2 cursor-pointer rounded-xl p-4 bg-gradient-to-br from-blue-50 to-yellow-50 hover:bg-blue-100 transition-all"
-          onClick={() => setActiveTab("profile")}
-        >
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center text-2xl font-bold text-blue-700 shadow">
-            HR
-          </div>
-          <div className="text-center">
-            <div className="font-semibold text-gray-900 text-base leading-tight">HR Manager</div>
-            <div className="text-xs text-blue-600 font-medium">HR</div>
-          </div>
-        </div>
-        
-        {/* Logout Button */}
-        <Button
-          className="mt-2 w-full bg-red-500 text-white hover:bg-red-600 font-semibold rounded-xl py-3"
-          onClick={() => {
-            setProfile({ name: "", email: "" });
-            router.push("/login");
-          }}
-        >
-          Logout
-        </Button>
+        {/* Sidebar Separator */}
+        <div className="my-6 border-t border-gray-200" />
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-6 lg:p-12">
         {/* Welcome Banner */}
         <div className="mb-8">
-          <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-yellow-400 shadow-lg p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="rounded-2xl bg-blue-600 shadow-lg p-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1">
               <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow">Welcome to the HR Dashboard</h1>
               <p className="text-lg text-blue-100 font-medium">Manage employees, track reviews, and view HR analytics in one place.</p>
             </div>
             <div className="flex items-center gap-4">
               <NotificationBell
-                notifications={notifications}
+                notifications={localNotifications}
                 onMarkAsRead={markNotificationAsRead}
                 onMarkAllAsRead={markAllNotificationsAsRead}
               />
@@ -191,7 +243,37 @@ export default function HRDashboard() {
                 New Evaluation
               </Button>
             </div>
-            <img src="/images/hr-illustration.svg" alt="HR Illustration" className="h-28 hidden md:block" />
+            {/* Profile User Card */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer rounded-xl p-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center text-xl font-bold text-blue-700 shadow">
+                    HR
+                  </div>
+                  <div className="text-white">
+                    <div className="font-semibold text-base leading-tight">HR Manager</div>
+                    <div className="text-sm opacity-90">HR</div>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-white opacity-70" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-white border-0">
+                <DropdownMenuItem onClick={() => setActiveTab("profile")} className="cursor-pointer hover:bg-blue-200">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setProfile({ name: "", email: "" });
+                    router.push("/login");
+                  }}
+                  className="cursor-pointer text-red-600 focus:text-red-600"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -224,28 +306,154 @@ export default function HRDashboard() {
 
             {/* Recent Activity */}
             <Card className="mb-10 p-8 rounded-2xl shadow-xl border-0 bg-white">
-              <h2 className="text-2xl font-bold text-blue-700 mb-6">Recent Activity</h2>
-              <div className="space-y-4">
-                {activities.length > 0 ? (
-                  activities.map(activity => (
-                    <div key={activity.id} className="flex items-center gap-4 p-5 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
-                      <FileText className="h-6 w-6 text-blue-500" />
-                      <div>
-                        <div className="font-semibold text-gray-800">{activity.text}</div>
-                        <div className="text-xs text-gray-500">{new Date(activity.timestamp).toLocaleString()}</div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="flex items-center gap-4 p-5 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
-                    <FileText className="h-6 w-6 text-blue-500" />
-                    <div>
-                      <div className="font-semibold text-gray-800">No recent activities yet.</div>
-                      <div className="text-xs text-gray-500">Your HR activities will appear here.</div>
-                    </div>
-                  </div>
-                )}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-blue-700">Recent Activity</h2>
+                <Button 
+                  onClick={refreshData}
+                  disabled={loading}
+                  className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-4 py-2 rounded-lg"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  {loading ? 'Refreshing...' : 'Refresh'}
+                </Button>
               </div>
+              
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mr-3" />
+                  <span className="text-gray-600">Loading recent activities...</span>
+                </div>
+              ) : activities.length > 0 ? (
+                <div className="space-y-4">
+                  {activities.slice(0, 5).map((activity, index) => (
+                    <div key={activity.id} className="group relative">
+                      {/* Activity Card */}
+                      <div className="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-100 hover:border-blue-200">
+                        {/* Icon and Status */}
+                        <div className="flex-shrink-0">
+                          <div className="relative">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                              <FileText className="h-6 w-6 text-white" />
+                            </div>
+                            {/* Status indicator */}
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          {/* Main Activity Text */}
+                          <div className="mb-2">
+                            <p className="text-lg font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">
+                              {activity.text}
+                            </p>
+                          </div>
+
+                          {/* Activity Details */}
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                            {/* Timestamp */}
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium">
+                                {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                                  weekday: 'short',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+
+                            {/* Activity Type Badge */}
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                {activity.type === 'evaluation_completed' ? 'Evaluation Completed' : 'Evaluation Started'}
+                              </span>
+                            </div>
+
+                            {/* Time Ago */}
+                            <div className="text-gray-500">
+                              {getTimeAgo(activity.timestamp)}
+                            </div>
+                          </div>
+
+                          {/* Additional Info */}
+                          <div className="mt-3 pt-3 border-t border-blue-100">
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                Performance Review
+                              </span>
+                              <span>•</span>
+                              <span>HR Dashboard</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() => activity.reviewId && handleViewEvaluation(activity.reviewId)}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Connection Line (except for last item) */}
+                      {index < activities.length - 1 && index < 4 && (
+                        <div className="absolute left-6 top-16 w-0.5 h-4 bg-gradient-to-b from-blue-300 to-transparent"></div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* View All Button */}
+                  {activities.length > 5 && (
+                    <div className="text-center pt-4">
+                      <Button 
+                        variant="outline"
+                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                      >
+                        View All {activities.length} Activities
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <FileText className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No Recent Activities</h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    When evaluators complete performance reviews, they will appear here as recent activities for your HR dashboard.
+                  </p>
+                </div>
+              )}
+
+              {/* Activity Summary */}
+              {activities.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        {activities.filter(a => a.type === 'evaluation_completed').length} Completed
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        {activities.filter(a => a.type === 'evaluation_started').length} In Progress
+                      </span>
+                    </div>
+                    <span>Last updated: {new Date().toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              )}
             </Card>
           </>
         )}
@@ -345,7 +553,7 @@ export default function HRDashboard() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-blue-50">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Review ID</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee ID</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Status</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Score</th>
@@ -355,7 +563,7 @@ export default function HRDashboard() {
                 <tbody className="bg-white divide-y divide-gray-100">
                   {reviews.map((review) => (
                     <tr key={review.id}>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{review.id}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{review.employeeId}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{review.employeeName}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${review.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
