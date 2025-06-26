@@ -1045,6 +1045,7 @@ export default function FinalResults({
         immediateSupervisor: initialForm.immediateSupervisorInput,
         performanceCoverage: initialForm.performanceCoverage,
         ForRegular: initialForm.ForRegular || getCurrentQuarter(),
+        reviewDate: initialForm.reviewDate,
         // Scores - Ensure all numeric values are valid numbers
         jobKnowledge: Number(initialForm.jobKnowledge) || 0,
         qualityOfWork: Number(initialForm.qualityOfWork) || 0,

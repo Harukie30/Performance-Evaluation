@@ -32,6 +32,19 @@ interface Notification {
   evaluationId?: string;
 }
 
+// Helper to get quarter from a date
+function getQuarterFromDate(dateString: string | undefined) {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'N/A';
+  const month = date.getMonth();
+  if (month >= 0 && month <= 2) return 'Q1';
+  if (month >= 3 && month <= 5) return 'Q2';
+  if (month >= 6 && month <= 8) return 'Q3';
+  if (month >= 9 && month <= 11) return 'Q4';
+  return 'N/A';
+}
+
 export default function HRDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [editOpen, setEditOpen] = useState(false);
@@ -51,6 +64,7 @@ export default function HRDashboard() {
     status: "Active",
     datehired: { date: "" },
   });
+  const [deleteEmployeeId, setDeleteEmployeeId] = useState<string | null>(null);
   const router = useRouter();
 
   // Helper function to get relative time
@@ -195,6 +209,11 @@ export default function HRDashboard() {
       return;
     }
     router.push(`/performance/${reviewId}`);
+  };
+
+  const handleDeleteEmployee = (employeeId: string) => {
+    setUsers((prev) => prev.filter((user) => user.employeeId !== employeeId));
+    setDeleteEmployeeId(null);
   };
 
   return (
@@ -462,7 +481,7 @@ export default function HRDashboard() {
         {activeTab === "employees" && (
           <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-blue-700">Employees</h2>
+              <h2 className="text-3xl font-bold text-blue-700">Employees</h2>
               <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-6 py-2 rounded-lg" onClick={() => setAddOpen(true)}>
                 Add Employee
               </Button>
@@ -479,6 +498,7 @@ export default function HRDashboard() {
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Location</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Status</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Date Hired</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
@@ -492,6 +512,16 @@ export default function HRDashboard() {
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{user.location}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{user.status}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{user.datehired?.date}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                        <Button
+                          className="bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setDeleteEmployeeId(user.employeeId)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -542,13 +572,26 @@ export default function HRDashboard() {
                 </form>
               </DialogContent>
             </Dialog>
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={!!deleteEmployeeId} onOpenChange={() => setDeleteEmployeeId(null)}>
+              <DialogContent className="max-w-md border-0 ">
+                <DialogHeader>
+                  <DialogTitle>Delete Employee</DialogTitle>
+                </DialogHeader>
+                <p>Are you sure you want to delete this employee?</p>
+                <DialogFooter>
+                  <Button className="bg-blue-500 text-white hover:bg-green-400" variant="secondary" onClick={() => setDeleteEmployeeId(null)}>Cancel</Button>
+                  <Button className="bg-red-500 hover:bg-red-700" variant="destructive" onClick={() => handleDeleteEmployee(deleteEmployeeId!)}>Delete</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </Card>
         )}
 
         {/* Reviews Tab Content */}
         {activeTab === "reviews" && (
           <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6">Reviews</h2>
+            <h2 className="text-3xl font-bold text-blue-700 mb-6">Reviews</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-blue-50">
@@ -556,24 +599,25 @@ export default function HRDashboard() {
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee ID</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Status</th>
-                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Score</th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">QuarterReview</th>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Date</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {reviews.map((review) => (
-                    <tr key={review.id}>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{review.employeeId}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{review.employeeName}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${review.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                          {review.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{review.score || 'N/A'}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{review.date}</td>
-                    </tr>
-                  ))}
+                  {reviews.map((review) => {
+                    console.log('QuarterReview debug:', review.reviewDate, review);
+                    return (
+                      <tr key={review.id}>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{review.employeeId}</td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{review.employeeName}</td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${review.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{review.status}</span>
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{getQuarterFromDate(review.reviewDate)}</td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{review.date}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -36,6 +36,7 @@ interface Review {
   areasForImprovement?: string;
   additionalComments?: string;
   ForRegular?: string;
+  reviewDate?: string;
 }
 
 interface AuthUser {
@@ -91,7 +92,9 @@ export async function GET(request: NextRequest) {
         department: review.department,
         ForRegular: review.ForRegular || 'Not Set',
         status: review.status.toLowerCase(),
-        lastModified: review.submittedAt || review.updatedAt || review.createdAt
+        lastModified: review.submittedAt || review.updatedAt || review.createdAt,
+        reviewDate: review.reviewDate || review.submittedAt || review.updatedAt || review.createdAt || null,
+        date: review.submittedAt || review.updatedAt || review.createdAt || null,
       };
     });
     console.log('Returning review IDs:', transformedReviews.map(r => r.id));

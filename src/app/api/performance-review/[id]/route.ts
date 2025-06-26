@@ -104,7 +104,8 @@ export async function GET(
       totalScore: totalScore,
       comments: review.additionalComments || 'No additional comments provided.',
       areasForImprovement: review.areasForImprovement || 'No priority areas for improvement specified.',
-      additionalComments: review.additionalComments || 'No additional remarks provided.'
+      additionalComments: review.additionalComments || 'No additional remarks provided.',
+      reviewDate: review.reviewDate || review.submittedAt || review.updatedAt || review.createdAt || '',
     };
 
     console.log('Sending response:', response);

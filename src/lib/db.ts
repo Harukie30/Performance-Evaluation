@@ -22,6 +22,7 @@ export interface PerformanceReview {
   immediateSupervisor: string;
   performanceCoverage: string;
   reviewPeriod: string;
+  reviewDate?: string;
   jobKnowledge: number;
   qualityOfWork: number;
   promptnessOfWork: number;

@@ -7,6 +7,7 @@ export interface Review {
   status: 'Pending' | 'Completed';
   date: string;
   score: number;
+  reviewDate?: string;
 }
 
 export interface Activity {
@@ -44,6 +45,7 @@ export const reviewService = {
         status: review.status === 'completed' ? 'Completed' : 'Pending',
         date: review.submittedAt || review.createdAt,
         score: review.finalScore || 0,
+        reviewDate: review.reviewDate,
       }));
     } catch (error) {
       console.error('Error fetching reviews:', error);
