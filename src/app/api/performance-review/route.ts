@@ -95,6 +95,7 @@ export async function GET(request: NextRequest) {
         lastModified: review.submittedAt || review.updatedAt || review.createdAt,
         reviewDate: review.reviewDate || review.submittedAt || review.updatedAt || review.createdAt || null,
         date: review.submittedAt || review.updatedAt || review.createdAt || null,
+        finalScore: review.finalScore || null,
       };
     });
     console.log('Returning review IDs:', transformedReviews.map(r => r.id));

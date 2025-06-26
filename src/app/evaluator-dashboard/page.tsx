@@ -94,6 +94,7 @@ interface Evaluation {
     | "Q2 2024";
   status: "draft" | "submitted" | "completed";
   lastModified: string;
+  finalScore?: number;
 }
 
 interface Employee {
@@ -564,44 +565,48 @@ export default function EvaluatorDashboard() {
     }
   };
 
-  // Calculate statistics
+  // Calculate statistics based on unique employees
+  const completedEmployeeIds = new Set(
+    evaluations
+      .filter((e) => e.status === "completed")
+      .map((e) => e.employeeId)
+  );
+
+  const completedCount = completedEmployeeIds.size;
+  const pendingCount = employees.length > 0 ? employees.length - completedCount : 0;
+  const completionPercentage =
+    employees.length > 0
+      ? Math.min((completedCount / employees.length) * 100, 100).toFixed(1)
+      : "0";
+
   const stats: Stat[] = [
     {
-      title: "Number of Employees",
+      title: "Total Employees",
       value: employees.length,
       icon: <Users className="h-6 w-6" />,
       color: "bg-blue-100 text-blue-600",
-      description: "Total number of employees in the system",
+      description: "Total employees assigned to you to evaluate",
     },
     {
-      title: "Completed",
-      value: evaluations.filter((e) => e.status === "completed").length,
+      title: "Completed Evaluations",
+      value: completedCount,
       icon: <CheckCircle2 className="h-6 w-6" />,
       color: "bg-green-100 text-green-600",
-      description: "Successfully completed evaluations",
+      description: "Evaluations you have completed",
     },
     {
-      title: "Pending",
-      value:
-        employees.length -
-        evaluations.filter((e) => e.status === "completed").length,
+      title: "Average Score",
+      value: "N/A",
+      icon: <Star className="h-6 w-6" />,
+      color: "bg-indigo-100 text-indigo-600",
+      description: "Average score of your completed evaluations",
+    },
+    {
+      title: "Pending Evaluations",
+      value: pendingCount,
       icon: <Clock className="h-6 w-6" />,
       color: "bg-yellow-100 text-yellow-600",
-      description: "Employees awaiting evaluation",
-    },
-    {
-      title: "Completion Rate",
-      value:
-        employees.length > 0
-          ? `${(
-              (evaluations.filter((e) => e.status === "completed").length /
-                employees.length) *
-              100
-            ).toFixed(1)}%`
-          : "0",
-      icon: <BarChart3 className="h-6 w-6" />,
-      color: "bg-purple-100 text-purple-600",
-      description: "Overall completion percentage",
+      description: "Employees that still need to be evaluated",
     },
   ];
 
@@ -886,18 +891,22 @@ export default function EvaluatorDashboard() {
             </Card>
             <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-green-200 transition-shadow">
               <FileText className="h-10 w-10 text-green-500 mb-3" />
-              <div className="text-3xl font-extrabold text-green-700 mb-1">{evaluations.filter(e => e.status === 'completed').length}</div>
+              <div className="text-3xl font-extrabold text-green-700 mb-1">{completedCount}</div>
               <div className="text-gray-600 font-semibold">Completed Evaluations</div>
             </Card>
             <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-yellow-200 transition-shadow">
               <Clock className="h-10 w-10 text-yellow-500 mb-3" />
-              <div className="text-3xl font-extrabold text-yellow-700 mb-1">{evaluations.filter(e => e.status === 'draft').length}</div>
-              <div className="text-gray-600 font-semibold">Draft Evaluations</div>
+              <div className="text-3xl font-extrabold text-yellow-700 mb-1">
+                {pendingCount}
+              </div>
+              <div className="text-gray-600 font-semibold">Pending Evaluations</div>
             </Card>
             <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-purple-200 transition-shadow">
-              <CheckCircle2 className="h-10 w-10 text-purple-500 mb-3" />
-              <div className="text-3xl font-extrabold text-purple-700 mb-1">{evaluations.filter(e => e.status === 'submitted').length}</div>
-              <div className="text-gray-600 font-semibold">Submitted Evaluations</div>
+              <BarChart3 className="h-10 w-10 text-purple-500 mb-3" />
+              <div className="text-3xl font-extrabold text-purple-700 mb-1">
+                {completionPercentage}%
+              </div>
+              <div className="text-gray-600 font-semibold">Completion Rate</div>
             </Card>
           </div>
 
@@ -1151,7 +1160,7 @@ export default function EvaluatorDashboard() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {employees
-                  .filter(emp => emp.status === "Active" && !evaluations.some(ev => ev.employeeId === emp.employeeId && ev.status === "completed"))
+                  .filter(emp => emp.status === "Active")
                   .map(emp => (
                     <tr key={emp.employeeId}>
                       <td className="px-4 py-2">{emp.employeeId}</td>
