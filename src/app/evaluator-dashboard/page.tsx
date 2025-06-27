@@ -42,7 +42,12 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import RecentActivityModal from "@/components/RecentActivityModal";
 import { Label } from "@/components/ui/label";
@@ -171,29 +176,37 @@ type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
 
 // Utility for consistent date/time formatting
 function formatTimestamp(ts?: string) {
-  if (!ts) return '';
+  if (!ts) return "";
   const date = new Date(ts);
-  if (isNaN(date.getTime())) return '';
-  return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  if (isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 // Helper function to get relative time (same as HR dashboard)
 const getTimeAgo = (timestamp: string): string => {
   const now = new Date();
   const activityTime = new Date(timestamp);
-  const diffInSeconds = Math.floor((now.getTime() - activityTime.getTime()) / 1000);
+  const diffInSeconds = Math.floor(
+    (now.getTime() - activityTime.getTime()) / 1000
+  );
 
   if (diffInSeconds < 60) {
-    return 'Just now';
+    return "Just now";
   } else if (diffInSeconds < 3600) {
     const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   } else if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
   } else {
     const days = Math.floor(diffInSeconds / 86400);
-    return `${days} day${days > 1 ? 's' : ''} ago`;
+    return `${days} day${days > 1 ? "s" : ""} ago`;
   }
 };
 
@@ -567,13 +580,12 @@ export default function EvaluatorDashboard() {
 
   // Calculate statistics based on unique employees
   const completedEmployeeIds = new Set(
-    evaluations
-      .filter((e) => e.status === "completed")
-      .map((e) => e.employeeId)
+    evaluations.filter((e) => e.status === "completed").map((e) => e.employeeId)
   );
 
   const completedCount = completedEmployeeIds.size;
-  const pendingCount = employees.length > 0 ? employees.length - completedCount : 0;
+  const pendingCount =
+    employees.length > 0 ? employees.length - completedCount : 0;
   const completionPercentage =
     employees.length > 0
       ? Math.min((completedCount / employees.length) * 100, 100).toFixed(1)
@@ -869,7 +881,12 @@ export default function EvaluatorDashboard() {
           </div>
 
           <DialogFooter>
-            <Button onClick={onClose} className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black">Close</Button>
+            <Button
+              onClick={onClose}
+              className="bg-blue-500 text-white hover:bg-yellow-400 hover:text-black"
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -886,20 +903,28 @@ export default function EvaluatorDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
             <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-blue-200 transition-shadow">
               <Users className="h-10 w-10 text-blue-500 mb-3" />
-              <div className="text-3xl font-extrabold text-blue-700 mb-1">{employees.length}</div>
+              <div className="text-3xl font-extrabold text-blue-700 mb-1">
+                {employees.length}
+              </div>
               <div className="text-gray-600 font-semibold">Total Employees</div>
             </Card>
             <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-green-200 transition-shadow">
               <FileText className="h-10 w-10 text-green-500 mb-3" />
-              <div className="text-3xl font-extrabold text-green-700 mb-1">{completedCount}</div>
-              <div className="text-gray-600 font-semibold">Completed Evaluations</div>
+              <div className="text-3xl font-extrabold text-green-700 mb-1">
+                {completedCount}
+              </div>
+              <div className="text-gray-600 font-semibold">
+                Completed Evaluations
+              </div>
             </Card>
             <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-yellow-200 transition-shadow">
               <Clock className="h-10 w-10 text-yellow-500 mb-3" />
               <div className="text-3xl font-extrabold text-yellow-700 mb-1">
                 {pendingCount}
               </div>
-              <div className="text-gray-600 font-semibold">Pending Evaluations</div>
+              <div className="text-gray-600 font-semibold">
+                Pending Evaluations
+              </div>
             </Card>
             <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-purple-200 transition-shadow">
               <BarChart3 className="h-10 w-10 text-purple-500 mb-3" />
@@ -913,21 +938,27 @@ export default function EvaluatorDashboard() {
           {/* Recent Activity */}
           <Card className="mb-10 p-8 rounded-2xl shadow-xl border-0 bg-white">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-blue-700">Recent Activity</h2>
-              <Button 
+              <h2 className="text-2xl font-bold text-blue-700">
+                Recent Activity
+              </h2>
+              <Button
                 onClick={() => loadData()}
                 disabled={isLoading}
                 className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-4 py-2 rounded-lg"
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                {isLoading ? 'Refreshing...' : 'Refresh'}
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+                />
+                {isLoading ? "Refreshing..." : "Refresh"}
               </Button>
             </div>
-            
+
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mr-3" />
-                <span className="text-gray-600">Loading recent activities...</span>
+                <span className="text-gray-600">
+                  Loading recent activities...
+                </span>
               </div>
             ) : recentActivities.length > 0 ? (
               <div className="space-y-4">
@@ -961,13 +992,16 @@ export default function EvaluatorDashboard() {
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4 text-gray-400" />
                             <span className="font-medium">
-                              {new Date(activity.timestamp).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                              {new Date(activity.timestamp).toLocaleDateString(
+                                "en-US",
+                                {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </span>
                           </div>
 
@@ -975,7 +1009,11 @@ export default function EvaluatorDashboard() {
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                             <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                              {activity.type === 'evaluation' ? 'Evaluation' : activity.type === 'update' ? 'Update' : 'Completion'}
+                              {activity.type === "evaluation"
+                                ? "Evaluation"
+                                : activity.type === "update"
+                                ? "Update"
+                                : "Completion"}
                             </span>
                           </div>
 
@@ -1000,11 +1038,14 @@ export default function EvaluatorDashboard() {
 
                       {/* Action Button */}
                       <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                          onClick={() => activity.reviewId && handleViewEvaluation(activity.reviewId)}
+                          onClick={() =>
+                            activity.reviewId &&
+                            handleViewEvaluation(activity.reviewId)
+                          }
                         >
                           View Details
                         </Button>
@@ -1021,7 +1062,7 @@ export default function EvaluatorDashboard() {
                 {/* View All Button */}
                 {recentActivities.length > 5 && (
                   <div className="text-center pt-4">
-                    <Button 
+                    <Button
                       variant="outline"
                       className="text-blue-600 border-blue-200 hover:bg-blue-50"
                       onClick={() => setIsActivityModalOpen(true)}
@@ -1036,9 +1077,12 @@ export default function EvaluatorDashboard() {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                   <FileText className="h-8 w-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">No Recent Activities</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  No Recent Activities
+                </h3>
                 <p className="text-gray-500 max-w-md mx-auto">
-                  When you complete performance evaluations, they will appear here as recent activities for your evaluator dashboard.
+                  When you complete performance evaluations, they will appear
+                  here as recent activities for your evaluator dashboard.
                 </p>
               </div>
             )}
@@ -1050,11 +1094,19 @@ export default function EvaluatorDashboard() {
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      {recentActivities.filter(a => a.type === 'completion').length} Completed
+                      {
+                        recentActivities.filter((a) => a.type === "completion")
+                          .length
+                      }{" "}
+                      Completed
                     </span>
                     <span className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      {recentActivities.filter(a => a.type === 'evaluation').length} In Progress
+                      {
+                        recentActivities.filter((a) => a.type === "evaluation")
+                          .length
+                      }{" "}
+                      In Progress
                     </span>
                   </div>
                   <span>Last updated: {new Date().toLocaleTimeString()}</span>
@@ -1074,21 +1126,51 @@ export default function EvaluatorDashboard() {
               {user.name.charAt(0)}
             </div>
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">{user.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                {user.name}
+              </h2>
               <p className="text-gray-600 mb-1">{user.username}</p>
-              <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">Role: {user.role}</span>
+              <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                Role: {user.role}
+              </span>
             </div>
-            <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-6 py-2 rounded-lg mt-4" onClick={() => setActiveTab("profile")}>Edit Profile</Button>
+            <Button
+              className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-6 py-2 rounded-lg mt-4"
+              onClick={() => setActiveTab("profile")}
+            >
+              Edit Profile
+            </Button>
           </div>
         </Card>
       );
     }
 
     if (activeTab === "employees") {
+      // Filter employees based on search query
+      const filteredEmployees = employees.filter((employee) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          employee.name.toLowerCase().includes(q) ||
+          employee.email.toLowerCase().includes(q) ||
+          employee.department.department_name.toLowerCase().includes(q) ||
+          employee.position.title.toLowerCase().includes(q) ||
+          employee.location.toLowerCase().includes(q) ||
+          employee.employeeId.toLowerCase().includes(q)
+        );
+      });
       return (
         <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <h2 className="text-2xl font-bold text-blue-700">Employees</h2>
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Input
+                placeholder="Search employees..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-full md:w-80 rounded-lg border border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
             <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-6 py-2 rounded-lg">
               View All
             </Button>
@@ -1097,29 +1179,63 @@ export default function EvaluatorDashboard() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-blue-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Name</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Department</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Position</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Email</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Location</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Status</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Employee ID
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Name
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Department
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Position
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Email
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Location
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Status
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {employees
+                {filteredEmployees
                   .filter((employee) => employee.status === "Active")
                   .map((employee) => (
                     <tr key={employee.id}>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.employeeId}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{employee.name}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.department.department_name}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.position.title}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.email}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{employee.location}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${employee.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {employee.employeeId}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        {employee.name}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                        {employee.department.department_name}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                        {employee.position.title}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                        {employee.email}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                        {employee.location}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            employee.status === "Active"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {employee.status}
                         </span>
                       </td>
@@ -1144,28 +1260,46 @@ export default function EvaluatorDashboard() {
     if (activeTab === "evaluate") {
       return (
         <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
-          <h3 className="text-xl font-bold text-blue-700 mb-4">Employees to Evaluate</h3>
+          <h3 className="text-xl font-bold text-blue-700 mb-4">
+            Employees to Evaluate
+          </h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-blue-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Name</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Department</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Position</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Email</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Phone</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Employee ID
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Name
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Department
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Position
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Email
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Phone
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {employees
-                  .filter(emp => emp.status === "Active")
-                  .map(emp => (
+                  .filter((emp) => emp.status === "Active")
+                  .map((emp) => (
                     <tr key={emp.employeeId}>
                       <td className="px-4 py-2">{emp.employeeId}</td>
                       <td className="px-4 py-2">{emp.name}</td>
-                      <td className="px-4 py-2">{emp.department.department_name}</td>
+                      <td className="px-4 py-2">
+                        {emp.department.department_name}
+                      </td>
                       <td className="px-4 py-2">{emp.position.title}</td>
                       <td className="px-4 py-2">{emp.email}</td>
                       <td className="px-4 py-2">{emp.phone}</td>
@@ -1188,10 +1322,30 @@ export default function EvaluatorDashboard() {
     }
 
     if (activeTab === "evaluations") {
+      // Filter evaluations based on search query
+      const filteredEvaluations = evaluations.filter((evaluation) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          evaluation.employeeName.toLowerCase().includes(q) ||
+          evaluation.employeeId.toLowerCase().includes(q) ||
+          (evaluation.department || "").toLowerCase().includes(q) ||
+          (evaluation.ForRegular || "").toLowerCase().includes(q) ||
+          evaluation.status.toLowerCase().includes(q)
+        );
+      });
       return (
         <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <h2 className="text-2xl font-bold text-blue-700">Evaluations</h2>
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Input
+                placeholder="Search evaluations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-full md:w-80 rounded-lg border border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
             <Button className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black font-semibold px-6 py-2 rounded-lg">
               New Evaluation
             </Button>
@@ -1200,32 +1354,61 @@ export default function EvaluatorDashboard() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-blue-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Employee Name</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Department</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Period</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Status</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Last Modified</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Employee ID
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Employee Name
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Department
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Period
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Status
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Last Modified
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {evaluations.map((evaluation) => (
+                {filteredEvaluations.map((evaluation) => (
                   <tr key={evaluation.id}>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{evaluation.employeeId}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{evaluation.employeeName}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{evaluation.department}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{evaluation.ForRegular || 'N/A'}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        evaluation.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                        evaluation.status === 'submitted' ? 'bg-blue-100 text-blue-800' : 
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {evaluation.status.charAt(0).toUpperCase() + evaluation.status.slice(1)}
+                      {evaluation.employeeId}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
+                      {evaluation.employeeName}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                      {evaluation.department}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                      {evaluation.ForRegular || "N/A"}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          evaluation.status === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : evaluation.status === "submitted"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {evaluation.status.charAt(0).toUpperCase() +
+                          evaluation.status.slice(1)}
                       </span>
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{formatTimestamp(evaluation.lastModified)}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                      {formatTimestamp(evaluation.lastModified)}
+                    </td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
                       <div className="flex items-center gap-2">
                         <Button
@@ -1235,7 +1418,7 @@ export default function EvaluatorDashboard() {
                         >
                           View
                         </Button>
-                        {evaluation.status === 'completed' && (
+                        {evaluation.status === "completed" && (
                           <Button
                             className="bg-green-500 text-white hover:bg-green-600"
                             size="sm"
@@ -1265,25 +1448,46 @@ export default function EvaluatorDashboard() {
   return (
     <div className="flex min-h-screen bg-blue-200">
       {/* Sidebar */}
-      <aside className="w-20 lg:w-64 bg-white shadow-lg rounded-2xl flex flex-col py-6 px-2 lg:px-6">
-        <div className="mb-8 flex justify-center">
+      <aside className="w-20 lg:w-64 bg-gray-600 shadow-lg rounded-2xl flex flex-col py-6 px-2 lg:px-6">
+      <div className="mb-8 flex items-center justify-center space-x-2">
           <img src="/images/smct.png" alt="SMCT Logo" className="h-12 w-auto" />
+          <p className="font-bold text-white  ">Performance Evaluation</p>
         </div>
+        <div className="my-8 border-1 mt-0 border-gray-500" />
         <nav className="space-y-1">
           {navItems.map((item) => (
             <Button
               key={item.id}
               variant={activeTab === item.id ? "secondary" : "ghost"}
-              className={`w-full justify-center lg:justify-start group transition-all duration-200 py-3 lg:py-2 ${activeTab === item.id ? "bg-blue-50 text-blue-600 hover:bg-blue-100" : "hover:bg-gray-50"}`}
+              className={`w-full justify-center lg:justify-start group transition-all duration-200 py-3 lg:py-2 ${
+                activeTab === item.id
+                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                  : "hover:bg-gray-50"
+              }`}
               onClick={() => handleTabChange(item.id)}
             >
-              <item.icon className={`h-5 w-5 flex-shrink-0 ${activeTab === item.id ? "text-blue-600" : "text-gray-500 group-hover:text-blue-600"}`} />
-              <span className="ml-0 lg:ml-2 hidden lg:inline-block">{item.label}</span>
+              <item.icon
+                className={`h-5 w-5 flex-shrink-0 ${
+                  activeTab === item.id
+                    ? "text-blue-600"
+                    : "text-white group-hover:text-blue-600"
+                }`}
+              />
+              <span
+                className={`ml-0 lg:ml-2 hidden lg:inline-block transition-colors duration-200
+                  ${activeTab === item.id ? "text-blue-600 font-bold" : "text-white group-hover:text-blue-400"}
+                `}
+              >
+                {item.label}
+              </span>
             </Button>
           ))}
         </nav>
         {/* Sidebar Separator */}
         <div className="my-6 border-t border-gray-200" />
+
+         {/* Sidebar footer */}
+         
       </aside>
 
       {/* Main Content */}
@@ -1292,8 +1496,13 @@ export default function EvaluatorDashboard() {
         <div className="mb-8">
           <div className="rounded-2xl bg-blue-600 shadow-lg p-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1">
-              <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow">Welcome to the Evaluator Dashboard</h1>
-              <p className="text-lg text-blue-100 font-medium">Conduct performance evaluations, track employee progress, and manage review processes.</p>
+              <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow">
+                Welcome to the Evaluator Dashboard
+              </h1>
+              <p className="text-lg text-blue-100 font-medium">
+                Conduct performance evaluations, track employee progress, and
+                manage review processes.
+              </p>
             </div>
             <div className="flex items-center gap-4">
               <NotificationBell
@@ -1303,7 +1512,7 @@ export default function EvaluatorDashboard() {
               />
               <Button
                 className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-50 transition-all"
-                onClick={() => router.push('/performance')}
+                onClick={() => router.push("/performance")}
               >
                 New Evaluation
               </Button>
@@ -1316,18 +1525,26 @@ export default function EvaluatorDashboard() {
                     {user.name.charAt(0)}
                   </div>
                   <div className="text-white">
-                    <div className="font-semibold text-base leading-tight">{user.name}</div>
+                    <div className="font-semibold text-base leading-tight">
+                      {user.name}
+                    </div>
                     <div className="text-sm opacity-90">{user.role}</div>
                   </div>
                   <ChevronDown className="h-4 w-4 text-white opacity-70" />
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white border-0">
-                <DropdownMenuItem onClick={() => handleTabChange("profile")} className="cursor-pointer hover:bg-blue-200">
+              <DropdownMenuContent
+                align="end"
+                className="w-56 bg-white border-0"
+              >
+                <DropdownMenuItem
+                  onClick={() => handleTabChange("profile")}
+                  className="cursor-pointer hover:bg-blue-200"
+                >
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={handleLogout}
                   className="cursor-pointer text-red-600 focus:text-red-600"
                 >
@@ -1359,10 +1576,7 @@ export default function EvaluatorDashboard() {
         />
 
         {/* Quarters Modal */}
-        <Dialog
-          open={isQuarterModalOpen}
-          onOpenChange={setIsQuarterModalOpen}
-        >
+        <Dialog open={isQuarterModalOpen} onOpenChange={setIsQuarterModalOpen}>
           <DialogContent className="w-full max-w-4xl max-h-[97vh] overflow-y-auto bg-gradient-to-b from-white to-gray-50">
             <DialogHeader className="space-y-4 pb-6 border-b border-gray-100">
               <DialogTitle className="text-3xl font-bold text-center bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
@@ -1428,7 +1642,8 @@ export default function EvaluatorDashboard() {
                           {selectedEmployee?.name}
                         </h3>
                         <p className="text-gray-600 mt-1">
-                          {selectedEmployee?.position.title} • {selectedEmployee?.department.department_name}
+                          {selectedEmployee?.position.title} •{" "}
+                          {selectedEmployee?.department.department_name}
                         </p>
                         <p className="text-gray-500 text-sm mt-1">
                           Employee ID: {selectedEmployee?.employeeId}
@@ -1439,18 +1654,26 @@ export default function EvaluatorDashboard() {
 
                   {/* Evaluation Status */}
                   <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Evaluation Status</h4>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                      Evaluation Status
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">Q1</div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          Q1
+                        </div>
                         <div className="text-sm text-gray-600">Completed</div>
                       </div>
                       <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                        <div className="text-2xl font-bold text-yellow-600">Q2</div>
+                        <div className="text-2xl font-bold text-yellow-600">
+                          Q2
+                        </div>
                         <div className="text-sm text-gray-600">In Progress</div>
                       </div>
                       <div className="text-center p-4 bg-gray-50 rounded-lg">
-                        <div className="text-2xl font-bold text-gray-400">Q3</div>
+                        <div className="text-2xl font-bold text-gray-400">
+                          Q3
+                        </div>
                         <div className="text-sm text-gray-500">Pending</div>
                       </div>
                     </div>

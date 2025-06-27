@@ -59,7 +59,7 @@ export default function RegisterPage() {
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.3 }}
-        className="w-full max-w-5xl bg-white rounded-lg shadow-xl overflow-hidden flex flex-col lg:flex-row"
+        className="w-full max-w-5xl bg-blue-400 rounded-lg shadow-xl overflow-hidden flex flex-col lg:flex-row"
       >
         <motion.div
           initial={{ x: -50, opacity: 0 }}
@@ -67,10 +67,10 @@ export default function RegisterPage() {
           transition={{ delay: 0.2, duration: 0.3 }}
           className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center items-center text-center lg:text-left"
         >
-          <h1 className="text-4xl font-bold text-gray-800 mb-6">
+          <h1 className="text-4xl font-bold text-white mb-6">
             Create Your Performance Review Account
           </h1>
-          <p className="text-gray-600 mb-8 max-w-md">
+          <p className="text-white mb-8 max-w-md">
             Join our platform to manage your performance evaluations and track your professional growth.
           </p>
           <motion.img
@@ -81,9 +81,9 @@ export default function RegisterPage() {
             alt="Business Account Icon"
             className="w-64 h-auto mb-8"
           />
-          <p className="text-gray-500 text-sm mt-auto">
+          <p className="text-white text-sm mt-auto">
             © 2025 Perormance login form. All Rights Reserved | Design by{" "}
-            <a href="#" className="text-blue-500 hover:underline">
+            <a href="devteam" className="text-white-500 hover:underline">
               SMCT DevTeam
             </a>
           </p>
@@ -93,7 +93,7 @@ export default function RegisterPage() {
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          className="w-full lg:w-1/2 p-8 lg:p-12 bg-yellow-100 flex flex-col justify-center"
+          className="w-full lg:w-1/2 p-8 lg:p-12 bg-white flex flex-col justify-center"
         >
           <motion.div
             initial={{ y: -20, opacity: 0 }}

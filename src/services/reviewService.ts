@@ -29,6 +29,21 @@ export interface Notification {
   evaluationId?: string;
 }
 
+// Helper to persist and load read states
+const NOTIF_READ_KEY = 'hr-notification-read';
+function getReadMap() {
+  if (typeof window === 'undefined') return {};
+  try {
+    return JSON.parse(localStorage.getItem(NOTIF_READ_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+function setReadMap(map: Record<string, boolean>) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(NOTIF_READ_KEY, JSON.stringify(map));
+}
+
 export const reviewService = {
   // --- Data Fetching Methods ---
   
@@ -82,13 +97,14 @@ export const reviewService = {
   getNotifications: async (): Promise<Notification[]> => {
     try {
       const activities = await reviewService.getActivities();
+      const readMap = getReadMap();
       return activities.map((activity) => ({
         id: activity.id,
         type: activity.type,
         title: "Evaluation Completed",
         message: activity.text,
         timestamp: activity.timestamp,
-        read: false,
+        read: !!readMap[activity.id],
       }));
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -172,8 +188,9 @@ export const reviewService = {
    */
   markNotificationAsRead: async (notificationId: string): Promise<void> => {
     try {
-      // In a real implementation, you might have an API endpoint for this
-      // For now, we'll just log it
+      const readMap = getReadMap();
+      readMap[notificationId] = true;
+      setReadMap(readMap);
       console.log(`Notification ${notificationId} marked as read`);
     } catch (error) {
       console.error(`Error marking notification ${notificationId} as read:`, error);
@@ -186,8 +203,11 @@ export const reviewService = {
    */
   markAllNotificationsAsRead: async (): Promise<void> => {
     try {
-      // In a real implementation, you might have an API endpoint for this
-      // For now, we'll just log it
+      const readMap = getReadMap();
+      // Mark all current notifications as read
+      const activities = await reviewService.getActivities();
+      activities.forEach(a => { readMap[a.id] = true; });
+      setReadMap(readMap);
       console.log('All notifications marked as read');
     } catch (error) {
       console.error('Error marking all notifications as read:', error);

@@ -53,5 +53,14 @@ export const useReviewData = (options: UseReviewDataOptions = {}) => {
     loading,
     error,
     refreshData,
+    reloadNotifications: async () => {
+      setLoading(true);
+      try {
+        const notificationsData = await reviewService.getNotifications();
+        setNotifications(notificationsData);
+      } finally {
+        setLoading(false);
+      }
+    },
   };
 }; 
