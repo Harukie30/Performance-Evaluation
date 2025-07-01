@@ -37,6 +37,26 @@
       "name": "John Evaluator",
       "department": "Operations",
       "permissions": ["create_reviews", "edit_own_reviews"]
+    },
+    {
+      "id": "4",
+      "username": "employee_joe",
+      "email": "joe@smct.com",
+      "password": "joe123456",
+      "role": "employee",
+      "name": "Joe Employee",
+      "department": "User",
+      "permissions": ["can_view_own_reviews","can_see_results","can_edit_profile"]
+    },
+    {
+      "id": "5",
+      "username": "employee_test",
+      "email": "test@smct.com",
+      "password": "test123456",
+      "role": "employee",
+      "name": "Test Employee",
+      "department": "QA",
+      "permissions": ["can_view_own_reviews", "can_see_results"]
     }
   ]
 } 

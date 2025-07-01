@@ -1,41 +1,7 @@
+import accounts from "@/data/accounts.json";
+
 // Simple user data
-const USERS = [
-  {
-    id: "1",
-    email: "admin@smct.com",
-    password: "admin123",
-    role: "admin",
-    name: "Admin User",
-    department: "IT",
-    permissions: ["manage_users", "view_all_reviews", "create_reviews", "edit_reviews", "delete_reviews"]
-  },
-  {
-    id: "2",
-    email: "hr@smct.com",
-    password: "hr123456",
-    role: "HR",
-    name: "HR Manager",
-    department: "Human Resources",
-    permissions: [
-      "view_all_reviews",
-      "create_reviews",
-      "edit_reviews",
-      "manage_employees",
-      "add_employee",
-      "delete_employee",
-      "edit_employee"
-    ]
-  },
-  {
-    id: "3",
-    email: "evaluator@smct.com",
-    password: "eval12345",
-    role: "evaluator",
-    name: "John Evaluator",
-    department: "Operations",
-    permissions: ["create_reviews", "edit_own_reviews"]
-  }
-];
+const USERS = accounts.users;
 
 export const auth = {
   login: async (email: string, password: string) => {
