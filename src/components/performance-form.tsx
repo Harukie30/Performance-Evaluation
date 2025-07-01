@@ -332,7 +332,7 @@ export default function PerformanceForm({
                 <FormItem className="flex flex-col">
                   <FormLabel>Employee Name</FormLabel>
                   <Select
-                    value={field.value?.toString() || "0"}
+                    value={field.value?.toString() ?? "0"}
                     onValueChange={(selectedId: string) => {
                       const name = employeeNames.find(
                         (name) => name.id === Number(selectedId)
@@ -389,7 +389,7 @@ export default function PerformanceForm({
                   <Input
                     placeholder=""
                     {...field}
-                    value={employeeSelected?.position?.title || ""}
+                    value={employeeSelected?.position?.title ?? ""}
                     readOnly
                   />
                 </FormControl>
@@ -408,7 +408,7 @@ export default function PerformanceForm({
                   <Input
                     placeholder="Engineering"
                     {...field}
-                    value={employeeSelected?.department?.department_name || ""}
+                    value={employeeSelected?.department?.department_name ?? ""}
                     readOnly
                   />
                 </FormControl>
@@ -753,7 +753,7 @@ export default function PerformanceForm({
                               min={1.0}
                               max={5.0}
                               step={0.1}
-                              value={field.value as number}
+                              value={field.value ?? 0}
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 field.onChange(
@@ -782,7 +782,7 @@ export default function PerformanceForm({
                             <Textarea
                               placeholder="Add explanation..."
                               className="min-h-[100px]"
-                              value={String(field.value || "")}
+                              value={String(field.value ?? "")}
                               onChange={field.onChange}
                               onBlur={field.onBlur}
                               name={field.name}
@@ -824,7 +824,7 @@ export default function PerformanceForm({
                               min={1.0}
                               max={5.0}
                               step={0.1}
-                              value={field.value as number}
+                              value={field.value ?? 0}
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 field.onChange(
@@ -853,7 +853,7 @@ export default function PerformanceForm({
                             <Textarea
                               placeholder="Add explanation..."
                               className="min-h-[120px] w-100"
-                              value={String(field.value || "")}
+                              value={String(field.value ?? "")}
                               onChange={field.onChange}
                               onBlur={field.onBlur}
                               name={field.name}
@@ -895,7 +895,7 @@ export default function PerformanceForm({
                               min={1.0}
                               max={5.0}
                               step={0.1}
-                              value={field.value as number}
+                              value={field.value ?? 0}
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value);
                                 field.onChange(
@@ -924,7 +924,7 @@ export default function PerformanceForm({
                             <Textarea
                               placeholder="Add explanation..."
                               className="min-h-[100px]"
-                              value={String(field.value || "")}
+                              value={String(field.value ?? "")}
                               onChange={field.onChange}
                               onBlur={field.onBlur}
                               name={field.name}

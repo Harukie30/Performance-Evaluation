@@ -36,6 +36,13 @@ import { useReviewData } from "@/hooks/useReviewData";
 import { eventService, EVENTS } from "@/services/eventService";
 import NotificationBell from "@/components/NotificationBell";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
@@ -53,6 +60,20 @@ interface Notification {
   read: boolean;
   employeeName?: string;
   evaluationId?: string;
+}
+
+// Add this type above the component if not present
+interface Employee {
+  id: number;
+  employeeId: string;
+  name: string;
+  email: string;
+  phone: string;
+  department: { department_name: string };
+  position: { title: string };
+  location: string;
+  status: string;
+  datehired: { date: string };
 }
 
 // Helper to get quarter from a date
@@ -93,6 +114,8 @@ export default function HRDashboard() {
     datehired: { date: "" },
   });
   const [deleteEmployeeId, setDeleteEmployeeId] = useState<string | null>(null);
+  const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
+  const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
   const router = useRouter();
 
   // Helper function to get relative time
@@ -268,6 +291,11 @@ export default function HRDashboard() {
   const handleDeleteEmployee = (employeeId: string) => {
     setUsers((prev) => prev.filter((user) => user.employeeId !== employeeId));
     setDeleteEmployeeId(null);
+  };
+
+  const handleEditEmployee = (employee: Employee) => {
+    setEditEmployee({ ...employee });
+    setEditEmployeeOpen(true);
   };
 
   return (
@@ -626,7 +654,7 @@ export default function HRDashboard() {
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-blue-50">
+                <thead className="bg-blue-50 border-0">
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
                       Employee ID
@@ -684,7 +712,14 @@ export default function HRDashboard() {
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
                         {user.datehired?.date}
                       </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 flex gap-2">
+                        <Button
+                          className="bg-blue-500 text-white hover:bg-blue-600"
+                          size="sm"
+                          onClick={() => handleEditEmployee(user)}
+                        >
+                          Edit
+                        </Button>
                         <Button
                           className="bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400"
                           variant="destructive"
@@ -718,6 +753,7 @@ export default function HRDashboard() {
                         }))
                       }
                       required
+                      className="border-gray-500 rounded-md"
                     />
                   </div>
                   <div>
@@ -733,6 +769,7 @@ export default function HRDashboard() {
                         }))
                       }
                       required
+                      className="border-gray-500 rounded-md"
                     />
                   </div>
                   <div>
@@ -744,11 +781,12 @@ export default function HRDashboard() {
                       value={newEmployee.email}
                       onChange={(e) =>
                         setNewEmployee((emp) => ({
-                          ...emp,
+                          ...emp, 
                           email: e.target.value,
                         }))
                       }
                       required
+                      className="border-gray-500 rounded-md"
                     />
                   </div>
                   <div>
@@ -764,6 +802,7 @@ export default function HRDashboard() {
                         }))
                       }
                       required
+                      className="border-gray-500 rounded-md"
                     />
                   </div>
                   <div>
@@ -779,6 +818,7 @@ export default function HRDashboard() {
                         }))
                       }
                       required
+                      className="border-gray-500 rounded-md"
                     />
                   </div>
                   <div>
@@ -794,6 +834,7 @@ export default function HRDashboard() {
                         }))
                       }
                       required
+                      className="border-gray-500 rounded-md"
                     />
                   </div>
                   <div>
@@ -809,6 +850,7 @@ export default function HRDashboard() {
                         }))
                       }
                       required
+                      className="border-gray-500 rounded-md"
                     />
                   </div>
                   <div>
@@ -825,6 +867,7 @@ export default function HRDashboard() {
                         }))
                       }
                       required
+                      className="border-gray-500 rounded-md"
                     />
                   </div>
                   <DialogFooter>
@@ -871,6 +914,159 @@ export default function HRDashboard() {
                     Delete
                   </Button>
                 </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+
+            <Dialog open={editEmployeeOpen} onOpenChange={setEditEmployeeOpen}>
+              <DialogContent className="max-w-md border-0">
+                <DialogHeader>
+                  <DialogTitle>Edit Employee</DialogTitle>
+                </DialogHeader>
+                {editEmployee && (
+                  <form
+                    onSubmit={e => {
+                      e.preventDefault();
+                      setUsers(users.map(u => u.employeeId === editEmployee.employeeId ? editEmployee : u));
+                      setEditEmployeeOpen(false);
+                    }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Employee ID
+                      </label>
+                      <Input
+                        value={editEmployee.employeeId ?? ""}
+                        onChange={e => setEditEmployee({ ...editEmployee!, employeeId: e.target.value })}
+                        required
+                        disabled
+                         className="border-gray-500 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Name
+                      </label>
+                      <Input
+                        value={editEmployee.name ?? ""}
+                        onChange={e => setEditEmployee({ ...editEmployee!, name: e.target.value })}
+                        required
+                        className="border-gray-500 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                      </label>
+                      <Input
+                        type="email"
+                        value={editEmployee.email ?? ""}
+                        onChange={e => setEditEmployee({ ...editEmployee!, email: e.target.value })}
+                        required
+                        className="border-gray-500 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Department
+                      </label>
+                      <Select
+                        value={editEmployee.department.department_name ?? ""}
+                        onValueChange={value => setEditEmployee({ ...editEmployee!, department: { department_name: value } })}
+                        
+                      >
+                        <SelectTrigger className="border-gray-500 rounded-md">
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="HR">HR</SelectItem>
+                          <SelectItem value="IT">IT</SelectItem>
+                          <SelectItem value="Dev">Dev</SelectItem>
+                          <SelectItem value="Finance">Finance</SelectItem>
+                          <SelectItem value="Marketing">Marketing</SelectItem>
+                          <SelectItem value="Operations">Operations</SelectItem>
+                          <SelectItem value="Sales">Sales</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Position
+                      </label>
+                      <Select
+                        value={editEmployee.position.title ?? ""}
+                        onValueChange={value => setEditEmployee({ ...editEmployee!, position: { title: value } })}
+                        required
+                      >
+                        <SelectTrigger className="border-gray-500 rounded-md">
+                          <SelectValue placeholder="Select position" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Senior Developer">Senior Developer</SelectItem>
+                          <SelectItem value="Junior Developer">Junior Developer</SelectItem>
+                          <SelectItem value="Automation">Automation</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Location
+                      </label>
+                      <Input
+                        value={editEmployee.location ?? ""}
+                        onChange={e => setEditEmployee({ ...editEmployee!, location: e.target.value })}
+                        required
+                        className="border-gray-500 rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Status
+                      </label>
+                      <Select
+                        value={editEmployee.status ?? ""}
+                        onValueChange={value => setEditEmployee({ ...editEmployee!, status: value })}
+                      >
+                        <SelectTrigger className="border-gray-500 rounded-md">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Active">Active</SelectItem>
+                          <SelectItem value="Inactive">Inactive</SelectItem>                  
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Date Hired
+                      </label>
+                      <Input
+                        type="date"
+                        value={editEmployee.datehired?.date ?? ""}
+                        onChange={e => setEditEmployee({ ...editEmployee!, datehired: { date: e.target.value } })}
+                        required
+                        className="border-gray-500 rounded-md"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setEditEmployeeOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="bg-blue-600 text-white hover:bg-yellow-400 hover:text-black"
+                      >
+                        Save
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                )}
               </DialogContent>
             </Dialog>
           </Card>

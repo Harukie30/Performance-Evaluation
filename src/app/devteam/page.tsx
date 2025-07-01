@@ -174,10 +174,10 @@ export default function DevTeamLanding() {
     { name: "Next.js", img: "/tech/next.png" },
     { name: "TypeScript", img: "/tech/type.png" },
     { name: "Tailwind CSS", img: "/tech/wind.png" },
-    { name: "Node.js", img: "/tech/node.png" },
+    { name: "Node.js", img: "/tech/node.svg" },
     { name: "PostgreSQL", img: "/tech/post.png" },
     { name: "AWS", img: "/tech/aws.png" },
-    { name: "Docker", img: "/tech/Docker.png" },
+    { name: "Docker", img: "/tech/docker.svg" },
   ];
   const [currentTech, setCurrentTech] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -196,7 +196,15 @@ export default function DevTeamLanding() {
   }, [isHovered, techStack.length]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-900 relative overflow-x-hidden">
+    <div
+      className="min-h-screen field-sizing-fixed overflow-x-hidden"
+      style={{
+        backgroundImage: "linear-gradient(to bottom, #fff, #1e3a8a), url('/images/bgg.png')",
+        backgroundSize: "cover, cover",
+        backgroundPosition: "center, center",
+        backgroundRepeat: "no-repeat, no-repeat",
+      }}
+    >
       {/* Animated Gradient Background */}
       <div
         aria-hidden="true"
@@ -217,177 +225,192 @@ export default function DevTeamLanding() {
         }
       `}</style>
       {/* Hero Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-        <div className="flex flex-col md:flex-row gap-12 items-center justify-between">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-            className="flex-1"
-          >
-            <div className="flex items-center gap-4 mb-6">
-              <img
-                src="/images/smct.png"
-                alt="SMCT Logo"
-                className="h-10 w-auto"
-              />
-              <span className="text-2xl font-extrabold text-blue-700 tracking-tight">
-                SMCT DevTeam
+      <section className="relative py-24 px-0 w-full overflow-hidden">
+        {/* Background image with blur */}
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: "url('/images/bgg.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(5px) brightness(0.5)",
+          }}
+          aria-hidden="true"
+        />
+        {/* Semi-transparent overlay */}
+        <div className="absolute inset-0 z-10 bg-black/50" aria-hidden="true" />
+        {/* Main content */}
+        <div className="relative z-20">
+          <div className="flex flex-col md:flex-row gap-12 items-center justify-between px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              viewport={{ once: true }}
+              className="flex-1"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <img
+                  src="/images/smct.png"
+                  alt="SMCT Logo"
+                  className="h-10 w-auto"
+                />
+                <span className="text-2xl font-extrabold text-white tracking-tight">
+                  SMCT DevTeam
+                </span>
+              </div>
+              <span className="inline-block mb-3 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold tracking-wide border border-blue-200 shadow-sm">
+                Official Internal Team
               </span>
-            </div>
-            <span className="inline-block mb-3 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold tracking-wide border border-blue-200 shadow-sm">
-              Official Internal Team
-            </span>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
-              Exclusively Empowering SMCT's Digital Future
-            </h1>
-            <p className="text-lg text-gray-600 mb-8 max-w-lg">
-              The SMCT DevTeam is dedicated to building secure, innovative, and
-              high-impact digital solutions exclusively for the SMCT community.
-              Our mission: to set the standard for government technology.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                size="lg"
-                className="bg-blue-600 text-white hover:bg-blue-700 shadow"
-              >
-                Request SMCT Project
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-blue-700 border-blue-600 hover:bg-blue-50"
-              >
-                See SMCT Impact
-              </Button>
-            </div>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="flex-1 flex flex-col justify-center items-center"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            <h3 className="text-2xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-              Our Technology Stack
-            </h3>
-            {/* Tech badges with enhanced animations */}
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+                Exclusively Empowering SMCT's Digital Future
+              </h1>
+              <p className="text-lg text-white mb-8 max-w-lg">
+                The SMCT DevTeam is dedicated to building secure, innovative, and
+                high-impact digital solutions exclusively for the SMCT community.
+                Our mission: to set the standard for government technology.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full border border-blue-100 bg-white/70 hover:bg-blue-50 shadow-sm"
-                  onClick={handlePrev}
-                  aria-label="Previous tech"
+                  size="lg"
+                  className="bg-blue-600 text-white hover:bg-blue-700 shadow"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    className="text-blue-500"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
+                  Request SMCT Project
                 </Button>
-              </motion.div>
-
-              <AnimatePresence initial={false} mode="wait">
-                <motion.div
-                  key={techStack[currentTech].name}
-                  initial={{ opacity: 0, x: 50, scale: 0.9 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -50, scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 25 }}
-                  className="w-80 h-80 flex items-center justify-center"
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-blue-700 border-blue-600 hover:bg-blue-50"
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                  See SMCT Impact
+                </Button>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="flex-1 flex flex-col justify-center items-center"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              <h3 className="text-2xl font-bold mb-6 text-center bg-clip-text text-white">
+                Our Technology Stack
+              </h3>
+              {/* Tech badges with enhanced animations */}
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full border border-blue-100 bg-white/70 hover:bg-blue-50 shadow-sm"
+                    onClick={handlePrev}
+                    aria-label="Previous tech"
                   >
-                    <Badge
-                      
+                    <svg
+                      width="20"
+                      height="20"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      className="text-blue-500"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </Button>
+                </motion.div>
+
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.div
+                    key={techStack[currentTech].name}
+                    initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: -50, scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                    className="w-80 h-80 flex items-center justify-center"
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <Badge
                         className="px-8 py-7 rounded-3xl border-blue-200 bg-white/90 text-blue-700 text-lg font-semibold shadow-lg hover:shadow-xl transition-all cursor-pointer"
                       >
-                      <div className="flex flex-col items-center gap-5">
-                        {techStack[currentTech].img && (
-                          <motion.img
-                            src={techStack[currentTech].img}
-                            alt={techStack[currentTech].name}
-                            className="h-36 w-36 object-contain"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.1 }}
-                          />
-                        )}
-                        <span className="text-3xl font-bold">{techStack[currentTech].name}</span>
-                      </div>
-                    </Badge>
+                        <div className="flex flex-col items-center gap-5">
+                          {techStack[currentTech].img && (
+                            <motion.img
+                              src={techStack[currentTech].img}
+                              alt={techStack[currentTech].name}
+                              className="h-36 w-36 object-contain"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.1 }}
+                            />
+                          )}
+                          <span className="text-3xl font-bold">{techStack[currentTech].name}</span>
+                        </div>
+                      </Badge>
+                    </motion.div>
                   </motion.div>
-                </motion.div>
-              </AnimatePresence>
+                </AnimatePresence>
 
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full border border-blue-100 bg-white/70 hover:bg-blue-50 shadow-sm"
-                  onClick={handleNext}
-                  aria-label="Next tech"
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    className="text-blue-500"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full border border-blue-100 bg-white/70 hover:bg-blue-50 shadow-sm"
+                    onClick={handleNext}
+                    aria-label="Next tech"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Button>
-              </motion.div>
-            </div>
+                    <svg
+                      width="20"
+                      height="20"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      className="text-blue-500"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </Button>
+                </motion.div>
+              </div>
 
-            {/* Tech stack indicators */}
-            <div className="flex justify-center gap-2 mb-6">
-              {techStack.map((_, index) => (
-                <motion.button
-                  key={index}
-                  onClick={() => setCurrentTech(index)}
-                  className={`h-2 rounded-full transition-all ${
-                    index === currentTech
-                      ? "bg-blue-600 w-6"
-                      : "bg-blue-200 w-2"
-                  }`}
-                  whileHover={{ scale: 1.2 }}
-                  aria-label={`View ${techStack[index].name}`}
-                />
-              ))}
-            </div>
-          </motion.div>
+              {/* Tech stack indicators */}
+              <div className="flex justify-center gap-2 mb-6">
+                {techStack.map((_, index) => (
+                  <motion.button
+                    key={index}
+                    onClick={() => setCurrentTech(index)}
+                    className={`h-2 rounded-full transition-all ${
+                      index === currentTech
+                        ? "bg-blue-600 w-6"
+                        : "bg-blue-200 w-2"
+                    }`}
+                    whileHover={{ scale: 1.2 }}
+                    aria-label={`View ${techStack[index].name}`}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
       {/* Features Section */}

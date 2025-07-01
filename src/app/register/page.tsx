@@ -59,7 +59,7 @@ export default function RegisterPage() {
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.3 }}
-        className="w-full max-w-5xl bg-blue-400 rounded-lg shadow-xl overflow-hidden flex flex-col lg:flex-row"
+        className="w-full max-w-5xl bg-blue-600 rounded-lg shadow-xl overflow-hidden flex flex-col lg:flex-row"
       >
         <motion.div
           initial={{ x: -50, opacity: 0 }}

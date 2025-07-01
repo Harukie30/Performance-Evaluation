@@ -277,8 +277,9 @@ export default function LoginPage() {
                             {...field}
                             type="email"
                             placeholder="Enter your email"
-                            className="pl-10"
+                            className="pl-10 border-gray-300 rounded-md"
                             disabled={isLoading}
+                            
                           />
                         </div>
                       </FormControl>
@@ -300,7 +301,7 @@ export default function LoginPage() {
                             {...field}
                             type={showPassword ? "text" : "password"}
                             placeholder="Enter your password"
-                            className="pl-10 pr-10"
+                            className="pl-10 pr-10 border-gray-300 rounded-md"
                             disabled={isLoading}
                           />
                           <button
