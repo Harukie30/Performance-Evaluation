@@ -36,6 +36,8 @@ import { useReviewData } from "@/hooks/useReviewData";
 import { eventService, EVENTS } from "@/services/eventService";
 import NotificationBell from "@/components/NotificationBell";
 import { toast } from "sonner";
+import positions from "@/data/positions.json";
+import department from "@/data/department.json"
 import {
   Select,
   SelectContent,
@@ -69,7 +71,7 @@ interface Employee {
   name: string;
   email: string;
   phone: string;
-  department: { department_name: string };
+  department: { department_name?: string, title:string, };
   position: { title: string };
   location: string;
   status: string;
@@ -107,7 +109,7 @@ export default function HRDashboard() {
     name: "",
     email: "",
     phone: "",
-    department: { department_name: "" },
+    department: { department_name: "", title: "" },
     position: { title: "" },
     location: "",
     status: "Active",
@@ -117,6 +119,8 @@ export default function HRDashboard() {
   const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
   const router = useRouter();
+  const [employeeSearch, setEmployeeSearch] = useState("");
+  const [reviewSearch, setReviewSearch] = useState("");
 
   // Helper function to get relative time
   const getTimeAgo = (timestamp: string): string => {
@@ -217,7 +221,7 @@ export default function HRDashboard() {
       name: "",
       email: "",
       phone: "",
-      department: { department_name: "" },
+      department: { department_name: "", title: "" },
       position: { title: "" },
       location: "",
       status: "Active",
@@ -328,7 +332,11 @@ export default function HRDashboard() {
               />
               <span
                 className={`ml-0 lg:ml-2 hidden lg:inline-block transition-colors duration-200
-                  ${activeTab === item.id ? "text-blue-600 font-bold" : "text-white group-hover:text-blue-400"}
+                  ${
+                    activeTab === item.id
+                      ? "text-blue-600 font-bold"
+                      : "text-white group-hover:text-blue-400"
+                  }
                 `}
               >
                 {item.label}
@@ -652,6 +660,15 @@ export default function HRDashboard() {
                 Add Employee
               </Button>
             </div>
+            {/* Search Bar */}
+            <div className="mb-4">
+              <Input
+                placeholder="Search employees..."
+                value={employeeSearch}
+                onChange={e => setEmployeeSearch(e.target.value)}
+                className="border-gray-400 rounded-md w-full max-w-xs"
+              />
+            </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-blue-50 border-0">
@@ -686,51 +703,61 @@ export default function HRDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {user.employeeId}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        {user.name}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {user.email}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {user.department?.department_name}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {user.position?.title}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {user.location}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {user.status}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                        {user.datehired?.date}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 flex gap-2">
-                        <Button
-                          className="bg-blue-500 text-white hover:bg-blue-600"
-                          size="sm"
-                          onClick={() => handleEditEmployee(user)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          className="bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setDeleteEmployeeId(user.employeeId)}
-                        >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {users
+                    .filter((user: any) => {
+                      const q = employeeSearch.toLowerCase();
+                      return (
+                        user.name.toLowerCase().includes(q) ||
+                        user.email.toLowerCase().includes(q) ||
+                        (user.department?.department_name?.toLowerCase() || "").includes(q) ||
+                        (user.position?.title?.toLowerCase() || "").includes(q)
+                      );
+                    })
+                    .map((user: any) => (
+                      <tr key={user.id}>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                          {user.employeeId}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
+                          {user.name}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                          {user.email}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                          {user.department?.department_name}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                          {user.position?.title}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                          {user.location}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                          {user.status}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                          {user.datehired?.date}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 flex gap-2">
+                          <Button
+                            className="bg-blue-500 text-white hover:bg-blue-600"
+                            size="sm"
+                            onClick={() => handleEditEmployee(user)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            className="bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setDeleteEmployeeId(user.employeeId)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -781,7 +808,7 @@ export default function HRDashboard() {
                       value={newEmployee.email}
                       onChange={(e) =>
                         setNewEmployee((emp) => ({
-                          ...emp, 
+                          ...emp,
                           email: e.target.value,
                         }))
                       }
@@ -793,35 +820,57 @@ export default function HRDashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Department
                     </label>
-                    <Input
-                      value={newEmployee.department.department_name}
-                      onChange={(e) =>
-                        setNewEmployee((emp) => ({
-                          ...emp,
-                          department: { department_name: e.target.value },
-                        }))
+                    <Select
+                      value={newEmployee.department.title ?? ""}
+                      onValueChange={(value) =>
+                        setNewEmployee({
+                          ...newEmployee,
+                          department: { title: value, department_name: value },
+                        })
                       }
                       required
-                      className="border-gray-500 rounded-md"
-                    />
+                    >
+                      <SelectTrigger className="border-gray-500 rounded-md">
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {department.department.map((dep: string) => (
+                          <SelectItem key={dep} value={dep}>
+                            {dep}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Position
                     </label>
-                    <Input
-                      value={newEmployee.position.title}
-                      onChange={(e) =>
-                        setNewEmployee((emp) => ({
-                          ...emp,
-                          position: { title: e.target.value },
-                        }))
+                    <Select
+                      value={newEmployee.position.title ?? ""}
+                      onValueChange={(value) =>
+                        setNewEmployee({
+                          ...newEmployee!,
+                          position: { ...newEmployee.position, title: value },
+                        })
                       }
                       required
-                      className="border-gray-500 rounded-md"
-                    />
+                    >
+                      <SelectTrigger className="border-gray-500 rounded-md">
+                        <SelectValue placeholder="Select position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {positions.positions.map((pos: string) => (
+                          <SelectItem key={pos} value={pos}>
+                            {pos}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
+                    
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Location
                     </label>
@@ -831,22 +880,6 @@ export default function HRDashboard() {
                         setNewEmployee((emp) => ({
                           ...emp,
                           location: e.target.value,
-                        }))
-                      }
-                      required
-                      className="border-gray-500 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Status
-                    </label>
-                    <Input
-                      value={newEmployee.status}
-                      onChange={(e) =>
-                        setNewEmployee((emp) => ({
-                          ...emp,
-                          status: e.target.value,
                         }))
                       }
                       required
@@ -917,7 +950,6 @@ export default function HRDashboard() {
               </DialogContent>
             </Dialog>
 
-
             <Dialog open={editEmployeeOpen} onOpenChange={setEditEmployeeOpen}>
               <DialogContent className="max-w-md border-0">
                 <DialogHeader>
@@ -925,9 +957,15 @@ export default function HRDashboard() {
                 </DialogHeader>
                 {editEmployee && (
                   <form
-                    onSubmit={e => {
+                    onSubmit={(e) => {
                       e.preventDefault();
-                      setUsers(users.map(u => u.employeeId === editEmployee.employeeId ? editEmployee : u));
+                      setUsers(
+                        users.map((u: any) =>
+                          u.employeeId === editEmployee.employeeId
+                            ? editEmployee
+                            : u
+                        )
+                      );
                       setEditEmployeeOpen(false);
                     }}
                     className="space-y-4"
@@ -938,10 +976,15 @@ export default function HRDashboard() {
                       </label>
                       <Input
                         value={editEmployee.employeeId ?? ""}
-                        onChange={e => setEditEmployee({ ...editEmployee!, employeeId: e.target.value })}
+                        onChange={(e) =>
+                          setEditEmployee({
+                            ...editEmployee!,
+                            employeeId: e.target.value,
+                          })
+                        }
                         required
                         disabled
-                         className="border-gray-500 rounded-md"
+                        className="border-gray-500 rounded-md"
                       />
                     </div>
                     <div>
@@ -950,7 +993,12 @@ export default function HRDashboard() {
                       </label>
                       <Input
                         value={editEmployee.name ?? ""}
-                        onChange={e => setEditEmployee({ ...editEmployee!, name: e.target.value })}
+                        onChange={(e) =>
+                          setEditEmployee({
+                            ...editEmployee!,
+                            name: e.target.value,
+                          })
+                        }
                         required
                         className="border-gray-500 rounded-md"
                       />
@@ -962,7 +1010,12 @@ export default function HRDashboard() {
                       <Input
                         type="email"
                         value={editEmployee.email ?? ""}
-                        onChange={e => setEditEmployee({ ...editEmployee!, email: e.target.value })}
+                        onChange={(e) =>
+                          setEditEmployee({
+                            ...editEmployee!,
+                            email: e.target.value,
+                          })
+                        }
                         required
                         className="border-gray-500 rounded-md"
                       />
@@ -972,41 +1025,50 @@ export default function HRDashboard() {
                         Department
                       </label>
                       <Select
-                        value={editEmployee.department.department_name ?? ""}
-                        onValueChange={value => setEditEmployee({ ...editEmployee!, department: { department_name: value } })}
-                        
+                        value={editEmployee.department.title ?? ""}
+                        onValueChange={(value) =>
+                          setEditEmployee({
+                            ...editEmployee!,
+                            department: { title: value, department_name: value },
+                          })
+                        }
+                        required
                       >
                         <SelectTrigger className="border-gray-500 rounded-md">
                           <SelectValue placeholder="Select department" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="HR">HR</SelectItem>
-                          <SelectItem value="IT">IT</SelectItem>
-                          <SelectItem value="Dev">Dev</SelectItem>
-                          <SelectItem value="Finance">Finance</SelectItem>
-                          <SelectItem value="Marketing">Marketing</SelectItem>
-                          <SelectItem value="Operations">Operations</SelectItem>
-                          <SelectItem value="Sales">Sales</SelectItem>
+                          {department.department.map((dep: string) => (
+                            <SelectItem key={dep} value={dep}>
+                              {dep}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Position
                       </label>
                       <Select
                         value={editEmployee.position.title ?? ""}
-                        onValueChange={value => setEditEmployee({ ...editEmployee!, position: { title: value } })}
+                        onValueChange={(value) =>
+                          setEditEmployee({
+                            ...editEmployee!,
+                            position: { title: value },
+                          })
+                        }
                         required
                       >
                         <SelectTrigger className="border-gray-500 rounded-md">
                           <SelectValue placeholder="Select position" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Senior Developer">Senior Developer</SelectItem>
-                          <SelectItem value="Junior Developer">Junior Developer</SelectItem>
-                          <SelectItem value="Automation">Automation</SelectItem>
+                          {positions.positions.map((pos: string) => (
+                            <SelectItem key={pos} value={pos}>
+                              {pos}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1016,7 +1078,12 @@ export default function HRDashboard() {
                       </label>
                       <Input
                         value={editEmployee.location ?? ""}
-                        onChange={e => setEditEmployee({ ...editEmployee!, location: e.target.value })}
+                        onChange={(e) =>
+                          setEditEmployee({
+                            ...editEmployee!,
+                            location: e.target.value,
+                          })
+                        }
                         required
                         className="border-gray-500 rounded-md"
                       />
@@ -1027,14 +1094,16 @@ export default function HRDashboard() {
                       </label>
                       <Select
                         value={editEmployee.status ?? ""}
-                        onValueChange={value => setEditEmployee({ ...editEmployee!, status: value })}
+                        onValueChange={(value) =>
+                          setEditEmployee({ ...editEmployee!, status: value })
+                        }
                       >
                         <SelectTrigger className="border-gray-500 rounded-md">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Active">Active</SelectItem>
-                          <SelectItem value="Inactive">Inactive</SelectItem>                  
+                          <SelectItem value="Inactive">Inactive</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1045,7 +1114,12 @@ export default function HRDashboard() {
                       <Input
                         type="date"
                         value={editEmployee.datehired?.date ?? ""}
-                        onChange={e => setEditEmployee({ ...editEmployee!, datehired: { date: e.target.value } })}
+                        onChange={(e) =>
+                          setEditEmployee({
+                            ...editEmployee!,
+                            datehired: { date: e.target.value },
+                          })
+                        }
                         required
                         className="border-gray-500 rounded-md"
                       />
@@ -1076,6 +1150,15 @@ export default function HRDashboard() {
         {activeTab === "reviews" && (
           <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white">
             <h2 className="text-3xl font-bold text-blue-700 mb-6">Reviews</h2>
+            {/* Search Bar */}
+            <div className="mb-4">
+              <Input
+                placeholder="Search reviews..."
+                value={reviewSearch}
+                onChange={e => setReviewSearch(e.target.value)}
+                className="border-gray-400 rounded-md w-full max-w-xs"
+              />
+            </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-blue-50">
@@ -1098,42 +1181,51 @@ export default function HRDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {reviews.map((review) => {
-                    console.log(
-                      "QuarterReview debug:",
-                      review.reviewDate,
-                      review
-                    );
-                    return (
-                      <tr key={review.id}>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                          {review.employeeId}
-                        </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
-                          {review.employeeName}
-                        </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              review.status === "Completed"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
-                          >
-                            {review.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                          {getQuarterFromDate(review.reviewDate)}
-                        </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
-                          {review.date
-                            ? new Date(review.date).toLocaleDateString()
-                            : "N/A"}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {reviews
+                    .filter((review) => {
+                      const q = reviewSearch.toLowerCase();
+                      return (
+                        (review.employeeName?.toLowerCase() || "").includes(q) ||
+                        (review.status?.toLowerCase() || "").includes(q) ||
+                        (review.reviewDate?.toLowerCase() || "").includes(q)
+                      );
+                    })
+                    .map((review) => {
+                      console.log(
+                        "QuarterReview debug:",
+                        review.reviewDate,
+                        review
+                      );
+                      return (
+                        <tr key={review.id}>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {review.employeeId}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
+                            {review.employeeName}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                review.status === "Completed"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {review.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {getQuarterFromDate(review.reviewDate)}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {review.date
+                              ? new Date(review.date).toLocaleDateString()
+                              : "N/A"}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>

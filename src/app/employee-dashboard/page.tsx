@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { loadEvaluations, Evaluation } from "@/services/evaluationService";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
   { id: "my-reviews", label: "My Reviews", icon: FileText },
   { id: "profile", label: "Profile", icon: User },
+];
+
+const METRIC_LABELS = [
+  { key: "jobKnowledge", label: "Job Knowledge" },
+  { key: "qualityOfWork", label: "Quality of Work" },
+  { key: "promptnessOfWork", label: "Promptness of Work" },
+  { key: "qualityStandards", label: "Quality Standards" },
+  { key: "timeliness", label: "Timeliness" },
+  { key: "workOutput", label: "Work Output" },
+  { key: "consistency", label: "Consistency" },
+  { key: "jobTargets", label: "Job Targets" },
+  { key: "adaptability", label: "Adaptability" },
 ];
 
 export default function EmployeeDashboard() {
@@ -32,8 +54,26 @@ export default function EmployeeDashboard() {
     name: "Employee Name",
     role: "Employee",
     employeeId: "EMP001",
+    position: "Software Engineer",
+    department: "IT Department",
   });
   const [recentReviews, setRecentReviews] = useState<Evaluation[]>([]);
+  const [reminders] = useState([
+    { id: 1, text: "Next performance review due: June 30, 2024" },
+    { id: 2, text: "Submit self-assessment by June 15, 2024" },
+  ]);
+  const [announcements] = useState([
+    {
+      id: 1,
+      title: "New HR Policy Update",
+      body: "Please review the updated remote work policy effective July 1.",
+    },
+    {
+      id: 2,
+      title: "Wellness Program",
+      body: "Join our new wellness program for exclusive benefits!",
+    },
+  ]);
 
   useEffect(() => {
     // Fetch evaluations for the logged-in employee
@@ -64,141 +104,125 @@ export default function EmployeeDashboard() {
     return `${Math.floor(diffInSeconds / 86400)} day(s) ago`;
   }
 
+  const metricAverages = METRIC_LABELS.map(({ key, label }) => {
+    const values = recentReviews.map((r) => Number((r as any)[key]) || 0);
+    const avg = values.length
+      ? values.reduce((a, b) => a + b, 0) / values.length
+      : 0;
+    return { metric: label, value: avg };
+  });
+
   return (
     <div className="flex min-h-screen bg-blue-100">
       {/* Sidebar */}
-      <aside className="w-20 lg:w-64 bg-gray-600 shadow-lg rounded-2xl flex flex-col py-8 px-2 lg:px-6">
-        <div className="mb-8 flex items-center justify-center space-x-2">
-          <img src="/images/smct.png" alt="SMCT Logo" className="h-12 w-auto" />
-          <p className="font-bold text-white">Performance Evaluation</p>
-        </div>
-        <div className="my-8 border-1 mt-0 border-gray-500" />
-        <nav className="space-y-1">
-          {navItems.map((item) => (
-            <Button
-              key={item.id}
-              variant={activeTab === item.id ? "secondary" : "ghost"}
-              className={`w-full justify-center lg:justify-start group transition-all duration-200 py-3 lg:py-2 ${
-                activeTab === item.id
-                  ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
-                  : "hover:bg-gray-50"
-              }`}
-              onClick={() => setActiveTab(item.id)}
-            >
-              <item.icon
-                className={`h-5 w-5 flex-shrink-0 ${
+      <aside className="w-20 lg:w-64 bg-gray-600 shadow-lg rounded-2xl flex flex-col py-8 px-2 lg:px-6 justify-between">
+        <div>
+          <div className="mb-8 flex items-center justify-center space-x-2">
+            <img
+              src="/images/smct.png"
+              alt="SMCT Logo"
+              className="h-12 w-auto"
+            />
+            <p className="font-bold text-white">Performance Evaluation</p>
+          </div>
+          <div className="my-8 border-1 mt-0 border-gray-500" />
+          <nav className="space-y-1">
+            {navItems.map((item) => (
+              <Button
+                key={item.id}
+                variant={activeTab === item.id ? "secondary" : "ghost"}
+                className={`w-full justify-center lg:justify-start group transition-all duration-200 py-3 lg:py-2 ${
                   activeTab === item.id
-                    ? "text-blue-600"
-                    : "text-white group-hover:text-blue-600"
+                    ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                    : "hover:bg-gray-50"
                 }`}
-              />
-              <span
-                className={`ml-0 lg:ml-2 hidden lg:inline-block transition-colors duration-200
-                  ${
-                    activeTab === item.id
-                      ? "text-blue-600 font-bold"
-                      : "text-white group-hover:text-blue-400"
-                  }
-                `}
+                onClick={() => setActiveTab(item.id)}
               >
-                {item.label}
-              </span>
-            </Button>
-          ))}
-        </nav>
-        {/* Sidebar Separator */}
-        <div className="my-8 border-1 border-gray-500" />
+                <item.icon
+                  className={`h-5 w-5 flex-shrink-0 ${
+                    activeTab === item.id
+                      ? "text-blue-600"
+                      : "text-white group-hover:text-blue-600"
+                  }`}
+                />
+                
+                <span
+                  className={`ml-0 lg:ml-2 hidden lg:inline-block transition-colors duration-200
+                    ${
+                      activeTab === item.id
+                        ? "text-blue-600 font-bold"
+                        : "text-white group-hover:text-blue-400"
+                    }
+                  `}
+                >
+                  {item.label}
+                </span>
+              </Button>
+            ))}
+          </nav>
+          {/* Logout Button at the bottom */}
+        <Button
+          className="w-full justify-center mt-8 bg-red-600 text-white hover:bg-red-700 font-semibold py-3 rounded-lg"
+          onClick={() => router.push("/login")}
+        >
+          <LogOut className="h-2 w-5 mr-2" />
+          <span className="hidden lg:inline">Logout</span>
+        </Button>
+          <div className="my-8 border-1 border-gray-500" />
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 lg:p-12">
-        {/* Welcome Banner */}
-        <div className="mb-8">
-          <div className="rounded-2xl bg-blue-600 shadow-lg p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex-1">
-              <h1 className="text-4xl font-extrabold text-white mb-2 drop-shadow">
-                Welcome, {user.name}
-              </h1>
-              <p className="text-lg text-blue-100 font-medium">
-                This is your employee dashboard. Here you can view your
-                performance reviews, track your progress, and receive important
-                updates.
-              </p>
+      <main className="flex-1 p-6 lg:p-12 space-y-8">
+        {/* Profile Info Card */}
+        <Card className="mb-4 p-6 rounded-2xl shadow-xl border-0 bg-white flex flex-col md:flex-row items-center gap-6">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center text-4xl font-bold text-blue-700 shadow">
+            {user.name.charAt(0)}
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-blue-700 mb-1">
+              {user.name}
+            </h2>
+            <div className="text-gray-600 mb-1">
+              ID: <span className="font-semibold">{user.employeeId}</span>
             </div>
-            <div className="flex items-center gap-4">
-              <Button
-                className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-50 transition-all"
-                onClick={() => setActiveTab("my-reviews")}
-              >
-                View My Reviews
-              </Button>
-              {/* Profile User Card */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <div className="flex items-center gap-3 cursor-pointer rounded-xl p-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center text-xl font-bold text-blue-700 shadow">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div className="text-white">
-                      <div className="font-semibold text-base leading-tight">
-                        {user.name}
-                      </div>
-                      <div className="text-sm opacity-90">{user.role}</div>
-                    </div>
-                    <ChevronDown className="h-4 w-4 text-white opacity-70" />
-                  </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-56 bg-white border-0"
-                >
-                  <DropdownMenuItem
-                    onClick={() => setActiveTab("profile")}
-                    className="cursor-pointer hover:bg-blue-200"
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => router.push("/login")}
-                    className="cursor-pointer text-red-600 focus:text-red-600"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="text-gray-600 mb-1">
+              Position: <span className="font-semibold">{user.position}</span>
+            </div>
+            <div className="text-gray-600">
+              Department:{" "}
+              <span className="font-semibold">{user.department}</span>
             </div>
           </div>
+        </Card>
+
+        {/* Reminders & Announcements */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="p-6 rounded-2xl shadow-xl border-0 bg-white">
+            <h3 className="text-lg font-bold text-blue-700 mb-2">Reminders</h3>
+            <ul className="list-disc pl-6 text-gray-700">
+              {reminders.map((r) => (
+                <li key={r.id}>{r.text}</li>
+              ))}
+            </ul>
+          </Card>
+          <Card className="p-6 rounded-2xl shadow-xl border-0 bg-white">
+            <h3 className="text-lg font-bold text-blue-700 mb-2">
+              Announcements
+            </h3>
+            <ul className="space-y-2">
+              {announcements.map((a) => (
+                <li key={a.id}>
+                  <div className="font-semibold text-blue-800">{a.title}</div>
+                  <div className="text-gray-700 text-sm">{a.body}</div>
+                </li>
+              ))}
+            </ul>
+          </Card>
         </div>
 
-        {/* Dashboard Tab Content */}
         {activeTab === "dashboard" && (
           <>
-            {/* Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
-              <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-blue-200 transition-shadow">
-                <div className="text-3xl font-extrabold text-blue-700 mb-1">
-                  N/A
-                </div>
-                <div className="text-gray-600 font-semibold">
-                  My Performance
-                </div>
-              </Card>
-              <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-green-200 transition-shadow">
-                <div className="text-3xl font-extrabold text-green-700 mb-1">
-                  N/A
-                </div>
-                <div className="text-gray-600 font-semibold">My Reviews</div>
-              </Card>
-              <Card className="p-8 flex flex-col items-center justify-center rounded-2xl shadow-xl border-0 bg-white hover:shadow-yellow-200 transition-shadow">
-                <div className="text-3xl font-extrabold text-yellow-700 mb-1">
-                  N/A
-                </div>
-                <div className="text-gray-600 font-semibold">Notifications</div>
-              </Card>
-            </div>
-
             {/* Recent Activity Card */}
             <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white text-left mb-8">
               <div className="flex items-center justify-between mb-6">
@@ -215,21 +239,18 @@ export default function EmployeeDashboard() {
                     >
                       <div className="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-100 hover:border-blue-200">
                         <div className="flex-shrink-0">
-                          <div className="relative">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                              <FileText className="h-6 w-6 text-white" />
-                            </div>
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                            <FileText className="h-6 w-6 text-white" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="mb-2">
                             <p className="text-lg font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">
-                              {`Your review for ${review.reviewYear} was completed by ${review.reviewer}`}
+                              {`Review for ${review.reviewYear} completed by ${review.reviewer}`}
                             </p>
                           </div>
                           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                             <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4 text-gray-400" />
                               <span className="font-medium">
                                 {new Date(review.reviewDate).toLocaleDateString(
                                   "en-US",
@@ -249,30 +270,7 @@ export default function EmployeeDashboard() {
                                 Evaluation Completed
                               </span>
                             </div>
-                            <div className="text-gray-500">
-                              {getTimeAgo(review.reviewDate)}
-                            </div>
                           </div>
-                          <div className="mt-3 pt-3 border-t border-blue-100">
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <FileText className="h-3 w-3" />
-                                Performance Review
-                              </span>
-                              <span>•</span>
-                              <span>Employee Dashboard</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            // onClick={() => handleViewEvaluation(review.id)}
-                          >
-                            View Details
-                          </Button>
                         </div>
                       </div>
                       {idx < recentReviews.length - 1 && idx < 4 && (
@@ -280,16 +278,6 @@ export default function EmployeeDashboard() {
                       )}
                     </div>
                   ))}
-                  {recentReviews.length > 5 && (
-                    <div className="text-center pt-4">
-                      <Button
-                        variant="outline"
-                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                      >
-                        View All {recentReviews.length} Activities
-                      </Button>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -308,7 +296,114 @@ export default function EmployeeDashboard() {
             </Card>
           </>
         )}
-        {/* You can add more tab content for "my-reviews" and "profile" here in the future */}
+
+        {activeTab === "my-reviews" && (
+          <>
+            <Card className="mb-8 p-8 rounded-2xl shadow-xl border-0 bg-white">
+              <h2 className="text-2xl font-bold text-blue-700 mb-4">
+                My Review Metrics
+              </h2>
+              {recentReviews.length > 0 ? (
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart
+                    data={metricAverages}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="metric"
+                      tick={{ fontSize: 13 }}
+                      interval={0}
+                      angle={-20}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis domain={[0, 5]} tickCount={6} />
+                    <Tooltip formatter={(value: any) => value.toFixed(2)} />
+                    <Legend />
+                    <Bar
+                      dataKey="value"
+                      name="Average Score"
+                      fill="#4F8EF7"
+                      radius={[8, 8, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center text-gray-400 py-16 text-lg">
+                  No review metrics to display yet.
+                </div>
+              )}
+            </Card>
+            <Card className="p-8 rounded-2xl shadow-xl border-0 bg-white text-left mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-blue-700">
+                  Evaluation Results
+                </h2>
+              </div>
+              {recentReviews.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-blue-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                          Year
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                          Reviewer
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                          Date Completed
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                      {recentReviews.map((review, idx) => (
+                        <tr key={review.reviewDate + idx}>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {review.reviewYear}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {review.reviewer}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
+                            {new Date(review.reviewDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-green-700 font-semibold">
+                            Completed
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <FileText className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    No Evaluation Results
+                  </h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    When your performance reviews are completed, they will
+                    appear here.
+                  </p>
+                </div>
+              )}
+            </Card>
+          </>
+        )}
       </main>
     </div>
   );
